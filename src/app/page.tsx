@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { auth, signIn } from "~/server/auth";
+
 import { Button } from "~/components/ui/button";
 import { FaPlane, FaGithub } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -34,11 +36,14 @@ const features = [
     icon: <Bot className="h-6 w-6 text-primary" />,
     title: "Automated Organization",
     description:
-      "Trip details automatically organized in Google Sheets for easy sharing",
+      "Everything is automatically organized in Google Sheets for easy viewing and sharing",
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  console.log(session);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F3F4EF" }}>
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -72,10 +77,17 @@ export default function Home() {
             it&apos;s like having a personal travel agent, but wayyy smarter
           </p>
           <div className="flex gap-4">
-            <Button className="text-md h-12 rounded-full bg-[#4285F4] px-6 font-semibold text-white shadow-xl hover:bg-[#4285F4]/90">
-              <Power className="mr-2 h-6 w-6" strokeWidth={3} />
-              Start Now
-            </Button>
+            <form
+              action={async () => {
+                "use server";
+                await signIn("google");
+              }}
+            >
+              <Button className="text-md h-12 rounded-full bg-[#4285F4] px-6 font-semibold text-white shadow-xl hover:bg-[#4285F4]/90">
+                <Power className="mr-2 !h-5 !w-5" strokeWidth={3} />
+                Start Now
+              </Button>
+            </form>
           </div>
         </div>
 
