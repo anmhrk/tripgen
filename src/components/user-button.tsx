@@ -1,5 +1,4 @@
 "use client";
-
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 
@@ -19,14 +18,15 @@ interface UserButtonProps {
 export default function UserButton({ session }: UserButtonProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Avatar className="h-9 w-9 hover:cursor-pointer">
+      <DropdownMenuTrigger>
+        <Avatar className="hover:cursor-pointer">
           <AvatarImage src={session.user.image ?? ""} />
           <AvatarFallback>
             {session.user.name?.slice(0, 1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-56" align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1">
@@ -39,7 +39,9 @@ export default function UserButton({ session }: UserButtonProps) {
           </div>
         </div>
         <DropdownMenuItem
-          onClick={() => signOut()}
+          onClick={async () => {
+            await signOut({ redirectTo: "/" });
+          }}
           className="font-medium text-muted-foreground hover:text-destructive focus:text-destructive"
         >
           <LogOut className="mr-2 !h-5 !w-5" />
