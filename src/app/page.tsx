@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, signIn } from "~/server/auth";
+import { redirect } from "next/navigation";
 
 import { Button } from "~/components/ui/button";
 import { FaPlane, FaGithub } from "react-icons/fa";
@@ -42,10 +43,13 @@ const features = [
 
 export default async function Home() {
   const session = await auth();
-  console.log(session);
+
+  if (session) {
+    redirect("/create");
+  }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F3F4EF" }}>
+    <div className="min-h-screen">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="rounded-lg bg-primary p-2">
@@ -80,7 +84,7 @@ export default async function Home() {
             <form
               action={async () => {
                 "use server";
-                await signIn("google");
+                await signIn("google", { redirectTo: "/create" });
               }}
             >
               <Button className="text-md h-12 rounded-full bg-[#4285F4] px-6 font-semibold text-white shadow-xl hover:bg-[#4285F4]/90">
