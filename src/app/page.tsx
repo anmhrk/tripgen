@@ -1,69 +1,103 @@
 import Link from "next/link";
+import { Button } from "~/components/ui/button";
+import { FaPlane, FaGithub } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { Bot, Map, Plane, Power } from "lucide-react";
 
-import { LatestPost } from "~/app/_components/post";
-import { auth } from "~/server/auth";
-import { api, HydrateClient } from "~/trpc/server";
+const socialLinks = [
+  {
+    href: "https://github.com/anmhrk/tripgen",
+    icon: <FaGithub className="h-7 w-7" />,
+    label: "GitHub",
+  },
+  {
+    href: "https://x.com/anmhrk",
+    icon: <FaXTwitter className="h-7 w-7" />,
+    label: "Twitter",
+  },
+];
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await auth();
+const features = [
+  {
+    icon: <Plane className="h-6 w-6 text-primary" />,
+    title: "Smart Travel Planning",
+    description:
+      "AI assistant that understands your needs for flights, accommodations, and attractions",
+  },
+  {
+    icon: <Map className="h-6 w-6 text-primary" />,
+    title: "Comprehensive Itineraries",
+    description:
+      "Get detailed trip recommendations you can refine and improve by chatting with the AI",
+  },
+  {
+    icon: <Bot className="h-6 w-6 text-primary" />,
+    title: "Automated Organization",
+    description:
+      "Trip details automatically organized in Google Sheets for easy sharing",
+  },
+];
 
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
-
+export default function Home() {
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
+    <div className="min-h-screen" style={{ backgroundColor: "#F3F4EF" }}>
+      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="rounded-lg bg-primary p-2">
+            <FaPlane className="h-6 w-6 text-white" />
+          </div>
+          <span className="text-xl font-semibold">TripGen</span>
+        </Link>
+        <nav className="flex items-center gap-4">
+          {socialLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              className="text-zinc-600 hover:text-zinc-900"
+            >
+              {link.icon}
+              <span className="sr-only">{link.label}</span>
+            </Link>
+          ))}
+        </nav>
+      </header>
+
+      <main>
+        <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-20 text-center">
+          <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+            Plan your perfect trip with AI-powered itineraries
           </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
+          <p className="mb-8 text-xl text-gray-600">
+            it&apos;s like having a personal travel agent, but wayyy smarter
+          </p>
+          <div className="flex gap-4">
+            <Button className="text-md h-12 rounded-full bg-[#4285F4] px-6 font-semibold text-white shadow-xl hover:bg-[#4285F4]/90">
+              <Power className="mr-2 h-6 w-6" strokeWidth={3} />
+              Start Now
+            </Button>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
+        </div>
 
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+        <div className="relative mx-auto max-w-6xl px-6 pb-16">
+          <div className="grid grid-cols-3 gap-8">
+            {features.map((feature, idx) => (
+              <div
+                className={`col-span-3 rounded-2xl bg-white p-8 shadow-lg md:col-span-1 ${
+                  idx === 1 && "md:translate-y-8"
+                }`}
+                key={idx}
               >
-                {session ? "Sign out" : "Sign in"}
-              </Link>
-            </div>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  {feature.icon}
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
+            ))}
           </div>
-
-          {session?.user && <LatestPost />}
         </div>
       </main>
-    </HydrateClient>
+    </div>
   );
 }
