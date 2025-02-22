@@ -1,3 +1,5 @@
+import TripDetailsForm from "../_components/trip-details-form";
+
 export default function AdvancedPage() {
-  return <div>Advanced</div>;
+  return <TripDetailsForm />;
 }

@@ -1,35 +1,55 @@
-import Link from "next/link";
-import { Plane, Sparkles } from "lucide-react";
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import {
+  PromptInput,
+  PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
+} from "~/components/ui/prompt-input";
 import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
+import { ArrowUp, Square } from "lucide-react";
 
 export default function TripPrompt() {
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async () => {
+    if (!input) return;
+    const randomId = crypto.randomUUID();
+    router.push(`/i/${randomId}`);
+  };
+
   return (
-    <form className="space-y-8">
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
-        <Textarea
-          placeholder="I want to go to Japan for 2 weeks in April..."
-          className="min-h-[200px] resize-none border-0 bg-transparent !text-[16px] shadow-none focus-visible:ring-0"
-        />
-      </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Button size="lg" className="px-8 py-6 text-lg">
-          <Plane className="mr-2 !h-5 !w-5" />
-          Generate Itinerary
-        </Button>
-
-        <Link href="/create/advanced">
+    <PromptInput
+      value={input}
+      onValueChange={setInput}
+      onSubmit={handleSubmit}
+      className="max-w-(--breakpoint-md) w-full"
+    >
+      <PromptInputTextarea
+        placeholder="I want to go to Japan for 2 weeks in April..."
+        className="min-h-[240px] !text-[15px]"
+      />
+      <PromptInputActions className="justify-end pt-2">
+        <PromptInputAction tooltip="Create Trip">
           <Button
-            variant="outline"
-            size="lg"
-            className="w-full py-6 text-lg sm:w-auto"
+            variant="default"
+            size="icon"
+            className="h-8 w-8 rounded-full"
+            disabled={input.length === 0}
+            onClick={handleSubmit}
           >
-            <Sparkles className="mr-2 !h-5 !w-5" />
-            Advanced Mode
+            {isLoading ? (
+              <Square className="size-5 fill-current" />
+            ) : (
+              <ArrowUp className="size-5" />
+            )}
           </Button>
-        </Link>
-      </div>
-    </form>
+        </PromptInputAction>
+      </PromptInputActions>
+    </PromptInput>
   );
 }
