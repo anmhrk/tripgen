@@ -20,10 +20,12 @@ export default function TripPrompt() {
 
   const validatePromptMutation = api.trips.validatePrompt.useMutation({
     onSuccess: (data) => {
-      router.push(`/i/${data?.tripId}`);
+      router.push(`/trip/${data?.tripId}`);
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+    onSettled: () => {
       setIsLoading(false);
     },
   });

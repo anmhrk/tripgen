@@ -98,3 +98,17 @@ export const verificationTokens = pgTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
+
+export const trips = pgTable("trip", {
+  id: varchar("id", { length: 255 }).notNull().primaryKey(),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  prompt: text("prompt"),
+  createdAt: timestamp("created_at", {
+    mode: "date",
+    withTimezone: true,
+  })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
