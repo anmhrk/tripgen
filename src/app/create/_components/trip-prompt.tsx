@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { api } from "~/trpc/react";
 
 import {
   PromptInput,
@@ -10,26 +11,31 @@ import {
 } from "~/components/ui/prompt-input";
 import { Button } from "~/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
+import { toast } from "sonner";
 
 export default function TripPrompt() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  // const router = useRouter();
+  const router = useRouter();
+
+  const validatePromptMutation = api.trips.validatePrompt.useMutation({
+    onSuccess: (data) => {
+      router.push(`/i/${data?.tripId}`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      setIsLoading(false);
+    },
+  });
 
   const handleSubmit = async () => {
     if (!input) return;
 
     setIsLoading(true);
-    const randomId = crypto.randomUUID();
-    console.log("randomId", randomId);
-    // router.push(`/i/${randomId}`);
-    setIsLoading(false);
 
-    /* possible flow:
-    first validates the input
-    then redirects to /i/${randomId}
-    then AI does its thing in that route
-    */
+    validatePromptMutation.mutate({
+      prompt: input,
+    });
   };
 
   return (
@@ -38,6 +44,7 @@ export default function TripPrompt() {
       onValueChange={setInput}
       onSubmit={handleSubmit}
       className="max-w-(--breakpoint-md) w-full"
+      isLoading={isLoading}
     >
       <PromptInputTextarea
         placeholder="I want to go to London for 1 week in April..."
@@ -49,7 +56,7 @@ export default function TripPrompt() {
             variant="default"
             size="icon"
             className="h-8 w-8 rounded-full"
-            disabled={input.length === 0}
+            disabled={!input || isLoading}
             onClick={handleSubmit}
           >
             {isLoading ? (

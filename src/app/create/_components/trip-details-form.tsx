@@ -32,7 +32,7 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   tripName: z.string().min(3, "Trip name needs to be at least 3 characters"),
   startDate: z.date(),
   endDate: z.date(),

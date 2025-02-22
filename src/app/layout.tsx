@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#F3F4EF]">
         <TRPCReactProvider>
           {children}
-          <Toaster />
+          <Toaster position="top-center" richColors />
         </TRPCReactProvider>
       </body>
     </html>
