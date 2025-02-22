@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 import {
   PromptInput,
@@ -14,12 +14,22 @@ import { ArrowUp, Square } from "lucide-react";
 export default function TripPrompt() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  // const router = useRouter();
 
   const handleSubmit = async () => {
     if (!input) return;
+
+    setIsLoading(true);
     const randomId = crypto.randomUUID();
-    router.push(`/i/${randomId}`);
+    console.log("randomId", randomId);
+    // router.push(`/i/${randomId}`);
+    setIsLoading(false);
+
+    /* possible flow:
+    first validates the input
+    then redirects to /i/${randomId}
+    then AI does its thing in that route
+    */
   };
 
   return (
@@ -30,7 +40,7 @@ export default function TripPrompt() {
       className="max-w-(--breakpoint-md) w-full"
     >
       <PromptInputTextarea
-        placeholder="I want to go to Japan for 2 weeks in April..."
+        placeholder="I want to go to London for 1 week in April..."
         className="min-h-[240px] !text-[15px]"
       />
       <PromptInputActions className="justify-end pt-2">
