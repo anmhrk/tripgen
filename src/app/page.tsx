@@ -54,13 +54,13 @@ export default async function Home() {
             <Button className="text-md h-12 rounded-full bg-[#4285F4] px-6 font-semibold text-white shadow-xl hover:bg-[#4285F4]/90">
               {session ? (
                 <>
-                  Dashboard
+                  Go to App
                   <ArrowRight className="mr-2 !h-5 !w-5" strokeWidth={3} />
                 </>
               ) : (
                 <>
                   <Power className="mr-2 !h-5 !w-5" strokeWidth={3} />
-                  Start Now
+                  Get Started
                 </>
               )}
             </Button>
@@ -72,8 +72,8 @@ export default async function Home() {
         <div className="grid grid-cols-3 gap-8">
           {features.map((feature, idx) => (
             <div
-              className={`col-span-3 rounded-2xl bg-white p-8 shadow-lg md:col-span-1 ${
-                idx === 1 && "md:translate-y-8"
+              className={`col-span-3 rounded-2xl bg-white p-8 shadow-lg sm:col-span-1 ${
+                idx === 1 && "sm:translate-y-8"
               }`}
               key={idx}
             >
