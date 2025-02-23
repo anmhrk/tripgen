@@ -197,6 +197,7 @@ export function TripDetailsForm() {
                 <FormLabel>Start Location</FormLabel>
                 <FormControl>
                   <Input
+                    type="text"
                     className="!text-sm"
                     placeholder="New York City"
                     {...field}
@@ -215,6 +216,7 @@ export function TripDetailsForm() {
                 <FormLabel>Destination(s)</FormLabel>
                 <FormControl>
                   <Input
+                    type="text"
                     className="!text-sm"
                     placeholder="London, Edinburgh, Paris"
                     {...field}

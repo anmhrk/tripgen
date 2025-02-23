@@ -104,6 +104,7 @@ export const trips = pgTable("trip", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
+  name: text("name").notNull(),
   prompt: text("prompt"),
   createdAt: timestamp("created_at", {
     mode: "date",
