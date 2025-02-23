@@ -112,7 +112,7 @@ export const trips = pgTable("trip", {
   })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  user_submitted: json("user_submitted").$type<{
+  user_submitted_data: json("user_submitted_data").$type<{
     prompt: string | null;
     startDate: Date | null;
     endDate: Date | null;
