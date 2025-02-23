@@ -1,9 +1,12 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { CalendarIcon } from "lucide-react";
+import type { z } from "zod";
 import { format } from "date-fns";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { formSchema } from "~/lib/zod-schemas";
 
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
@@ -26,25 +29,12 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { Calendar } from "~/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-
-export const formSchema = z.object({
-  tripName: z.string().min(3, "Trip name needs to be at least 3 characters"),
-  startDate: z.date(),
-  endDate: z.date(),
-  numTravelers: z.string(),
-  budgetRange: z.string().min(1, "Required"),
-  startLocation: z.string(),
-  destination: z.string(),
-  travelStyle: z.string().min(1, "Required"),
-  accommodation: z.string().min(1, "Required"),
-  activities: z.string().optional(),
-  specialRequirements: z.string().optional(),
-});
 
 const travelStyles = [
   "Relaxed & Easy",
@@ -64,10 +54,22 @@ const budgetRanges = [
 ];
 
 export function TripDetailsForm() {
+  const router = useRouter();
+  const createTripFromForm = api.trips.createTripFromForm.useMutation({
+    onSuccess: (data) => {
+      router.push(`/trip/${data.tripId}`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       tripName: "",
+      startLocation: "",
+      destination: "",
       numTravelers: "1",
       budgetRange: "",
       travelStyle: "",
@@ -78,7 +80,7 @@ export function TripDetailsForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    await createTripFromForm.mutateAsync(values);
   };
 
   return (
@@ -115,7 +117,7 @@ export function TripDetailsForm() {
                       <Button
                         variant="outline"
                         className={cn(
-                          "bg-transparent pl-3 text-left font-normal",
+                          "bg-transparent pl-3 text-left font-normal hover:bg-transparent",
                           !field.value && "text-muted-foreground",
                         )}
                       >
@@ -133,9 +135,7 @@ export function TripDetailsForm() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date() || date < new Date("1900-01-01")
-                      }
+                      disabled={(date) => date < new Date()}
                       initialFocus
                     />
                   </PopoverContent>
@@ -157,7 +157,7 @@ export function TripDetailsForm() {
                       <Button
                         variant="outline"
                         className={cn(
-                          "bg-transparent pl-3 text-left font-normal",
+                          "bg-transparent pl-3 text-left font-normal hover:bg-transparent",
                           !field.value && "text-muted-foreground",
                         )}
                       >
@@ -175,9 +175,15 @@ export function TripDetailsForm() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date() || date < new Date("1900-01-01")
-                      }
+                      disabled={(date) => {
+                        const startDate = form.getValues("startDate");
+                        return startDate
+                          ? date <
+                              new Date(
+                                startDate.getTime() + 24 * 60 * 60 * 1000,
+                              )
+                          : date < new Date();
+                      }}
                       initialFocus
                     />
                   </PopoverContent>

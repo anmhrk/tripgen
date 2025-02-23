@@ -18,9 +18,9 @@ export default function TripPrompt() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const validatePromptMutation = api.trips.validatePrompt.useMutation({
+  const createTripFromPrompt = api.trips.createTripFromPrompt.useMutation({
     onSuccess: (data) => {
-      router.push(`/trip/${data?.tripId}`);
+      router.push(`/trip/${data.tripId}`);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -35,7 +35,7 @@ export default function TripPrompt() {
 
     setIsLoading(true);
 
-    validatePromptMutation.mutate({
+    await createTripFromPrompt.mutateAsync({
       prompt: input,
     });
   };

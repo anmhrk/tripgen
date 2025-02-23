@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
   varchar,
+  json,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -105,11 +106,23 @@ export const trips = pgTable("trip", {
     .notNull()
     .references(() => users.id),
   name: text("name").notNull(),
-  prompt: text("prompt"),
   createdAt: timestamp("created_at", {
     mode: "date",
     withTimezone: true,
   })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
+  user_submitted: json("user_submitted").$type<{
+    prompt: string | null;
+    startDate: Date | null;
+    endDate: Date | null;
+    numTravelers: string | null;
+    budgetRange: string | null;
+    startLocation: string | null;
+    destination: string | null;
+    travelStyle: string | null;
+    accommodation: string | null;
+    activities: string | null;
+    specialRequirements: string | null;
+  }>(),
 });
