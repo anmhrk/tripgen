@@ -18,7 +18,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body className="min-h-screen bg-[#F3F4EF]">
+      <body className="min-h-screen overscroll-none bg-[#F3F4EF]">
         <TooltipProvider delayDuration={100}>
           <TRPCReactProvider>
             {children}

@@ -23,7 +23,7 @@ export default async function TripPage({
       <HydrateClient>
         <div className="flex h-screen flex-col">
           <TopNav tripName={tripName} session={session!} />
-          <div className="flex flex-1 gap-1 p-2">
+          <div className="flex flex-1 gap-2 p-2">
             <Chat />
             <GSheet />
           </div>
