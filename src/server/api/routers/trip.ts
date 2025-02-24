@@ -88,7 +88,8 @@ export const tripRouter = createTRPCRouter({
       return { tripId };
     }),
 
-  returnTripData: publicProcedure
+  // also validates trip page access
+  getTripName: publicProcedure
     .input(z.object({ tripId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const trip = await ctx.db.query.trips.findFirst({
@@ -109,9 +110,6 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
-      return {
-        name: trip.name,
-        user_submitted_data: trip.user_submitted_data,
-      };
+      return trip.name;
     }),
 });

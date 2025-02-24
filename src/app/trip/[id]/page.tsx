@@ -3,9 +3,41 @@ import { HydrateClient } from "~/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Metadata } from "next";
 
-async function getTripData(id: string) {
+import { TopNav } from "./_components/top-nav";
+import { Chat } from "./_components/chat";
+import { GSheet } from "./_components/gsheet";
+
+export default async function TripPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
   try {
-    return await api.trips.returnTripData({
+    const tripName = await getTripName(id);
+
+    return (
+      <HydrateClient>
+        <div className="flex h-screen flex-col">
+          <TopNav tripName={tripName} />
+          <div className="flex flex-1 gap-1 p-2">
+            <Chat />
+            <GSheet />
+          </div>
+        </div>
+      </HydrateClient>
+    );
+  } catch (error) {
+    if (error instanceof TRPCError) {
+      return <ErrorMessage code={error.code} message={error.message} />;
+    }
+  }
+}
+
+async function getTripName(id: string) {
+  try {
+    return await api.trips.getTripName({
       tripId: id,
     });
   } catch (error) {
@@ -21,54 +53,25 @@ export async function generateMetadata({
   const { id } = await params;
 
   try {
-    const tripData = await getTripData(id);
+    const tripName = await getTripName(id);
     return {
-      title: `${tripData.name} | TripGen`,
+      title: `${tripName} | TripGen`,
     };
   } catch (error) {
     return {
-      title: error instanceof TRPCError ? error.code : "TripGen",
+      title:
+        error instanceof TRPCError ? error.code.replace("_", " ") : "TripGen",
     };
   }
 }
 
-export default async function TripPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-
-  try {
-    const tripData = await getTripData(id);
-
-    return (
-      <HydrateClient>
-        <div>Hello, trip id is: {id}</div>
-        <div>{tripData.name}</div>
-      </HydrateClient>
-    );
-  } catch (error) {
-    if (error instanceof TRPCError) {
-      if (error.code === "NOT_FOUND") {
-        return (
-          <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">
-              {error.code}
-            </h2>
-            <p className="text-gray-600">{error.message}</p>
-          </div>
-        );
-      } else if (error.code === "FORBIDDEN") {
-        return (
-          <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">
-              {error.code}
-            </h2>
-            <p className="text-gray-600">{error.message}</p>
-          </div>
-        );
-      }
-    }
-  }
+function ErrorMessage({ code, message }: { code: string; message: string }) {
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+      <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        {code.replace("_", " ")}
+      </h2>
+      <p className="text-gray-600">{message}</p>
+    </div>
+  );
 }
