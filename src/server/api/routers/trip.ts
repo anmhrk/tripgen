@@ -112,4 +112,13 @@ export const tripRouter = createTRPCRouter({
 
       return trip.name;
     }),
+
+  updateTripName: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1), name: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(trips)
+        .set({ name: input.name })
+        .where(eq(trips.id, input.tripId));
+    }),
 });

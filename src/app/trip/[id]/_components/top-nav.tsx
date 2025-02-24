@@ -1,6 +1,9 @@
 "use client";
 import Link from "next/link";
 import type { Session } from "next-auth";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { api } from "~/trpc/react";
 
 import { FaPlane } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
@@ -11,20 +14,35 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { useState } from "react";
 import { Input } from "~/components/ui/input";
+import { toast } from "sonner";
 
 interface TopNavProps {
   tripName: string;
   session: Session;
 }
 
-export function TopNav({ tripName, session }: TopNavProps) {
-  const [tripNameInput, setTripNameInput] = useState(tripName);
+export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
+  const params = useParams<{ id: string }>();
+  const [tripNameInput, setTripNameInput] = useState(initialTripName);
   const [isEditing, setIsEditing] = useState(false);
 
+  const updateTripName = api.trips.updateTripName.useMutation({
+    onSuccess: async () => {
+      setTripNameInput(tripNameInput);
+      toast.success("Trip name updated");
+    },
+    onError: (error) => {
+      setTripNameInput(initialTripName);
+      toast.error(error.message);
+    },
+    onSettled: () => {
+      setIsEditing(false);
+    },
+  });
+
   return (
-    <header className="flex h-10 items-center justify-between px-3">
+    <header className="flex h-10 items-center justify-between px-3 text-zinc-800">
       <Link href="/" className="flex items-center gap-2">
         <Button
           variant="ghost"
@@ -33,7 +51,7 @@ export function TopNav({ tripName, session }: TopNavProps) {
         >
           <FaPlane className="h-4 w-4 text-white" />
         </Button>
-        <span className="text-md font-semibold text-zinc-800">TripGen</span>
+        <span className="text-md font-semibold">TripGen</span>
       </Link>
 
       <div className="flex items-center gap-1">
@@ -41,10 +59,23 @@ export function TopNav({ tripName, session }: TopNavProps) {
           <Input
             value={tripNameInput}
             onChange={(e) => setTripNameInput(e.target.value)}
-            className="w-24"
+            className="text-md w-48 font-medium"
+            autoFocus
+            onBlur={() => {
+              setTripNameInput(initialTripName);
+              setIsEditing(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateTripName.mutate({
+                  tripId: params.id,
+                  name: tripNameInput,
+                });
+              }
+            }}
           />
         ) : (
-          <span className="text-md font-medium text-zinc-800">{tripName}</span>
+          <span className="text-md font-medium">{tripNameInput}</span>
         )}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -54,7 +85,7 @@ export function TopNav({ tripName, session }: TopNavProps) {
               className="hover:bg-zinc-200"
               onClick={() => setIsEditing(true)}
             >
-              <PenLine className="!h-6 !w-6 text-zinc-800" />
+              <PenLine className="!h-6 !w-6" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
@@ -67,7 +98,7 @@ export function TopNav({ tripName, session }: TopNavProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" className="hover:bg-zinc-200">
-              <Share className="!h-6 !w-6 text-zinc-800" />
+              <Share className="!h-6 !w-6" />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
