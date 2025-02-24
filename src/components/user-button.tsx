@@ -1,6 +1,7 @@
 "use client";
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
+import { cn } from "~/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
@@ -13,13 +14,14 @@ import { LogOut } from "lucide-react";
 
 interface UserButtonProps {
   session: Session;
+  className?: string;
 }
 
-export default function UserButton({ session }: UserButtonProps) {
+export default function UserButton({ session, className }: UserButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Avatar className="hover:cursor-pointer">
+        <Avatar className={cn("hover:cursor-pointer", className)}>
           <AvatarImage src={session.user.image ?? ""} />
           <AvatarFallback>
             {session.user.name?.slice(0, 1).toUpperCase()}

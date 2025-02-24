@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "~/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "TripGen - AI trip itinerary planner",
@@ -18,10 +19,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body className="min-h-screen bg-[#F3F4EF]">
-        <TRPCReactProvider>
-          {children}
-          <Toaster position="top-center" richColors />
-        </TRPCReactProvider>
+        <TooltipProvider delayDuration={100}>
+          <TRPCReactProvider>
+            {children}
+            <Toaster position="top-center" richColors />
+          </TRPCReactProvider>
+        </TooltipProvider>
       </body>
     </html>
   );

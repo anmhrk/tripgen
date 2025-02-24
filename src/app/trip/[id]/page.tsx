@@ -2,6 +2,7 @@ import { api } from "~/trpc/server";
 import { HydrateClient } from "~/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Metadata } from "next";
+import { auth } from "~/server/auth";
 
 import { TopNav } from "./_components/top-nav";
 import { Chat } from "./_components/chat";
@@ -13,6 +14,7 @@ export default async function TripPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
 
   try {
     const tripName = await getTripName(id);
@@ -20,7 +22,7 @@ export default async function TripPage({
     return (
       <HydrateClient>
         <div className="flex h-screen flex-col">
-          <TopNav tripName={tripName} />
+          <TopNav tripName={tripName} session={session!} />
           <div className="flex flex-1 gap-1 p-2">
             <Chat />
             <GSheet />
