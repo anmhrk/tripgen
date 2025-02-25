@@ -16,6 +16,9 @@ import {
 } from "~/components/ui/tooltip";
 import { Input } from "~/components/ui/input";
 import { toast } from "sonner";
+import { Label } from "~/components/ui/label";
+import { Dialog, DialogTrigger, DialogContent } from "~/components/ui/dialog";
+import { ShareDialog } from "./share-dialog";
 
 interface TopNavProps {
   tripName: string;
@@ -59,7 +62,9 @@ export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
         >
           <FaPlane className="h-4 w-4 text-white" />
         </Button>
-        <span className="text-md font-semibold">TripGen</span>
+        <Label className="text-md select-none font-bold hover:cursor-pointer">
+          TripGen
+        </Label>
       </Link>
 
       <div className="flex items-center gap-1">
@@ -80,10 +85,14 @@ export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
                   name: tripNameInput,
                 });
               }
+              if (e.key === "Escape") {
+                setTripNameInput(initialTripName);
+                setIsEditing(false);
+              }
             }}
           />
         ) : (
-          <span className="text-md font-medium">{tripNameInput}</span>
+          <Label className="text-md font-medium">{tripNameInput}</Label>
         )}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -103,16 +112,27 @@ export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="hover:bg-zinc-200">
-              <Share className="!h-6 !w-6" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-            Share Trip
-          </TooltipContent>
-        </Tooltip>
+        <Dialog>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-zinc-200"
+                >
+                  <Share className="!h-6 !w-6" />
+                </Button>
+              </DialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+              Share Trip
+            </TooltipContent>
+          </Tooltip>
+          <DialogContent>
+            <ShareDialog tripName={tripNameInput} />
+          </DialogContent>
+        </Dialog>
         <UserButton session={session} className="h-7 w-7" />
       </div>
     </header>

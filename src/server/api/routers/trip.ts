@@ -121,4 +121,15 @@ export const tripRouter = createTRPCRouter({
         .set({ name: input.name })
         .where(eq(trips.id, input.tripId));
     }),
+
+  shareTrip: publicProcedure
+    .input(
+      z.object({ tripId: z.string().min(1), sharePhrase: z.string().min(1) }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(trips)
+        .set({ share_phrase: input.sharePhrase, is_shared: true })
+        .where(eq(trips.id, input.tripId));
+    }),
 });

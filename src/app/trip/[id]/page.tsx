@@ -3,10 +3,21 @@ import { HydrateClient } from "~/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Metadata } from "next";
 import { auth } from "~/server/auth";
+import { cache } from "react";
 
 import { TopNav } from "./_components/top-nav";
 import { Chat } from "./_components/chat";
 import { GSheet } from "./_components/gsheet";
+
+const getCachedTripName = cache(async (id: string) => {
+  try {
+    return await api.trips.getTripName({
+      tripId: id,
+    });
+  } catch (error) {
+    throw error;
+  }
+});
 
 export default async function TripPage({
   params,
@@ -17,7 +28,7 @@ export default async function TripPage({
   const session = await auth();
 
   try {
-    const tripName = await getTripName(id);
+    const tripName = await getCachedTripName(id);
 
     return (
       <HydrateClient>
@@ -37,16 +48,6 @@ export default async function TripPage({
   }
 }
 
-async function getTripName(id: string) {
-  try {
-    return await api.trips.getTripName({
-      tripId: id,
-    });
-  } catch (error) {
-    throw error;
-  }
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -55,7 +56,7 @@ export async function generateMetadata({
   const { id } = await params;
 
   try {
-    const tripName = await getTripName(id);
+    const tripName = await getCachedTripName(id);
     return {
       title: `${tripName} | TripGen`,
     };

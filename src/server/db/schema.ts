@@ -5,6 +5,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  boolean,
   timestamp,
   varchar,
   json,
@@ -125,4 +126,6 @@ export const trips = pgTable("trip", {
     activities: string | null;
     specialRequirements: string | null;
   }>(),
+  is_shared: boolean("is_shared").notNull().default(false),
+  share_phrase: text("share_phrase"),
 });

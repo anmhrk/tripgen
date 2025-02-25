@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} antialiased`}>
       <body className="min-h-screen overscroll-none bg-[#F3F4EF]">
-        <TooltipProvider delayDuration={100}>
+        <TooltipProvider delayDuration={100} skipDelayDuration={0}>
           <TRPCReactProvider>
             {children}
             <Toaster position="top-center" richColors />
