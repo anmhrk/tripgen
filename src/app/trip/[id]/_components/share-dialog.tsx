@@ -1,3 +1,5 @@
+// TODO: maybe have a button to change the share phrase?
+
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -24,6 +26,7 @@ export function ShareDialog({ tripName }: { tripName: string }) {
   });
 
   // refetch on every mount to prevent stale state
+  // TODO: this is causing extra calls to api, fix?
   useEffect(() => {
     void getSharePhrase.refetch();
   }, [getSharePhrase]);
@@ -77,7 +80,7 @@ export function ShareDialog({ tripName }: { tripName: string }) {
 
       <div className="space-y-5 pb-3">
         <div className="flex items-center gap-2">
-          <Input value={shareLink} readOnly className="text-xs" />
+          <Input value={shareLink} readOnly className="!text-sm" />
           <Button
             variant="outline"
             size="icon"

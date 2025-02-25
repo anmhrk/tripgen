@@ -9,10 +9,11 @@ import { TopNav } from "./_components/top-nav";
 import { Chat } from "./_components/chat";
 import { GSheet } from "./_components/gsheet";
 
-const getCachedTripName = cache(async (id: string) => {
+const getCachedTripName = cache(async (id: string, share?: string) => {
   try {
     return await api.trips.getTripName({
       tripId: id,
+      sharePhrase: share,
     });
   } catch (error) {
     throw error;
@@ -21,19 +22,22 @@ const getCachedTripName = cache(async (id: string) => {
 
 export default async function TripPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ share: string }>;
 }) {
   const { id } = await params;
+  const { share } = await searchParams;
   const session = await auth();
 
   try {
-    const tripName = await getCachedTripName(id);
+    const { name, isShared } = await getCachedTripName(id, share);
 
     return (
       <HydrateClient>
         <div className="flex h-screen flex-col">
-          <TopNav tripName={tripName} session={session!} />
+          <TopNav tripName={name} isShared={isShared} session={session} />
           <div className="flex flex-1 gap-2 p-2">
             <Chat />
             <GSheet />
@@ -50,15 +54,18 @@ export default async function TripPage({
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ share: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
+  const { share } = await searchParams;
 
   try {
-    const tripName = await getCachedTripName(id);
+    const { name } = await getCachedTripName(id, share);
     return {
-      title: `${tripName} | TripGen`,
+      title: `${name} | TripGen`,
     };
   } catch (error) {
     return {

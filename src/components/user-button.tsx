@@ -13,11 +13,13 @@ import { DropdownMenu } from "./ui/dropdown-menu";
 import { LogOut } from "lucide-react";
 
 interface UserButtonProps {
-  session: Session;
+  session: Session | null;
   className?: string;
 }
 
 export default function UserButton({ session, className }: UserButtonProps) {
+  if (!session) return null;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>

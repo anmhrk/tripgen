@@ -1,9 +1,7 @@
-// TODOS:
-// - hide the rename and share button if logged in user doesn't match with trip userId
-
 "use client";
 import Link from "next/link";
 import type { Session } from "next-auth";
+import { signIn } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
@@ -25,10 +23,15 @@ import { ShareDialog } from "./share-dialog";
 
 interface TopNavProps {
   tripName: string;
-  session: Session;
+  isShared: boolean;
+  session: Session | null;
 }
 
-export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
+export function TopNav({
+  tripName: initialTripName,
+  isShared,
+  session,
+}: TopNavProps) {
   const params = useParams<{ id: string }>();
   const [tripNameInput, setTripNameInput] = useState(initialTripName);
   const [tripNameEdited, setTripNameEdited] = useState(false);
@@ -97,47 +100,64 @@ export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
         ) : (
           <Label className="text-md font-medium">{tripNameInput}</Label>
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hover:bg-zinc-200"
-              onClick={() => setIsEditing(true)}
-            >
-              <PenLine className="!h-6 !w-6" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-            Rename Trip
-          </TooltipContent>
-        </Tooltip>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Dialog>
+        {!isShared && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-zinc-200"
-                >
-                  <Share className="!h-6 !w-6" />
-                </Button>
-              </DialogTrigger>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-zinc-200"
+                onClick={() => setIsEditing(true)}
+              >
+                <PenLine className="!h-6 !w-6" />
+              </Button>
             </TooltipTrigger>
             <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-              Share Trip
+              Rename Trip
             </TooltipContent>
           </Tooltip>
-          <DialogContent>
-            <ShareDialog tripName={tripNameInput} />
-          </DialogContent>
-        </Dialog>
-        <UserButton session={session} className="h-7 w-7" />
+        )}
       </div>
+
+      {isShared ? (
+        <>
+          {session ? (
+            <UserButton session={session} className="h-7 w-7" />
+          ) : (
+            <Button
+              onClick={() => signIn("google", { redirect: false })}
+              className="h-8 rounded-lg px-2"
+            >
+              Sign in
+            </Button>
+          )}
+        </>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Dialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:bg-zinc-200"
+                  >
+                    <Share className="!h-6 !w-6" />
+                  </Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+                Share Trip
+              </TooltipContent>
+            </Tooltip>
+            <DialogContent>
+              <ShareDialog tripName={tripNameInput} />
+            </DialogContent>
+          </Dialog>
+          <UserButton session={session} className="h-7 w-7" />
+        </div>
+      )}
     </header>
   );
 }

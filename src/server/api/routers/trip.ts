@@ -88,9 +88,14 @@ export const tripRouter = createTRPCRouter({
       return { tripId };
     }),
 
-  // also validates trip page access
+  // also validates trip page access, handles shared user access too
   getTripName: publicProcedure
-    .input(z.object({ tripId: z.string().min(1) }))
+    .input(
+      z.object({
+        tripId: z.string().min(1),
+        sharePhrase: z.string().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const trip = await ctx.db.query.trips.findFirst({
         where: eq(trips.id, input.tripId),
@@ -103,6 +108,30 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
+      if (
+        input.sharePhrase &&
+        trip.is_shared &&
+        trip.userId != ctx.session?.user.id
+      ) {
+        const sharePhrase = await ctx.db.query.trips.findFirst({
+          where: and(
+            eq(trips.id, input.tripId),
+            eq(trips.share_phrase, input.sharePhrase),
+          ),
+        });
+        if (sharePhrase) {
+          return {
+            isShared: true,
+            name: trip.name,
+          };
+        }
+
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid share phrase",
+        });
+      }
+
       if (trip.userId !== ctx.session?.user.id) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -110,7 +139,10 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
-      return trip.name;
+      return {
+        isShared: false,
+        name: trip.name,
+      };
     }),
 
   updateTripName: protectedProcedure
