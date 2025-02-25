@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 
 import { FaPlane } from "react-icons/fa";
@@ -25,11 +25,19 @@ interface TopNavProps {
 export function TopNav({ tripName: initialTripName, session }: TopNavProps) {
   const params = useParams<{ id: string }>();
   const [tripNameInput, setTripNameInput] = useState(initialTripName);
+  const [tripNameEdited, setTripNameEdited] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (tripNameEdited) {
+      document.title = `${tripNameInput} | TripGen`;
+    }
+  }, [tripNameEdited, tripNameInput]);
 
   const updateTripName = api.trips.updateTripName.useMutation({
     onSuccess: async () => {
       setTripNameInput(tripNameInput);
+      setTripNameEdited(true);
       toast.success("Trip name updated");
     },
     onError: (error) => {

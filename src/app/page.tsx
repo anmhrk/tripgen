@@ -51,7 +51,7 @@ export default async function Home() {
               }
             }}
           >
-            <Button className="text-md h-12 rounded-full bg-[#4285F4] px-6 font-semibold text-white shadow-xl hover:bg-[#4285F4]/90">
+            <Button className="text-md h-12 rounded-full px-6 font-semibold text-white shadow-xl">
               {session ? (
                 <>
                   Go to App
