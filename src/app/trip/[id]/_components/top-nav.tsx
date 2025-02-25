@@ -1,3 +1,6 @@
+// TODOS:
+// - hide the rename and share button if logged in user doesn't match with trip userId
+
 "use client";
 import Link from "next/link";
 import type { Session } from "next-auth";

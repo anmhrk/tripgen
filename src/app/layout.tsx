@@ -22,7 +22,7 @@ export default function RootLayout({
         <TooltipProvider delayDuration={100} skipDelayDuration={0}>
           <TRPCReactProvider>
             {children}
-            <Toaster position="top-center" richColors />
+            <Toaster position="top-center" />
           </TRPCReactProvider>
         </TooltipProvider>
       </body>

@@ -16,11 +16,26 @@ import { toast } from "sonner";
 export function ShareDialog({ tripName }: { tripName: string }) {
   const params = useParams<{ id: string }>();
   const [sharePhrase, setSharePhrase] = useState("");
+  const [isShared, setIsShared] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
+  const getSharePhrase = api.trips.getSharePhrase.useQuery({
+    tripId: params.id,
+  });
+
+  // refetch on every mount to prevent stale state
   useEffect(() => {
-    setSharePhrase(generateSharePhrase());
-  }, []);
+    void getSharePhrase.refetch();
+  }, [getSharePhrase]);
+
+  useEffect(() => {
+    if (getSharePhrase.data) {
+      setSharePhrase(getSharePhrase.data);
+      setIsShared(true);
+    } else {
+      setSharePhrase(generateSharePhrase());
+    }
+  }, [getSharePhrase.data]);
 
   const shareLink = `${process.env.NEXT_PUBLIC_BASE_URL}/trip/${params.id}?share=${sharePhrase}`;
 
@@ -29,6 +44,22 @@ export function ShareDialog({ tripName }: { tripName: string }) {
       toast.success("Share link copied to clipboard");
       setLinkCopied(true);
       await navigator.clipboard.writeText(shareLink);
+      setIsShared(true);
+      setTimeout(() => {
+        setLinkCopied(false);
+      }, 4000);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const unshareTrip = api.trips.unshareTrip.useMutation({
+    onSuccess: () => {
+      toast.success("Trip unshared and made private again");
+      setIsShared(false);
+      setLinkCopied(false);
+      setSharePhrase(generateSharePhrase());
     },
     onError: (error) => {
       toast.error(error.message);
@@ -40,12 +71,11 @@ export function ShareDialog({ tripName }: { tripName: string }) {
       <DialogHeader>
         <DialogTitle>Share trip: {tripName}</DialogTitle>
         <DialogDescription className="pt-2">
-          Share this trip with others using the link below.
+          Share this trip with others using the link below
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-2 pb-3">
-        <label className="text-sm font-medium">Share Link</label>
+      <div className="space-y-5 pb-3">
         <div className="flex items-center gap-2">
           <Input value={shareLink} readOnly className="text-xs" />
           <Button
@@ -65,13 +95,29 @@ export function ShareDialog({ tripName }: { tripName: string }) {
             )}
           </Button>
         </div>
+        {isShared && (
+          <div className="space-y-2">
+            <Button
+              variant="destructive"
+              className="w-[100px]"
+              onClick={() => {
+                unshareTrip.mutate({ tripId: params.id });
+              }}
+            >
+              Unshare
+            </Button>
+            <p className="text-xs text-gray-500">
+              This will remove the share link and make the trip private again
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
 }
 
 function generateSharePhrase() {
-  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < 10; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));

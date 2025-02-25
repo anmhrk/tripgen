@@ -9,7 +9,7 @@ import { generateObject } from "ai";
 import { TRPCError } from "@trpc/server";
 import { trips } from "~/server/db/schema";
 import { formSchema } from "~/lib/zod-schemas";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export const tripRouter = createTRPCRouter({
   createTripFromPrompt: protectedProcedure
@@ -122,7 +122,7 @@ export const tripRouter = createTRPCRouter({
         .where(eq(trips.id, input.tripId));
     }),
 
-  shareTrip: publicProcedure
+  shareTrip: protectedProcedure
     .input(
       z.object({ tripId: z.string().min(1), sharePhrase: z.string().min(1) }),
     )
@@ -130,6 +130,25 @@ export const tripRouter = createTRPCRouter({
       await ctx.db
         .update(trips)
         .set({ share_phrase: input.sharePhrase, is_shared: true })
+        .where(and(eq(trips.id, input.tripId), eq(trips.is_shared, false)));
+    }),
+
+  getSharePhrase: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const trip = await ctx.db.query.trips.findFirst({
+        where: and(eq(trips.id, input.tripId)),
+      });
+
+      return trip?.share_phrase;
+    }),
+
+  unshareTrip: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(trips)
+        .set({ is_shared: false, share_phrase: null })
         .where(eq(trips.id, input.tripId));
     }),
 });
