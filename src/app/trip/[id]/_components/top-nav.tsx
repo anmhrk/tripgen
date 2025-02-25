@@ -41,7 +41,7 @@ export function TopNav({
     if (tripNameEdited) {
       document.title = `${tripNameInput} | TripGen`;
     }
-  }, [tripNameEdited, tripNameInput]);
+  }, [tripNameEdited]);
 
   const updateTripName = api.trips.updateTripName.useMutation({
     onSuccess: async () => {
@@ -86,10 +86,15 @@ export function TopNav({
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                updateTripName.mutate({
-                  tripId: params.id,
-                  name: tripNameInput,
-                });
+                toast.promise(
+                  updateTripName.mutateAsync({
+                    tripId: params.id,
+                    name: tripNameInput,
+                  }),
+                  {
+                    loading: "Updating trip name...",
+                  },
+                );
               }
               if (e.key === "Escape") {
                 setTripNameInput(initialTripName);

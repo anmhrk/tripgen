@@ -1,5 +1,3 @@
-// TODO: maybe have a button to change the share phrase?
-
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
@@ -12,7 +10,7 @@ import {
 } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function ShareDialog({ tripName }: { tripName: string }) {
@@ -21,15 +19,19 @@ export function ShareDialog({ tripName }: { tripName: string }) {
   const [isShared, setIsShared] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  const getSharePhrase = api.trips.getSharePhrase.useQuery({
-    tripId: params.id,
-  });
+  const getSharePhrase = api.trips.getSharePhrase.useQuery(
+    {
+      tripId: params.id,
+    },
+    {
+      enabled: false,
+      staleTime: 0,
+    },
+  );
 
-  // refetch on every mount to prevent stale state
-  // TODO: this is causing extra calls to api, fix?
   useEffect(() => {
     void getSharePhrase.refetch();
-  }, [getSharePhrase]);
+  }, []);
 
   useEffect(() => {
     if (getSharePhrase.data) {
@@ -58,11 +60,12 @@ export function ShareDialog({ tripName }: { tripName: string }) {
   });
 
   const unshareTrip = api.trips.unshareTrip.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Trip unshared and made private again");
       setIsShared(false);
       setLinkCopied(false);
       setSharePhrase(generateSharePhrase());
+      await getSharePhrase.refetch();
     },
     onError: (error) => {
       toast.error(error.message);
@@ -84,11 +87,26 @@ export function ShareDialog({ tripName }: { tripName: string }) {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => {
-              shareTrip.mutate({
-                tripId: params.id,
-                sharePhrase: sharePhrase,
-              });
+            disabled={getSharePhrase.isLoading}
+            onClick={async () => {
+              if (isShared) {
+                toast.success("Share link copied to clipboard");
+                await navigator.clipboard.writeText(shareLink);
+                setLinkCopied(true);
+                setTimeout(() => {
+                  setLinkCopied(false);
+                }, 4000);
+              } else {
+                toast.promise(
+                  shareTrip.mutateAsync({
+                    tripId: params.id,
+                    sharePhrase: sharePhrase,
+                  }),
+                  {
+                    loading: "Sharing trip...",
+                  },
+                );
+              }
             }}
           >
             {linkCopied ? (
@@ -98,13 +116,20 @@ export function ShareDialog({ tripName }: { tripName: string }) {
             )}
           </Button>
         </div>
-        {isShared && (
+        {getSharePhrase.isLoading && (
+          <div className="flex items-center">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        )}
+        {isShared && !getSharePhrase.isLoading && (
           <div className="space-y-2">
             <Button
               variant="destructive"
               className="w-[100px]"
               onClick={() => {
-                unshareTrip.mutate({ tripId: params.id });
+                toast.promise(unshareTrip.mutateAsync({ tripId: params.id }), {
+                  loading: "Unsharing trip...",
+                });
               }}
             >
               Unshare
