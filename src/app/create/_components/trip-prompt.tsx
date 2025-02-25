@@ -26,6 +26,7 @@ export default function TripPrompt() {
       toast.error(error.message);
     },
     onSettled: () => {
+      toast.dismiss("create-trip");
       setIsLoading(false);
     },
   });
@@ -34,6 +35,7 @@ export default function TripPrompt() {
     if (!input) return;
 
     setIsLoading(true);
+    toast.loading("Creating trip...", { id: "create-trip" });
 
     await createTripFromPrompt.mutateAsync({
       prompt: input,
