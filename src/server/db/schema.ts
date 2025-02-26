@@ -128,4 +128,5 @@ export const trips = pgTable("trip", {
   }>(),
   is_shared: boolean("is_shared").notNull().default(false),
   share_phrase: text("share_phrase"),
+  gsheet_id: text("gsheet_id"),
 });

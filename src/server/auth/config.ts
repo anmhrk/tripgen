@@ -38,7 +38,16 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    GoogleProvider,
+    GoogleProvider({
+      authorization: {
+        params: {
+          scope:
+            "openid email profile https://www.googleapis.com/auth/spreadsheets",
+          prompt: "consent",
+          access_type: "offline",
+        },
+      },
+    }),
     /**
      * ...add more providers here.
      *
