@@ -387,7 +387,10 @@ export function TripDetailsForm() {
           )}
         />
 
-        <Button type="submit" className="h-11 w-full rounded-full">
+        <Button
+          type="submit"
+          className="h-11 w-full rounded-full font-semibold"
+        >
           Create Trip
         </Button>
       </form>

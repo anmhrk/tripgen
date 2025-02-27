@@ -11,7 +11,7 @@ import { ThemeProvider } from "~/components/theme-provider";
 export const metadata: Metadata = {
   title: "TripGen - AI trip itinerary planner",
   description: "Plan your perfect trip with AI-powered itineraries",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/logo.svg" }],
 };
 
 export default function RootLayout({

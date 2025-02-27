@@ -19,7 +19,7 @@ export function ThemeToggle({
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className={cn(
-        "text-zinc-600 hover:bg-transparent dark:text-zinc-300",
+        "text-zinc-600 hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-800",
         className,
       )}
     >

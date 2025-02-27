@@ -5,14 +5,6 @@ import Link from "next/link";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Bot, Map, Plane, Power, ArrowRight } from "lucide-react";
-import { FaXTwitter } from "react-icons/fa6";
-import { FaGithub } from "react-icons/fa";
-
-interface SocialLink {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}
 
 const features = [
   {
@@ -32,19 +24,6 @@ const features = [
     title: "Automated Organization",
     description:
       "Everything is automatically organized in Google Sheets for easy viewing and sharing",
-  },
-];
-
-const socialLinks: SocialLink[] = [
-  {
-    href: "https://github.com/anmhrk/tripgen",
-    icon: <FaGithub className="h-6 w-6" />,
-    label: "GitHub",
-  },
-  {
-    href: "https://x.com/anmhrk",
-    icon: <FaXTwitter className="h-6 w-6" />,
-    label: "Twitter",
   },
 ];
 
@@ -73,7 +52,7 @@ export default async function Home() {
               }
             }}
           >
-            <Button className="text-md h-12 rounded-full px-6 font-semibold shadow-xl">
+            <Button className="text-md h-12 rounded-full bg-pink-500 px-6 font-semibold shadow-xl hover:bg-pink-600">
               {session ? (
                 <>
                   Go to App
@@ -113,19 +92,20 @@ export default async function Home() {
 
       <footer className="mx-auto mt-auto w-full pb-3 pt-8 md:pt-14">
         <div className="flex justify-center gap-4">
-          {socialLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-              aria-label={link.label}
-            >
-              {link.icon}
-              <span className="sr-only">{link.label}</span>
-            </Link>
-          ))}
+          <Link
+            href="https://github.com/anmhrk/tripgen"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-600 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            GitHub
+          </Link>
+          <Link
+            href="/privacy"
+            className="text-zinc-600 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            Privacy
+          </Link>
         </div>
       </footer>
     </main>

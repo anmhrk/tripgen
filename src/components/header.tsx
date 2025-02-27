@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
-import { FaPlane } from "react-icons/fa";
 import UserButton from "./user-button";
 import { ThemeToggle } from "./theme-toggle";
+import Image from "next/image";
 
 function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <div className="rounded-lg bg-black p-2 dark:bg-white">
-        <FaPlane className="h-6 w-6 text-white dark:text-black" />
-      </div>
+      <Image src="/logo.svg" alt="" height={40} width={40} />
       <span className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
         TripGen
       </span>

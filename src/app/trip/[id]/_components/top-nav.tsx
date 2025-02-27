@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 
-import { FaPlane } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
 import { Share, PenLine, ChevronDown, Trash } from "lucide-react";
 import UserButton from "~/components/user-button";
@@ -27,7 +26,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-
+import Image from "next/image";
 interface TopNavProps {
   tripName: string;
   isShared: boolean;
@@ -79,13 +78,7 @@ export function TopNav({
   return (
     <header className="flex h-10 items-center justify-between px-3 text-zinc-800 dark:text-zinc-300">
       <Link href="/" className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 bg-black p-0 hover:bg-primary/90 dark:bg-white"
-        >
-          <FaPlane className="h-4 w-4 text-white dark:text-black" />
-        </Button>
+        <Image src="/logo.svg" alt="" height={28} width={28} />
         <Label className="text-md select-none font-semibold text-zinc-900 hover:cursor-pointer dark:text-zinc-100">
           TripGen
         </Label>
