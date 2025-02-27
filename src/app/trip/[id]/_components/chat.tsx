@@ -30,7 +30,7 @@ export function Chat() {
         onValueChange={setInput}
         onSubmit={handleSubmit}
         isLoading={isLoading}
-        className="bg-white"
+        className="w-full shadow-lg dark:bg-zinc-900"
       >
         <PromptInputTextarea
           autoFocus

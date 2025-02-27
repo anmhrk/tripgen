@@ -59,16 +59,16 @@ export function TopNav({
   });
 
   return (
-    <header className="flex h-10 items-center justify-between px-3 text-zinc-800">
+    <header className="flex h-10 items-center justify-between px-3 text-zinc-800 dark:text-zinc-300">
       <Link href="/" className="flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 bg-primary p-0 hover:bg-primary/90"
+          className="h-7 w-7 bg-black p-0 hover:bg-primary/90 dark:bg-white"
         >
-          <FaPlane className="h-4 w-4 text-white" />
+          <FaPlane className="h-4 w-4 text-white dark:text-black" />
         </Button>
-        <Label className="text-md select-none font-bold hover:cursor-pointer">
+        <Label className="text-md select-none font-semibold text-zinc-900 hover:cursor-pointer dark:text-zinc-100">
           TripGen
         </Label>
       </Link>
@@ -111,13 +111,13 @@ export function TopNav({
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-zinc-200"
+                className="hover:bg-zinc-200 dark:hover:bg-zinc-800"
                 onClick={() => setIsEditing(true)}
               >
                 <PenLine className="!h-6 !w-6" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+            <TooltipContent className="rounded-lg bg-black px-2 py-1.5 text-sm font-medium text-white">
               Rename Trip
             </TooltipContent>
           </Tooltip>
@@ -146,13 +146,13 @@ export function TopNav({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-zinc-200"
+                    className="hover:bg-zinc-200 dark:hover:bg-zinc-800"
                   >
                     <Share className="!h-6 !w-6" />
                   </Button>
                 </DialogTrigger>
               </TooltipTrigger>
-              <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+              <TooltipContent className="rounded-lg bg-black px-2 py-1.5 text-sm font-medium text-white">
                 Share Trip
               </TooltipContent>
             </Tooltip>

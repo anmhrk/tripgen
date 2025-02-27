@@ -6,6 +6,7 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { ThemeProvider } from "~/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "TripGen - AI trip itinerary planner",
@@ -17,14 +18,25 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable} antialiased`}>
-      <body className="min-h-screen overscroll-none bg-[#F3F4EF]">
-        <TooltipProvider delayDuration={100} skipDelayDuration={0}>
-          <TRPCReactProvider>
-            {children}
-            <Toaster position="top-center" />
-          </TRPCReactProvider>
-        </TooltipProvider>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} antialiased`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen overscroll-none bg-[#F3F4EF] dark:bg-[#0A0A0A]">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider delayDuration={100} skipDelayDuration={0}>
+            <TRPCReactProvider>
+              {children}
+              <Toaster position="top-center" />
+            </TRPCReactProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

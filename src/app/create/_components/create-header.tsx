@@ -8,7 +8,7 @@ export default function CreateHeader() {
 
   return (
     <div className="mb-12 space-y-7 text-center">
-      <h1 className="text-4xl font-bold sm:text-5xl">
+      <h1 className="text-4xl font-bold text-gray-900 dark:text-zinc-300 sm:text-5xl">
         Where will your next adventure be?{" "}
         <span className="inline-block">🗺️</span>
       </h1>

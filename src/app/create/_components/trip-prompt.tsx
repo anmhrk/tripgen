@@ -47,7 +47,7 @@ export default function TripPrompt() {
       value={input}
       onValueChange={setInput}
       onSubmit={handleSubmit}
-      className="max-w-(--breakpoint-md) w-full shadow-lg"
+      className="max-w-(--breakpoint-md) w-full shadow-lg dark:bg-zinc-900"
       isLoading={isLoading}
     >
       <PromptInputTextarea
