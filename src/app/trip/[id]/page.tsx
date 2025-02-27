@@ -9,9 +9,9 @@ import { TopNav } from "./_components/top-nav";
 import { Chat } from "./_components/chat";
 import { GSheet } from "./_components/gsheet";
 
-const getCachedTripName = cache(async (id: string, share?: string) => {
+const getCachedTrip = cache(async (id: string, share?: string) => {
   try {
-    return await api.trips.getTripName({
+    return await api.trips.getTripDataOnLoad({
       tripId: id,
       sharePhrase: share,
     });
@@ -32,7 +32,7 @@ export default async function TripPage({
   const session = await auth();
 
   try {
-    const { name, isShared } = await getCachedTripName(id, share);
+    const { name, isShared, gsheetId } = await getCachedTrip(id, share);
 
     return (
       <HydrateClient>
@@ -40,7 +40,7 @@ export default async function TripPage({
           <TopNav tripName={name} isShared={isShared} session={session} />
           <div className="flex flex-1 gap-2 p-2">
             <Chat />
-            <GSheet />
+            <GSheet gsheetId={gsheetId} />
           </div>
         </div>
       </HydrateClient>
@@ -63,7 +63,7 @@ export async function generateMetadata({
   const { share } = await searchParams;
 
   try {
-    const { name } = await getCachedTripName(id, share);
+    const { name } = await getCachedTrip(id, share);
     return {
       title: `${name} | TripGen`,
     };

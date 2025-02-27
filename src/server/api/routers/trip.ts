@@ -89,7 +89,7 @@ export const tripRouter = createTRPCRouter({
     }),
 
   // also validates trip page access, handles shared user access too
-  getTripName: publicProcedure
+  getTripDataOnLoad: publicProcedure
     .input(
       z.object({
         tripId: z.string().min(1),
@@ -108,6 +108,11 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
+      const tripData = {
+        name: trip.name,
+        gsheetId: trip.gsheet_id,
+      };
+
       if (
         input.sharePhrase &&
         trip.is_shared &&
@@ -122,7 +127,7 @@ export const tripRouter = createTRPCRouter({
         if (sharePhrase) {
           return {
             isShared: true,
-            name: trip.name,
+            ...tripData,
           };
         }
 
@@ -141,7 +146,7 @@ export const tripRouter = createTRPCRouter({
 
       return {
         isShared: false,
-        name: trip.name,
+        ...tripData,
       };
     }),
 

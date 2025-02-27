@@ -1,41 +1,66 @@
 "use client";
-import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
-import { toast } from "sonner";
 import { useParams } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
-export function GSheet() {
-  // // temp
-  // const randomId = Math.random().toString(36).substring(2, 15);
+export function GSheet({
+  gsheetId: initialGsheetId,
+}: {
+  gsheetId: string | null;
+}) {
   const params = useParams<{ id: string }>();
+  const [gsheetSrc, setGsheetSrc] = useState("");
+  const hasCreatedSheet = useRef(false);
 
   const createNewGsheet = api.gsheets.createNewGsheet.useMutation({
     onSuccess: (data) => {
-      toast.success("Google Sheet created successfully");
-      console.log(data);
+      setGsheetSrc(
+        `https://docs.google.com/spreadsheets/d/${data.gsheetId}/edit?embedded=true&rm=minimal`,
+      );
     },
     onError: (error) => {
-      toast.error("Failed to create Google Sheet");
+      toast.error(error.message);
       console.error(error);
     },
   });
 
+  useEffect(() => {
+    // If we already have a sheetId, set the source URL
+    if (initialGsheetId) {
+      setGsheetSrc(
+        `https://docs.google.com/spreadsheets/d/${initialGsheetId}/edit?embedded=true&rm=minimal`,
+      );
+      return;
+    }
+
+    // Only create a new sheet if we haven't already created one
+    if (!hasCreatedSheet.current && !createNewGsheet.isPending) {
+      hasCreatedSheet.current = true;
+      createNewGsheet.mutate({
+        tripId: params.id,
+      });
+    }
+  }, [params.id, initialGsheetId, createNewGsheet.isPending]);
+
   return (
     <div className="hidden flex-1 flex-col rounded-xl border bg-white/70 md:flex">
-      {/* <iframe
-        src={`https://docs.google.com/spreadsheets/d/${randomId}/edit?embedded=true&rm=minimal`}
-        className="h-full w-full rounded-xl"
-      /> */}
-
-      <Button
-        onClick={async () => {
-          await createNewGsheet.mutateAsync({ tripId: params.id });
-        }}
-        className="w-[200px]"
-      >
-        Create Google Sheet
-      </Button>
-      {createNewGsheet.isPending && <p>Creating...</p>}
+      {createNewGsheet.isPending ? (
+        <div className="flex h-full w-full items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin" />
+        </div>
+      ) : (
+        <>
+          {gsheetSrc && (
+            <iframe
+              src={gsheetSrc}
+              className="h-full w-full rounded-xl"
+              title="Google Sheet"
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
