@@ -2,8 +2,9 @@
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 export function GSheet({
   gsheetId: initialGsheetId,
@@ -11,6 +12,7 @@ export function GSheet({
   gsheetId: string | null;
 }) {
   const params = useParams<{ id: string }>();
+  const theme = useTheme();
   const [gsheetSrc, setGsheetSrc] = useState("");
   const hasCreatedSheet = useRef(false);
 
@@ -45,7 +47,7 @@ export function GSheet({
   }, [params.id, initialGsheetId, createNewGsheet.isPending]);
 
   return (
-    <div className="hidden flex-1 flex-col rounded-xl border bg-white/70 md:flex">
+    <div className="hidden flex-1 flex-col rounded-xl border bg-white/70 dark:bg-black/70 md:flex">
       {createNewGsheet.isPending ? (
         <div className="flex h-full w-full items-center justify-center">
           <Loader2 className="h-10 w-10 animate-spin" />
@@ -57,6 +59,12 @@ export function GSheet({
               src={gsheetSrc}
               className="h-full w-full rounded-xl"
               title="Google Sheet"
+              style={{
+                filter:
+                  theme.theme === "dark"
+                    ? "invert(1) hue-rotate(180deg)"
+                    : "none",
+              }}
             />
           )}
         </>

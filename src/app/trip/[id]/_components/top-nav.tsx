@@ -79,7 +79,7 @@ export function TopNav({
     <header className="flex h-10 items-center justify-between px-3 text-zinc-800 dark:text-zinc-300">
       <Link href="/" className="flex items-center gap-2">
         <Image src="/logo.svg" alt="" height={28} width={28} />
-        <Label className="text-md select-none font-semibold text-zinc-900 hover:cursor-pointer dark:text-zinc-100">
+        <Label className="text-md hidden select-none font-semibold text-zinc-900 hover:cursor-pointer dark:text-zinc-100 md:block">
           TripGen
         </Label>
       </Link>
@@ -178,7 +178,7 @@ function TripDropdown({
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent className="rounded-lg bg-black px-2 py-1.5 text-sm font-medium text-white">
+        <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
           Trip Settings
         </TooltipContent>
       </Tooltip>

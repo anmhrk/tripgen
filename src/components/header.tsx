@@ -19,7 +19,7 @@ export default async function Header() {
   const session = await auth();
 
   return (
-    <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <header className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
       <Logo />
       {session ? (
         <nav className="flex items-center gap-3">

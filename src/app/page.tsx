@@ -31,10 +31,10 @@ export default async function Home() {
   const session = await auth();
 
   return (
-    <main className="min-h-screen">
+    <main className="flex min-h-screen flex-col">
       <Header />
 
-      <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-14 pt-20 text-center">
+      <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-8 pt-20 text-center">
         <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-zinc-300 md:text-6xl">
           Plan your perfect trip with AI-powered itineraries
         </h1>
@@ -69,7 +69,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 pb-16">
+      <div className="mx-auto max-w-6xl px-6 pb-16 pt-8">
         <div className="grid grid-cols-3 gap-8">
           {features.map((feature, idx) => (
             <div
