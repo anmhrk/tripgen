@@ -26,8 +26,7 @@ export default function RootLayout({
       <body className="min-h-screen overscroll-none bg-[#F3F4EF] dark:bg-[#0A0A0A]">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
           disableTransitionOnChange
         >
           <TooltipProvider delayDuration={100} skipDelayDuration={0}>

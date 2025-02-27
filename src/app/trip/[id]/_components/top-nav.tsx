@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 
 import { FaPlane } from "react-icons/fa";
 import { Button } from "~/components/ui/button";
-import { Share, PenLine } from "lucide-react";
+import { Share, PenLine, ChevronDown, Trash } from "lucide-react";
 import UserButton from "~/components/user-button";
 import {
   Tooltip,
@@ -20,6 +20,13 @@ import { toast } from "sonner";
 import { Label } from "~/components/ui/label";
 import { Dialog, DialogTrigger, DialogContent } from "~/components/ui/dialog";
 import { ShareDialog } from "./share-dialog";
+import { ThemeToggle } from "~/components/theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 
 interface TopNavProps {
   tripName: string;
@@ -106,21 +113,10 @@ export function TopNav({
           <Label className="text-md font-medium">{tripNameInput}</Label>
         )}
         {!isShared && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-zinc-200 dark:hover:bg-zinc-800"
-                onClick={() => setIsEditing(true)}
-              >
-                <PenLine className="!h-6 !w-6" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="rounded-lg bg-black px-2 py-1.5 text-sm font-medium text-white">
-              Rename Trip
-            </TooltipContent>
-          </Tooltip>
+          <TripDropdown
+            setIsEditing={setIsEditing}
+            tripNameInput={tripNameInput}
+          />
         )}
       </div>
 
@@ -139,30 +135,59 @@ export function TopNav({
         </>
       ) : (
         <div className="flex items-center gap-2">
-          <Dialog>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hover:bg-zinc-200 dark:hover:bg-zinc-800"
-                  >
-                    <Share className="!h-6 !w-6" />
-                  </Button>
-                </DialogTrigger>
-              </TooltipTrigger>
-              <TooltipContent className="rounded-lg bg-black px-2 py-1.5 text-sm font-medium text-white">
-                Share Trip
-              </TooltipContent>
-            </Tooltip>
-            <DialogContent>
-              <ShareDialog tripName={tripNameInput} />
-            </DialogContent>
-          </Dialog>
+          <ThemeToggle className="h-8 w-8" size="!h-7 !w-7" />
           <UserButton session={session} className="h-7 w-7" />
         </div>
       )}
     </header>
+  );
+}
+
+interface TripDropdownProps {
+  setIsEditing: (isEditing: boolean) => void;
+  tripNameInput: string;
+}
+
+function TripDropdown({ setIsEditing, tripNameInput }: TripDropdownProps) {
+  return (
+    <DropdownMenu>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-zinc-200 dark:hover:bg-zinc-800"
+            >
+              <ChevronDown className="!h-6 !w-6" />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent className="rounded-lg bg-black px-2 py-1.5 text-sm font-medium text-white">
+          Trip Settings
+        </TooltipContent>
+      </Tooltip>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+          <PenLine className="mr-2 !h-4 !w-4" strokeWidth={2.5} />
+          Rename
+        </DropdownMenuItem>
+        <Dialog>
+          <DialogTrigger asChild>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <Share className="mr-2 !h-4 !w-4" strokeWidth={2.5} />
+              Share
+            </DropdownMenuItem>
+          </DialogTrigger>
+          <DialogContent>
+            <ShareDialog tripName={tripNameInput} />
+          </DialogContent>
+        </Dialog>
+        <DropdownMenuItem className="text-red-500 hover:text-red-500 focus:text-red-500">
+          <Trash className="mr-2 !h-4 !w-4" strokeWidth={2.5} />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
