@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 
@@ -40,6 +40,7 @@ export function TopNav({
   session,
 }: TopNavProps) {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [tripNameInput, setTripNameInput] = useState(initialTripName);
   const [tripNameEdited, setTripNameEdited] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -62,6 +63,16 @@ export function TopNav({
     },
     onSettled: () => {
       setIsEditing(false);
+    },
+  });
+
+  const deleteTrip = api.trips.deleteTrip.useMutation({
+    onSuccess: () => {
+      toast.success("Trip deleted");
+      router.push("/");
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -116,6 +127,8 @@ export function TopNav({
           <TripDropdown
             setIsEditing={setIsEditing}
             tripNameInput={tripNameInput}
+            deleteTrip={deleteTrip}
+            tripId={params.id}
           />
         )}
       </div>
@@ -146,9 +159,18 @@ export function TopNav({
 interface TripDropdownProps {
   setIsEditing: (isEditing: boolean) => void;
   tripNameInput: string;
+  deleteTrip: {
+    mutateAsync: (data: { tripId: string }) => Promise<void>;
+  };
+  tripId: string;
 }
 
-function TripDropdown({ setIsEditing, tripNameInput }: TripDropdownProps) {
+function TripDropdown({
+  setIsEditing,
+  tripNameInput,
+  deleteTrip,
+  tripId,
+}: TripDropdownProps) {
   return (
     <DropdownMenu>
       <Tooltip>
@@ -183,7 +205,15 @@ function TripDropdown({ setIsEditing, tripNameInput }: TripDropdownProps) {
             <ShareDialog tripName={tripNameInput} />
           </DialogContent>
         </Dialog>
-        <DropdownMenuItem className="text-red-500 hover:text-red-500 focus:text-red-500">
+        <DropdownMenuItem
+          className="text-red-500 hover:text-red-500 focus:text-red-500"
+          onClick={() =>
+            window.confirm("Are you sure you want to delete this trip?") &&
+            toast.promise(deleteTrip.mutateAsync({ tripId: tripId }), {
+              loading: "Deleting trip...",
+            })
+          }
+        >
           <Trash className="mr-2 !h-4 !w-4" strokeWidth={2.5} />
           Delete
         </DropdownMenuItem>

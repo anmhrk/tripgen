@@ -188,4 +188,10 @@ export const tripRouter = createTRPCRouter({
         .set({ is_shared: false, share_phrase: null })
         .where(eq(trips.id, input.tripId));
     }),
+
+  deleteTrip: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(trips).where(eq(trips.id, input.tripId));
+    }),
 });
