@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 
@@ -11,15 +10,19 @@ import {
 } from "~/components/ui/prompt-input";
 import { Button } from "~/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
+import { useState } from "react";
 
 export function Chat() {
   const params = useParams<{ id: string }>();
-  // const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { messages, input, handleInputChange, handleSubmit } = useChat({
     api: "/api/question",
     body: {
       tripId: params.id,
+    },
+    onFinish: () => {
+      setIsLoading(false);
     },
   });
 
@@ -40,8 +43,11 @@ export function Chat() {
             target: { value },
           } as React.ChangeEvent<HTMLTextAreaElement>)
         }
-        onSubmit={handleSubmit}
-        // isLoading={isLoading}
+        onSubmit={() => {
+          setIsLoading(true);
+          handleSubmit();
+        }}
+        isLoading={isLoading}
         className="w-full shadow-lg dark:bg-zinc-900"
       >
         <PromptInputTextarea
@@ -58,12 +64,11 @@ export function Chat() {
               disabled={!input}
               onClick={handleSubmit}
             >
-              {/* {isLoading ? (
-                  <Square className="size-5 fill-current" />
-                ) : (
-                  <ArrowUp className="size-5" />
-                )} */}
-              <ArrowUp className="size-5" />
+              {isLoading ? (
+                <Square className="size-5 fill-current" />
+              ) : (
+                <ArrowUp className="size-5" />
+              )}
             </Button>
           </PromptInputAction>
         </PromptInputActions>
