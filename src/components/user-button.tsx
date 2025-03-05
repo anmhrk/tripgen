@@ -17,7 +17,7 @@ interface UserButtonProps {
   className?: string;
 }
 
-export default function UserButton({ session, className }: UserButtonProps) {
+export function UserButton({ session, className }: UserButtonProps) {
   if (!session) return null;
 
   return (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "~/server/auth";
-import UserButton from "./user-button";
+import { UserButton } from "./user-button";
 import { ThemeToggle } from "./theme-toggle";
 import Image from "next/image";
 
@@ -15,7 +15,7 @@ function Logo() {
   );
 }
 
-export default async function Header() {
+export async function Header() {
   const session = await auth();
 
   return (

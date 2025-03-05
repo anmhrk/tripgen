@@ -2,7 +2,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-export default function CreateHeader() {
+export function CreateHeader() {
   const pathname = usePathname();
   const isAdvanced = pathname === "/create/advanced";
 

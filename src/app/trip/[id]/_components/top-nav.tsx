@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 
 import { Button } from "~/components/ui/button";
 import { Share, PenLine, ChevronDown, Trash } from "lucide-react";
-import UserButton from "~/components/user-button";
+import { UserButton } from "~/components/user-button";
 import {
   Tooltip,
   TooltipContent,

@@ -13,7 +13,7 @@ import { Button } from "~/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
 import { toast } from "sonner";
 
-export default function TripPrompt() {
+export function TripPrompt() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();

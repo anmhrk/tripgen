@@ -44,6 +44,10 @@ export function GSheet({
         tripId: params.id,
       });
     }
+
+    return () => {
+      hasCreatedSheet.current = false;
+    };
   }, [params.id, initialGsheetId, createNewGsheet.isPending]);
 
   return (

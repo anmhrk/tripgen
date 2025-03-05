@@ -1,8 +1,8 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 
-import Header from "~/components/header";
-import CreateHeader from "./_components/create-header";
+import { Header } from "~/components/header";
+import { CreateHeader } from "./_components/create-header";
 
 export default async function CreateTripLayout({
   children,

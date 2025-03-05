@@ -2,7 +2,7 @@ import { auth, signIn } from "~/server/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-import Header from "~/components/header";
+import { Header } from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Bot, Map, Plane, Power, ArrowRight } from "lucide-react";
 
