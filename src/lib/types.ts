@@ -13,3 +13,22 @@ export const formSchema = z.object({
   activities: z.string().optional(),
   specialRequirements: z.string().optional(),
 });
+
+export type UserSubmittedData = {
+  prompt: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  numTravelers: string | null;
+  budgetRange: string | null;
+  startLocation: string | null;
+  destination: string | null;
+  travelStyle: string | null;
+  accommodation: string | null;
+  activities: string | null;
+  specialRequirements: string | null;
+};
+
+export type Message = {
+  role: "user" | "assistant";
+  content: string;
+};

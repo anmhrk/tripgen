@@ -4,14 +4,12 @@ import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, streamText, tool } from "ai";
 import { auth } from "~/server/auth";
 import { trips } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "~/server/db";
+import type { Message } from "~/lib/types";
 
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
+export const runtime = "edge";
+export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -20,13 +18,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { messages, tripId } = (await request.json()) as {
+  const data = (await request.json()) as {
     messages: Message[];
     tripId: string;
   };
 
+  const messages = data.messages.map((msg: Message) => ({
+    role: msg.role,
+    content: msg.content,
+  }));
+
+  const tripId = data.tripId;
+
   const trip = await db.query.trips.findFirst({
-    where: eq(trips.id, tripId),
+    where: and(eq(trips.id, tripId), eq(trips.userId, session.user.id)),
   });
 
   if (!trip) {
@@ -40,11 +45,14 @@ export async function POST(request: NextRequest) {
     messages: convertToCoreMessages(messages),
     system: `You are a helpful travel planning assistant. Your job is to gather information about the user's trip.
           First, check what information is missing using the checkMissingFields tool.
-          Then, ask ONE question at a time using the askQuestion tool.
-          After receiving a response, update the trip data using updateTripData tool.
+          Then, ask ONLY ONE question at a time using the askQuestion tool.
+          After receiving a response to the question, update the database using updateTripData tool.
           Then check again for missing fields and continue until all required information is collected.
           Be conversational and friendly. Acknowledge the user's responses.
-          User's initial trip prompt: "${userData?.prompt}`,
+          User's initial trip prompt: "${userData?.prompt}"
+
+          IMPORTANT: Please only ask ONE question at a time.
+          `,
     tools: {
       askQuestion: tool({
         description: "Ask the user a question about their trip",
@@ -61,31 +69,28 @@ export async function POST(request: NextRequest) {
             .describe("Optional list of suggested answers"),
         }),
         execute: async ({ field, question, options }) => {
-          // This just returns the question - the actual response will come from the user
           return { field, question, options };
         },
       }),
 
+      // Save to database
       updateTripData: tool({
         description: "Update the trip data with user's response",
         parameters: z.object({
           field: z.string().describe("The field to update"),
-          value: z.any().describe("The value to set for this field"),
+          value: z
+            .union([z.string(), z.date()])
+            .describe("The value to set for this field"),
         }),
         execute: async ({ field, value }) => {
-          // Update the userData object
           if (userData) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-            (userData as unknown as Record<string, any>)[field] = value;
+            (userData as Record<string, string | Date>)[field] = value;
           }
-
-          // Save to database
           await db
             .update(trips)
             .set({ user_submitted_data: userData })
             .where(eq(trips.id, tripId));
 
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           return { success: true, field, value };
         },
       }),
@@ -116,11 +121,19 @@ export async function POST(request: NextRequest) {
         },
       }),
     },
+    onFinish: async (completion) => {
+      const updatedMessages = [
+        ...messages,
+        { role: "assistant", content: completion.text } as Message,
+      ];
+
+      await db
+        .update(trips)
+        .set({ messages: updatedMessages })
+        .where(eq(trips.id, tripId));
+    },
     maxSteps: 5,
   });
 
   return response.toDataStreamResponse();
 }
-
-export const runtime = "edge";
-export const maxDuration = 30;

@@ -52,7 +52,10 @@ export default async function Home() {
               }
             }}
           >
-            <Button className="text-md h-12 rounded-full bg-pink-500 px-6 font-semibold shadow-xl hover:bg-pink-600">
+            <Button
+              variant="outline"
+              className="text-md h-12 rounded-full bg-pink-500 px-6 font-semibold text-white shadow-xl hover:bg-pink-600 hover:text-white"
+            >
               {session ? (
                 <>
                   Go to App

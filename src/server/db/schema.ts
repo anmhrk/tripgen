@@ -11,6 +11,7 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
+import type { Message, UserSubmittedData } from "~/lib/types";
 
 export const users = pgTable("user", {
   id: varchar("id", { length: 255 })
@@ -113,20 +114,9 @@ export const trips = pgTable("trip", {
   })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  user_submitted_data: json("user_submitted_data").$type<{
-    prompt: string | null;
-    startDate: Date | null;
-    endDate: Date | null;
-    numTravelers: string | null;
-    budgetRange: string | null;
-    startLocation: string | null;
-    destination: string | null;
-    travelStyle: string | null;
-    accommodation: string | null;
-    activities: string | null;
-    specialRequirements: string | null;
-  }>(),
+  user_submitted_data: json("user_submitted_data").$type<UserSubmittedData>(),
   is_shared: boolean("is_shared").notNull().default(false),
   share_phrase: text("share_phrase"),
   gsheet_id: text("gsheet_id"),
+  messages: json("messages").$type<Message[]>().notNull().default([]),
 });

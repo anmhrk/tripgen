@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import type { Metadata } from "next";
 import { auth } from "~/server/auth";
 import { cache } from "react";
+import Link from "next/link";
 
 import { TopNav } from "./_components/top-nav";
 import { Chat } from "./_components/chat";
@@ -78,10 +79,16 @@ export async function generateMetadata({
 function ErrorMessage({ code, message }: { code: string; message: string }) {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
-      <h2 className="mb-2 text-2xl font-bold text-gray-900">
+      <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-zinc-300">
         {code.replace("_", " ")}
       </h2>
-      <p className="text-gray-600">{message}</p>
+      <p className="text-muted-foreground">{message}</p>
+      <Link
+        href="/"
+        className="text-md mt-8 rounded-full bg-pink-500 px-6 py-2 font-medium"
+      >
+        Home
+      </Link>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { formSchema } from "~/lib/zod-schemas";
+import { formSchema } from "~/lib/types";
 
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";

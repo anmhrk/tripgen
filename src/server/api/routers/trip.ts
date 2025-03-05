@@ -8,7 +8,7 @@ import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { TRPCError } from "@trpc/server";
 import { trips } from "~/server/db/schema";
-import { formSchema } from "~/lib/zod-schemas";
+import { formSchema } from "~/lib/types";
 import { eq, and } from "drizzle-orm";
 
 export const tripRouter = createTRPCRouter({
