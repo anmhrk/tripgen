@@ -37,10 +37,10 @@ export default async function TripPage({
 
     return (
       <HydrateClient>
-        <div className="flex h-screen flex-col">
+        <div className="flex h-screen flex-col overflow-hidden">
           <TopNav tripName={name} isShared={isShared} session={session} />
-          <div className="flex flex-1 gap-2 p-2">
-            <Chat />
+          <div className="flex flex-1 gap-2 overflow-hidden p-2">
+            <Chat session={session} />
             <GSheet gsheetId={gsheetId} />
           </div>
         </div>

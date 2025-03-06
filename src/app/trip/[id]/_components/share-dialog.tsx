@@ -118,7 +118,7 @@ export function ShareDialog({ tripName }: { tripName: string }) {
         </div>
         {getSharePhrase.isLoading && (
           <div className="flex items-center">
-            <Loader2 className="h-6 w-6 animate-spin" />
+            <Loader2 className="size-6 animate-spin" />
           </div>
         )}
         {isShared && !getSharePhrase.isLoading && (

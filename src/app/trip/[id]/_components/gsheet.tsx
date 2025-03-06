@@ -54,7 +54,7 @@ export function GSheet({
     <div className="hidden flex-1 flex-col rounded-xl border bg-white/70 dark:bg-black/70 md:flex">
       {createNewGsheet.isPending ? (
         <div className="flex h-full w-full items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin" />
+          <Loader2 className="size-10 animate-spin" />
         </div>
       ) : (
         <>

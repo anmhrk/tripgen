@@ -1,6 +1,10 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
+import { useState } from "react";
+import type { Session } from "next-auth";
+import { api } from "~/trpc/react";
+import { Loader2, ArrowUp, Square } from "lucide-react";
 
 import {
   PromptInput,
@@ -9,10 +13,9 @@ import {
   PromptInputAction,
 } from "~/components/ui/prompt-input";
 import { Button } from "~/components/ui/button";
-import { ArrowUp, Square } from "lucide-react";
-import { useState } from "react";
+import { Messages } from "./messages";
 
-export function Chat() {
+export function Chat({ session }: { session: Session | null }) {
   const params = useParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,53 +29,66 @@ export function Chat() {
     },
   });
 
+  const prevMessages = api.chats.getMessages.useQuery({
+    tripId: params.id,
+  });
+
+  const combinedMessages = [...(prevMessages.data ?? []), ...messages];
+
+  console.log(combinedMessages);
+  console.log(prevMessages.data);
+
   return (
-    <div className="flex w-full flex-col justify-between md:w-[450px]">
-      <div className="flex-1">
-        {messages.map((m) => (
-          <div key={m.id} className="whitespace-pre-wrap">
-            {m.role === "user" ? "User: " : "AI: "}
-            {m.content}
+    <div className="flex h-full w-full flex-col md:w-[450px]">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {prevMessages.isLoading ? (
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-        ))}
+        ) : (
+          <Messages messages={combinedMessages} session={session} />
+        )}
       </div>
-      <PromptInput
-        value={input}
-        onValueChange={(value) =>
-          handleInputChange({
-            target: { value },
-          } as React.ChangeEvent<HTMLTextAreaElement>)
-        }
-        onSubmit={() => {
-          setIsLoading(true);
-          handleSubmit();
-        }}
-        isLoading={isLoading}
-        className="w-full shadow-lg dark:bg-zinc-900"
-      >
-        <PromptInputTextarea
-          autoFocus
-          placeholder="Send a message..."
-          className="min-h-[80px] !text-[15px]"
-        />
-        <PromptInputActions className="justify-end pt-2">
-          <PromptInputAction tooltip="Create Trip">
-            <Button
-              variant="default"
-              size="icon"
-              className="h-8 w-8 rounded-full"
-              disabled={!input}
-              onClick={handleSubmit}
-            >
-              {isLoading ? (
-                <Square className="size-5 fill-current" />
-              ) : (
-                <ArrowUp className="size-5" />
-              )}
-            </Button>
-          </PromptInputAction>
-        </PromptInputActions>
-      </PromptInput>
+
+      <div className="w-full flex-shrink-0">
+        <PromptInput
+          value={input}
+          onValueChange={(value) =>
+            handleInputChange({
+              target: { value },
+            } as React.ChangeEvent<HTMLTextAreaElement>)
+          }
+          onSubmit={() => {
+            setIsLoading(true);
+            handleSubmit();
+          }}
+          isLoading={isLoading}
+          className="w-full dark:bg-zinc-900"
+        >
+          <PromptInputTextarea
+            autoFocus
+            placeholder="Send a message..."
+            className="max-h-[200px] min-h-[80px] !text-[15px]"
+          />
+          <PromptInputActions className="justify-end pt-2">
+            <PromptInputAction tooltip="Create Trip">
+              <Button
+                variant="default"
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                disabled={!input}
+                onClick={handleSubmit}
+              >
+                {isLoading ? (
+                  <Square className="size-5 fill-current" />
+                ) : (
+                  <ArrowUp className="size-5" />
+                )}
+              </Button>
+            </PromptInputAction>
+          </PromptInputActions>
+        </PromptInput>
+      </div>
     </div>
   );
 }

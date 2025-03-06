@@ -1,5 +1,6 @@
 import { tripRouter } from "./routers/trip";
 import { gsheetRouter } from "./routers/gsheet";
+import { chatRouter } from "./routers/chat";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 export const appRouter = createTRPCRouter({
   trips: tripRouter,
   gsheets: gsheetRouter,
+  chats: chatRouter,
 });
 
 // export type definition of API
