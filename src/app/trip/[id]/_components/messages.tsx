@@ -3,7 +3,7 @@ import type { Message } from "~/lib/types";
 import type { Session } from "next-auth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Bot } from "lucide-react";
+import { Bot, Loader2 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Tooltip,
@@ -14,9 +14,11 @@ import {
 export function Messages({
   messages,
   session,
+  isLoading,
 }: {
   messages: Message[];
   session: Session | null;
+  isLoading: boolean;
 }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,10 +38,20 @@ export function Messages({
               msg.role === "user" ? "justify-end" : "justify-start",
             )}
           >
-            {msg.role === "assistant" && (
+            {isLoading &&
+            msg.role === "assistant" &&
+            idx === messages.length - 1 ? (
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <Bot className="h-5 w-5 text-primary" />
+                <Loader2 className="size-5 animate-spin text-primary" />
               </div>
+            ) : (
+              <>
+                {msg.role === "assistant" && (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                    <Bot className="h-5 w-5 text-primary" />
+                  </div>
+                )}
+              </>
             )}
 
             <div
@@ -53,6 +65,7 @@ export function Messages({
               {msg.content}
             </div>
 
+            {/* TODO: make this work for anonymous users too */}
             {msg.role === "user" && session?.user?.image && (
               <div className="ml-2">
                 <Tooltip>

@@ -32,3 +32,19 @@ export type Message = {
   role: "user" | "assistant";
   content: string;
 };
+
+export const validUserDataFields = [
+  "prompt",
+  "startDate",
+  "endDate",
+  "numTravelers",
+  "budgetRange",
+  "startLocation",
+  "destination",
+  "travelStyle",
+  "accommodation",
+  "activities",
+  "specialRequirements",
+] as const;
+
+export type ValidFieldName = (typeof validUserDataFields)[number];

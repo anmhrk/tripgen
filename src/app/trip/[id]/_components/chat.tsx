@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/prompt-input";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
+import type { Message } from "~/lib/types";
 
 export function Chat({ session }: { session: Session | null }) {
   const params = useParams<{ id: string }>();
@@ -35,9 +36,6 @@ export function Chat({ session }: { session: Session | null }) {
 
   const combinedMessages = [...(prevMessages.data ?? []), ...messages];
 
-  console.log(combinedMessages);
-  console.log(prevMessages.data);
-
   return (
     <div className="flex h-full w-full flex-col md:w-[450px]">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -46,7 +44,11 @@ export function Chat({ session }: { session: Session | null }) {
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
-          <Messages messages={combinedMessages} session={session} />
+          <Messages
+            messages={combinedMessages as Message[]}
+            session={session}
+            isLoading={isLoading}
+          />
         )}
       </div>
 

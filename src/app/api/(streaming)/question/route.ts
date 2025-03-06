@@ -6,7 +6,7 @@ import { auth } from "~/server/auth";
 import { trips } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { db } from "~/server/db";
-import type { Message } from "~/lib/types";
+import { validUserDataFields, type Message } from "~/lib/types";
 
 export const runtime = "edge";
 export const maxDuration = 30;
@@ -39,6 +39,12 @@ export async function POST(request: NextRequest) {
   }
 
   const userData = trip.user_submitted_data;
+
+  if (!userData) {
+    return NextResponse.json({ error: "User data not found" }, { status: 404 });
+  }
+
+  const updatedMessages = [...messages];
 
   const response = streamText({
     model: openai("gpt-4o"),
@@ -77,15 +83,19 @@ export async function POST(request: NextRequest) {
       updateTripData: tool({
         description: "Update the trip data with user's response",
         parameters: z.object({
-          field: z.string().describe("The field to update"),
+          field: z.enum(validUserDataFields).describe("The field to update"),
           value: z
             .union([z.string(), z.date()])
             .describe("The value to set for this field"),
         }),
         execute: async ({ field, value }) => {
-          if (userData) {
-            (userData as Record<string, string | Date>)[field] = value;
+          if (field === "startDate" || field === "endDate") {
+            const dateValue = new Date(value);
+            userData[field] = dateValue;
+          } else {
+            userData[field] = value as string;
           }
+
           await db
             .update(trips)
             .set({ user_submitted_data: userData })
@@ -101,17 +111,14 @@ export async function POST(request: NextRequest) {
         execute: async () => {
           const missingFields = [];
 
-          if (!userData?.startDate || !userData.endDate)
-            missingFields.push("travel dates");
-          if (!userData?.numTravelers)
-            missingFields.push("number of travelers");
-          if (!userData?.budgetRange) missingFields.push("budget range");
-          if (!userData?.startLocation) missingFields.push("starting location");
-          if (!userData?.destination) missingFields.push("destination");
-          if (!userData?.travelStyle)
-            missingFields.push("travel style preferences");
-          if (!userData?.accommodation)
-            missingFields.push("accommodation preferences");
+          if (!userData.startDate) missingFields.push("startDate");
+          if (!userData.endDate) missingFields.push("endDate");
+          if (!userData.numTravelers) missingFields.push("numTravelers");
+          if (!userData.budgetRange) missingFields.push("budgetRange");
+          if (!userData.startLocation) missingFields.push("startLocation");
+          if (!userData.destination) missingFields.push("destination");
+          if (!userData.travelStyle) missingFields.push("travelStyle");
+          if (!userData.accommodation) missingFields.push("accommodation");
 
           return {
             missingFields,
@@ -122,10 +129,10 @@ export async function POST(request: NextRequest) {
       }),
     },
     onFinish: async (completion) => {
-      const updatedMessages = [
-        ...messages,
-        { role: "assistant", content: completion.text } as Message,
-      ];
+      updatedMessages.push({
+        role: "assistant",
+        content: completion.text,
+      });
 
       await db
         .update(trips)
@@ -137,3 +144,6 @@ export async function POST(request: NextRequest) {
 
   return response.toDataStreamResponse();
 }
+
+// TODO:
+// db flag that details have been collected
