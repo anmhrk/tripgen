@@ -7,48 +7,49 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
 export function GSheet({
-  gsheetId: initialGsheetId,
+  initialGsheetId,
 }: {
-  gsheetId: string | null;
+  initialGsheetId: string | null;
 }) {
   const params = useParams<{ id: string }>();
   const theme = useTheme();
+  const [gsheetId, setGsheetId] = useState<string | null>(initialGsheetId);
   const [gsheetSrc, setGsheetSrc] = useState("");
   const hasCreatedSheet = useRef(false);
 
   const createNewGsheet = api.gsheets.createNewGsheet.useMutation({
     onSuccess: (data) => {
+      setGsheetId(data.gsheetId);
       setGsheetSrc(
         `https://docs.google.com/spreadsheets/d/${data.gsheetId}/edit?embedded=true&rm=minimal`,
       );
+      hasCreatedSheet.current = true;
     },
     onError: (error) => {
       toast.error(error.message);
       console.error(error);
+      hasCreatedSheet.current = false;
     },
   });
 
   useEffect(() => {
     // If we already have a sheetId, set the source URL
-    if (initialGsheetId) {
+    if (gsheetId) {
       setGsheetSrc(
-        `https://docs.google.com/spreadsheets/d/${initialGsheetId}/edit?embedded=true&rm=minimal`,
+        `https://docs.google.com/spreadsheets/d/${gsheetId}/edit?embedded=true&rm=minimal`,
       );
+      hasCreatedSheet.current = true;
       return;
     }
 
     // Only create a new sheet if we haven't already created one
     if (!hasCreatedSheet.current && !createNewGsheet.isPending) {
-      hasCreatedSheet.current = true;
+      console.log("Creating new Google Sheet");
       createNewGsheet.mutate({
         tripId: params.id,
       });
     }
-
-    return () => {
-      hasCreatedSheet.current = false;
-    };
-  }, [params.id, initialGsheetId, createNewGsheet.isPending]);
+  }, [params.id, gsheetId]);
 
   return (
     <div className="hidden flex-1 flex-col rounded-xl border bg-white/70 dark:bg-black/70 md:flex">
