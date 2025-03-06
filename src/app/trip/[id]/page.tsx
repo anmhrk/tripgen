@@ -6,9 +6,7 @@ import { auth } from "~/server/auth";
 import { cache } from "react";
 import Link from "next/link";
 
-import { TopNav } from "./_components/top-nav";
-import { Chat } from "./_components/chat";
-import { GSheet } from "./_components/gsheet";
+import { LayoutHelper } from "./_components/layout-helper";
 
 const getCachedTrip = cache(async (id: string, share?: string) => {
   try {
@@ -37,13 +35,12 @@ export default async function TripPage({
 
     return (
       <HydrateClient>
-        <div className="flex h-screen flex-col overflow-hidden">
-          <TopNav tripName={name} isShared={isShared} session={session} />
-          <div className="flex flex-1 gap-2 overflow-hidden p-2">
-            <Chat session={session} />
-            <GSheet initialGsheetId={gsheetId} />
-          </div>
-        </div>
+        <LayoutHelper
+          name={name}
+          isShared={isShared}
+          session={session}
+          initialGsheetId={gsheetId}
+        />
       </HydrateClient>
     );
   } catch (error) {
