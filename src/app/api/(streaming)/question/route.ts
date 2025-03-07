@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
     - Offer relevant suggestions based on their preferences
     - Ask if they'd like any aspect of their trip plan refined
 
-    Original trip request: "${userData?.prompt}"
     Today's date is: ${new Date().toLocaleDateString()}
 
     Style guide:

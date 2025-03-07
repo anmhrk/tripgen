@@ -22,7 +22,7 @@ export const chatRouter = createTRPCRouter({
           message: "Trip not found",
         });
       }
-      
+
       return trip.messages;
     }),
 });

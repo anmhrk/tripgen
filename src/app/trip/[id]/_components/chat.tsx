@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Session } from "next-auth";
 import { api } from "~/trpc/react";
 import { Loader2, ArrowUp, Square } from "lucide-react";
@@ -21,13 +21,14 @@ interface ChatProps {
   session: Session | null;
   isShared: boolean;
   isOwner: boolean;
+  firstMessage: string;
 }
 
-export function Chat({ session, isShared, isOwner }: ChatProps) {
+export function Chat({ session, isShared, isOwner, firstMessage }: ChatProps) {
   const params = useParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
+  const { messages, input, append, handleInputChange, handleSubmit } = useChat({
     api: "/api/question",
     body: {
       tripId: params.id,
@@ -42,9 +43,23 @@ export function Chat({ session, isShared, isOwner }: ChatProps) {
   });
 
   const combinedMessages = useMemo(() => {
-    const allMessages = [...(prevMessages.data ?? []), ...messages];
-    return allMessages as Message[];
+    const allMessages = [
+      ...(prevMessages.data ?? []),
+      ...messages,
+    ] as Message[];
+
+    return allMessages;
   }, [prevMessages.data, messages]);
+
+  useEffect(() => {
+    if (firstMessage && combinedMessages.length === 0) {
+      setIsLoading(true);
+      append({
+        role: "user",
+        content: firstMessage,
+      });
+    }
+  }, [firstMessage, combinedMessages.length, append]);
 
   return (
     <div className="flex h-full w-full flex-shrink-0 flex-col p-1.5 md:w-[450px]">

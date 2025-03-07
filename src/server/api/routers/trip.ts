@@ -108,11 +108,39 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
-      const tripData = {
+      let tripData = {
         isShared: trip.is_shared,
         isOwner: trip.userId === ctx.session?.user.id,
         name: trip.name,
+        firstMessage: "",
       };
+
+      if (trip.messages.length === 0) {
+        if (trip.user_submitted_data?.prompt) {
+          tripData.firstMessage = trip.user_submitted_data.prompt;
+        } else {
+          tripData.firstMessage = `Please help me plan a trip. Here are the details:
+         ${Object.entries(trip.user_submitted_data ?? {})
+           .filter(([key]) => key !== "prompt")
+           .map(([key, value]) => {
+             if (key === "startDate" || key === "endDate") {
+               return `${key}: ${new Date(value as string).toLocaleDateString(
+                 "en-US",
+                 {
+                   month: "long",
+                   day: "numeric",
+                   year: "numeric",
+                 },
+               )}`;
+             }
+             if (value === undefined) {
+               return `${key}: Not specified`;
+             }
+             return `${key}: ${value}`;
+           })
+           .join("\n")}`;
+        }
+      }
 
       if (
         input.sharePhrase &&
@@ -126,9 +154,7 @@ export const tripRouter = createTRPCRouter({
           ),
         });
         if (sharePhrase) {
-          return {
-            ...tripData,
-          };
+          return tripData;
         }
 
         throw new TRPCError({
