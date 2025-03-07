@@ -43,12 +43,18 @@ export function Chat({ session }: { session: Session | null }) {
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-        ) : (
+        ) : combinedMessages.length > 0 ? (
           <Messages
             messages={combinedMessages as Message[]}
             session={session}
             isLoading={isLoading}
           />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-sm text-zinc-500">
+              Start planning your trip by sending a message!
+            </p>
+          </div>
         )}
       </div>
 
@@ -79,7 +85,10 @@ export function Chat({ session }: { session: Session | null }) {
                 size="icon"
                 className="h-8 w-8 rounded-full"
                 disabled={!input}
-                onClick={handleSubmit}
+                onClick={() => {
+                  setIsLoading(true);
+                  handleSubmit();
+                }}
               >
                 {isLoading ? (
                   <Square className="size-5 fill-current" />

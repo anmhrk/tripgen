@@ -88,7 +88,7 @@ export const tripRouter = createTRPCRouter({
       return { tripId };
     }),
 
-  // also validates trip page access, handles shared user access too
+  // Also validates trip page access, and shared user access
   getTripDataOnLoad: publicProcedure
     .input(
       z.object({

@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import Image from "next/image";
+
 interface TopNavProps {
   tripName: string;
   isShared: boolean;
@@ -90,7 +91,6 @@ export function TopNav({
             value={tripNameInput}
             onChange={(e) => setTripNameInput(e.target.value)}
             className="text-md w-48 font-medium"
-            autoFocus
             onBlur={() => {
               setTripNameInput(initialTripName);
               setIsEditing(false);
@@ -172,7 +172,7 @@ function TripDropdown({
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-zinc-200 dark:hover:bg-zinc-800"
+              className="hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
               <ChevronDown className="!h-6 !w-6" />
             </Button>

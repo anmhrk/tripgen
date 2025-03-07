@@ -1,5 +1,4 @@
-import { api } from "~/trpc/server";
-import { HydrateClient } from "~/trpc/server";
+import { api, HydrateClient } from "~/trpc/server";
 import { TRPCError } from "@trpc/server";
 import type { Metadata } from "next";
 import { auth } from "~/server/auth";

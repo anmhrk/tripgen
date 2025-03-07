@@ -23,7 +23,7 @@ export default function RootLayout({
       className={`${GeistSans.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen overscroll-none bg-[#F3F4EF] dark:bg-[#0A0A0A]">
+      <body className="min-h-screen overscroll-none bg-[#F3F4EF] dark:bg-[#212121]">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
