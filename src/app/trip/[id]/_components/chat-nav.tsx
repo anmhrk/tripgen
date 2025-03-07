@@ -27,7 +27,7 @@ export function ChatNav({ isShared, session, isOwner }: ChatNavProps) {
       {isShared ? (
         <>
           {session ? (
-            <Settings session={session} isShared={isShared} isOwner={isOwner} />
+            <Settings session={session} isOwner={isOwner} />
           ) : (
             <Button
               onClick={() => signIn("google", { redirect: false })}
@@ -38,7 +38,7 @@ export function ChatNav({ isShared, session, isOwner }: ChatNavProps) {
           )}
         </>
       ) : (
-        <Settings session={session} isShared={isShared} isOwner={isOwner} />
+        <Settings session={session} isOwner={isOwner} />
       )}
     </header>
   );

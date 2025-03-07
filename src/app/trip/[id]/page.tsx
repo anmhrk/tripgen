@@ -37,7 +37,7 @@ export default async function TripPage({
       <HydrateClient>
         <div className="flex h-screen flex-row">
           <Chat session={session} isShared={isShared} isOwner={isOwner} />
-          <SheetEditor name={name} />
+          <SheetEditor name={name} isOwner={isOwner} />
         </div>
       </HydrateClient>
     );

@@ -27,11 +27,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 interface SettingsProps {
   session: Session | null;
-  isShared: boolean;
   isOwner: boolean;
 }
 
-export function Settings({ session, isShared, isOwner }: SettingsProps) {
+export function Settings({ session, isOwner }: SettingsProps) {
   const params = useParams<{ id: string }>();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -108,7 +107,7 @@ export function Settings({ session, isShared, isOwner }: SettingsProps) {
           <Sun className="absolute mr-2 !h-5 !w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           {theme === "dark" ? "Light" : "Dark"} Mode
         </DropdownMenuItem>
-        {(!isShared || (isShared && isOwner)) && (
+        {isOwner && (
           <>
             <DropdownMenuSeparator />
             <Dialog>

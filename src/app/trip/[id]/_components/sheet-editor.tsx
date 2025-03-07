@@ -5,13 +5,20 @@ import { DataGrid, textEditor } from "react-data-grid";
 import { parse, unparse } from "papaparse";
 import { cn } from "~/lib/utils";
 import { SheetNav } from "./sheet-nav";
+import { Sheet } from "~/lib/types";
+
+interface SheetEditorProps {
+  name: string;
+  isOwner: boolean;
+}
 
 const MIN_ROWS = 100;
 const MIN_COLS = 26;
 
-export function SheetEditor({ name }: { name: string }) {
+export function SheetEditor({ name, isOwner }: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const [content, setContent] = useState("");
+  const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -102,7 +109,12 @@ export function SheetEditor({ name }: { name: string }) {
     <div className="hidden h-full w-full flex-1 flex-col overflow-hidden border-l border-zinc-200 dark:border-zinc-700 md:flex">
       {mounted && (
         <>
-          <SheetNav name={name} />
+          <SheetNav
+            name={name}
+            isOwner={isOwner}
+            currentSheet={currentSheet}
+            setCurrentSheet={setCurrentSheet}
+          />
           <div className="flex-1 overflow-auto">
             <DataGrid
               columns={columns}

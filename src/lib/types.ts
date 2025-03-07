@@ -48,3 +48,6 @@ export type Message = {
   role: "user" | "assistant";
   content: string;
 };
+
+export type Sheet = "itinerary" | "flights" | "hotels";
+export const SHEET_NAMES = ["itinerary", "flights", "hotels"] as const;

@@ -16,8 +16,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Sheet, SHEET_NAMES } from "~/lib/types";
 
-export function SheetNav({ name }: { name: string }) {
+interface SheetNavProps {
+  name: string;
+  isOwner: boolean;
+  currentSheet: Sheet;
+  setCurrentSheet: (sheet: Sheet) => void;
+}
+
+export function SheetNav({
+  name,
+  isOwner,
+  currentSheet,
+  setCurrentSheet,
+}: SheetNavProps) {
   const params = useParams<{ id: string }>();
   const [tripNameInput, setTripNameInput] = useState(name);
   const [tripNameEdited, setTripNameEdited] = useState(false);
@@ -71,6 +84,21 @@ export function SheetNav({ name }: { name: string }) {
     },
   ];
 
+  const sheetNames = [
+    {
+      label: "Itinerary",
+      value: "itinerary",
+    },
+    {
+      label: "Flights",
+      value: "flights",
+    },
+    {
+      label: "Hotels",
+      value: "hotels",
+    },
+  ];
+
   return (
     <div className="flex w-full items-center justify-between border-b border-zinc-100 bg-[#F9F9F9] p-2 px-4 shadow-sm dark:border-zinc-700 dark:bg-[#27272A]">
       <div className="flex flex-col">
@@ -106,21 +134,23 @@ export function SheetNav({ name }: { name: string }) {
           ) : (
             <p className="font-medium">{tripNameInput}</p>
           )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-fit w-fit p-1.5 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                onClick={() => setIsEditing(true)}
-              >
-                <PenLine className="!h-5 !w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-              Edit Trip Name
-            </TooltipContent>
-          </Tooltip>
+          {isOwner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-1 h-fit w-fit bg-transparent hover:bg-transparent"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <PenLine className="!h-5 !w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+                Edit Trip Name
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
         <div className="text-sm text-muted-foreground">
           {`Updated ${formatDistance(new Date(), new Date(), {
@@ -130,17 +160,21 @@ export function SheetNav({ name }: { name: string }) {
       </div>
 
       <div className="flex flex-row gap-2">
-        {/* Sheet Selector */}
-        <Select>
+        <Select
+          value={currentSheet}
+          onValueChange={(value) => {
+            setCurrentSheet(value as Sheet);
+          }}
+        >
           <SelectTrigger className="min-w-32 rounded-full bg-zinc-100 font-medium dark:bg-zinc-700">
             <SelectValue placeholder="Itinerary" />
           </SelectTrigger>
           <SelectContent className="rounded-lg">
-            <SelectItem value="1">Itinerary</SelectItem>
-            <SelectItem value="2">Flights</SelectItem>
-            <SelectItem value="3">Hotels</SelectItem>
-            <SelectItem value="4">Restaurants</SelectItem>
-            <SelectItem value="5">Activities</SelectItem>
+            {SHEET_NAMES.map((sheet, idx) => (
+              <SelectItem key={idx} value={sheet}>
+                {sheet.charAt(0).toUpperCase() + sheet.slice(1)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         {navButtons.map((button, idx) => (
