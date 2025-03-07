@@ -24,7 +24,7 @@ export default function RootLayout({
       className={`${GeistSans.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen overscroll-none bg-[#F3F4EF] dark:bg-[#212121]">
+      <body className="min-h-screen overscroll-none">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

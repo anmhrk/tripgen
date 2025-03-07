@@ -56,7 +56,7 @@ export function Settings({ session, isShared, isOwner }: SettingsProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              className="hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
               <Settings2 className="!h-6 !w-6" />
             </Button>

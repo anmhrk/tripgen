@@ -76,7 +76,7 @@ export default async function Home() {
         <div className="grid grid-cols-3 gap-8">
           {features.map((feature, idx) => (
             <div
-              className={`col-span-3 rounded-2xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:col-span-1 ${
+              className={`col-span-3 rounded-2xl bg-zinc-100 p-8 shadow-lg dark:bg-zinc-900 sm:col-span-1 ${
                 idx === 1 && "sm:translate-y-8"
               }`}
               key={idx}
@@ -98,7 +98,7 @@ export default async function Home() {
           href="https://github.com/anmhrk/tripgen"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-zinc-600 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="text-zinc-500 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
         >
           GitHub
         </Link>

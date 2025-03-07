@@ -99,7 +99,7 @@ export function SheetEditor({ name }: { name: string }) {
   };
 
   return (
-    <div className="flex h-full w-full flex-col border-l border-zinc-200 dark:border-zinc-700">
+    <div className="hidden h-full w-full flex-1 flex-col overflow-hidden border-l border-zinc-200 dark:border-zinc-700 md:flex">
       {mounted && (
         <>
           <SheetNav name={name} />

@@ -47,7 +47,7 @@ export function Chat({ session, isShared, isOwner }: ChatProps) {
   }, [prevMessages.data, messages]);
 
   return (
-    <div className="flex h-full flex-col p-1.5">
+    <div className="flex h-full w-full flex-shrink-0 flex-col p-1.5 md:w-[450px]">
       {prevMessages.isLoading ? (
         <div className="flex h-full items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -64,7 +64,7 @@ export function Chat({ session, isShared, isOwner }: ChatProps) {
               />
             ) : (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-md text-muted-foreground">
                   Start planning your trip by sending a message!
                 </p>
               </div>
