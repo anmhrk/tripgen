@@ -23,11 +23,11 @@ export async function Header() {
       <Logo />
       {session ? (
         <nav className="flex items-center gap-3">
-          <ThemeToggle className="h-10 w-10 p-2" size="!h-8 !w-8" />
-          <UserButton session={session} />
+          <ThemeToggle className="h-10 w-10 p-2" size="!h-9 !w-9" />
+          <UserButton session={session} className="h-9 w-9" />
         </nav>
       ) : (
-        <ThemeToggle className="h-10 w-10 p-2" size="!h-8 !w-8" />
+        <ThemeToggle className="h-10 w-10 p-2" size="!h-9 !w-9" />
       )}
     </header>
   );

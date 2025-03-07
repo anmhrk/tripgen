@@ -93,23 +93,15 @@ export default async function Home() {
         </div>
       </div>
 
-      <footer className="mx-auto mt-auto w-full pb-3 pt-8 md:pt-14">
-        <div className="flex justify-center gap-4">
-          <Link
-            href="https://github.com/anmhrk/tripgen"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-600 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            GitHub
-          </Link>
-          <Link
-            href="/privacy"
-            className="text-zinc-600 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            Privacy
-          </Link>
-        </div>
+      <footer className="mx-auto flex w-full justify-center pb-2 pt-8 md:pt-14">
+        <Link
+          href="https://github.com/anmhrk/tripgen"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-zinc-600 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+        >
+          GitHub
+        </Link>
       </footer>
     </main>
   );

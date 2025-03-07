@@ -28,7 +28,7 @@ export function Messages({
   }, [messages]);
 
   return (
-    <div className="h-full w-full px-2 py-4">
+    <div className="h-full w-full py-4">
       <div className="flex flex-col space-y-4 pr-1">
         {messages.map((msg, idx) => (
           <div

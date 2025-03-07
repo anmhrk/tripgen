@@ -26,19 +26,16 @@ export function TripPrompt() {
       toast.error(error.message);
     },
     onSettled: () => {
-      toast.dismiss("create-trip");
       setIsLoading(false);
     },
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!input) return;
 
     setIsLoading(true);
-    toast.loading("Creating trip...", { id: "create-trip" });
-
-    await createTripFromPrompt.mutateAsync({
-      prompt: input,
+    toast.promise(createTripFromPrompt.mutateAsync({ prompt: input }), {
+      loading: "Creating trip...",
     });
   };
 
@@ -57,7 +54,6 @@ export function TripPrompt() {
       <PromptInputActions className="justify-end pt-2">
         <PromptInputAction tooltip="Create Trip">
           <Button
-            variant="default"
             size="icon"
             className="h-8 w-8 rounded-full"
             disabled={!input || isLoading}

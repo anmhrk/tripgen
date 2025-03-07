@@ -40,7 +40,7 @@ export function Chat({ session }: { session: Session | null }) {
   }, [prevMessages.data, messages]);
 
   return (
-    <div className="flex h-full w-full flex-col md:w-[450px]">
+    <div className="flex h-full w-full flex-col p-2 md:w-[450px]">
       <div className="min-h-0 flex-1 overflow-y-auto">
         {prevMessages.isLoading ? (
           <div className="flex h-full items-center justify-center">
