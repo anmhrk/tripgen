@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
-import { LogOut, Moon, SettingsIcon, Sun, Share, Trash } from "lucide-react";
+import { LogOut, Moon, Settings2, Sun, Share, Trash } from "lucide-react";
 import { DialogTrigger } from "~/components/ui/dialog";
 import { DialogContent } from "~/components/ui/dialog";
 import { Dialog } from "~/components/ui/dialog";
@@ -58,14 +58,11 @@ export function Settings({ session, isShared, isOwner }: SettingsProps) {
               size="icon"
               className="hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
-              <SettingsIcon className="!h-6 !w-6" />
+              <Settings2 className="!h-6 !w-6" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent
-          className="rounded-lg px-2 py-1.5 text-sm font-medium"
-          side="right"
-        >
+        <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
           Settings
         </TooltipContent>
       </Tooltip>

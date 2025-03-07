@@ -47,7 +47,7 @@ export function Chat({ session, isShared, isOwner }: ChatProps) {
   }, [prevMessages.data, messages]);
 
   return (
-    <div className="flex h-full w-full flex-col p-2 md:w-[450px]">
+    <div className="flex h-full flex-col p-1.5">
       {prevMessages.isLoading ? (
         <div className="flex h-full items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />

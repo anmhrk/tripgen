@@ -93,7 +93,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <footer className="mx-auto flex w-full justify-center pb-2 pt-8 md:pt-14">
+      <footer className="mx-auto mt-auto flex w-full justify-center pb-2 pt-8 md:pt-14">
         <Link
           href="https://github.com/anmhrk/tripgen"
           target="_blank"

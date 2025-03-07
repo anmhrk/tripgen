@@ -1,4 +1,5 @@
 import "~/styles/globals.css";
+import "react-data-grid/lib/styles.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
@@ -26,7 +27,8 @@ export default function RootLayout({
       <body className="min-h-screen overscroll-none bg-[#F3F4EF] dark:bg-[#212121]">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
           <TooltipProvider delayDuration={100} skipDelayDuration={0}>

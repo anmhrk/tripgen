@@ -40,7 +40,7 @@ export function UserButton({ session }: { session: Session | null }) {
           onClick={async () => {
             await signOut({ redirectTo: "/" });
           }}
-          className="font-medium text-muted-foreground hover:text-red-500 focus:text-red-500"
+          className="font-medium text-muted-foreground transition-none"
         >
           <LogOut className="mr-2 !h-5 !w-5" />
           <span>Sign Out</span>

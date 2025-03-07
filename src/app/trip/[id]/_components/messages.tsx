@@ -65,7 +65,10 @@ export function Messages({
               {msg.content}
             </div>
 
-            {/* TODO: make this work for anonymous users too */}
+            {/* TODOs:
+               - make this work for anonymous users too
+               - fetch name and image from db instead of session
+            */}
             {msg.role === "user" && session?.user?.image && (
               <div className="ml-2">
                 <Tooltip>

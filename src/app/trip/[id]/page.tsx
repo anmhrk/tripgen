@@ -35,9 +35,11 @@ export default async function TripPage({
 
     return (
       <HydrateClient>
-        <div className="flex h-screen flex-col overflow-hidden">
-          <div className="flex flex-1 overflow-hidden">
+        <div className="flex h-screen flex-row">
+          <div className="w-full flex-shrink-0 md:w-[450px]">
             <Chat session={session} isShared={isShared} isOwner={isOwner} />
+          </div>
+          <div className="hidden flex-1 overflow-hidden md:block">
             <SheetEditor name={name} />
           </div>
         </div>
