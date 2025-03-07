@@ -13,7 +13,7 @@ import { Input } from "~/components/ui/input";
 import { Copy, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export function ShareDialog({ tripName }: { tripName: string }) {
+export function ShareDialog() {
   const params = useParams<{ id: string }>();
   const [sharePhrase, setSharePhrase] = useState("");
   const [isShared, setIsShared] = useState(false);
@@ -75,7 +75,7 @@ export function ShareDialog({ tripName }: { tripName: string }) {
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Share trip: {tripName}</DialogTitle>
+        <DialogTitle>Share trip</DialogTitle>
         <DialogDescription className="pt-2">
           Share this trip with others using the link below
         </DialogDescription>

@@ -31,13 +31,13 @@ export default async function TripPage({
   const session = await auth();
 
   try {
-    const { name, isShared } = await getCachedTrip(id, share);
+    const { name, isShared, isOwner } = await getCachedTrip(id, share);
 
     return (
       <HydrateClient>
         <div className="flex h-screen flex-col overflow-hidden">
           <div className="flex flex-1 overflow-hidden">
-            <Chat session={session} isShared={isShared} />
+            <Chat session={session} isShared={isShared} isOwner={isOwner} />
             <SheetEditor name={name} />
           </div>
         </div>

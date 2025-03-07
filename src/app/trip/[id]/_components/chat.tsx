@@ -20,9 +20,10 @@ import { ChatNav } from "./chat-nav";
 interface ChatProps {
   session: Session | null;
   isShared: boolean;
+  isOwner: boolean;
 }
 
-export function Chat({ session, isShared }: ChatProps) {
+export function Chat({ session, isShared, isOwner }: ChatProps) {
   const params = useParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,7 +54,7 @@ export function Chat({ session, isShared }: ChatProps) {
         </div>
       ) : (
         <>
-          <ChatNav isShared={isShared} session={session} />
+          <ChatNav isShared={isShared} session={session} isOwner={isOwner} />
           <div className="min-h-0 flex-1 overflow-y-auto">
             {combinedMessages.length > 0 ? (
               <Messages

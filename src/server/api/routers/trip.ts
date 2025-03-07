@@ -108,6 +108,12 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
+      const tripData = {
+        isShared: trip.is_shared,
+        isOwner: trip.userId === ctx.session?.user.id,
+        name: trip.name,
+      };
+
       if (
         input.sharePhrase &&
         trip.is_shared &&
@@ -121,8 +127,7 @@ export const tripRouter = createTRPCRouter({
         });
         if (sharePhrase) {
           return {
-            isShared: true,
-            name: trip.name,
+            ...tripData,
           };
         }
 
@@ -139,10 +144,7 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
-      return {
-        isShared: false,
-        name: trip.name,
-      };
+      return tripData;
     }),
 
   updateTripName: protectedProcedure

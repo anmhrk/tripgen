@@ -90,6 +90,12 @@
   scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
 }
 
+.dark ::selection {
+  background: rgba(255, 105, 180, 0.7);
+  color: white;
+}
+
 ::selection {
   background: rgba(255, 105, 180, 0.7);
+  color: black;
 }
