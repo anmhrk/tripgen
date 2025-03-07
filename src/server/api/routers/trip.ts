@@ -16,7 +16,7 @@ export const tripRouter = createTRPCRouter({
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const response = await generateObject({
-        model: openai("gpt-4o-mini"),
+        model: openai("gpt-4o"),
         schema: z.object({
           valid: z.boolean(),
           name: z.string().optional(),
@@ -108,11 +108,6 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
-      const tripData = {
-        name: trip.name,
-        gsheetId: trip.gsheet_id,
-      };
-
       if (
         input.sharePhrase &&
         trip.is_shared &&
@@ -127,7 +122,7 @@ export const tripRouter = createTRPCRouter({
         if (sharePhrase) {
           return {
             isShared: true,
-            ...tripData,
+            name: trip.name,
           };
         }
 
@@ -146,7 +141,7 @@ export const tripRouter = createTRPCRouter({
 
       return {
         isShared: false,
-        ...tripData,
+        name: trip.name,
       };
     }),
 

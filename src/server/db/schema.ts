@@ -117,7 +117,6 @@ export const trips = pgTable("trip", {
   user_submitted_data: json("user_submitted_data").$type<UserSubmittedData>(),
   is_shared: boolean("is_shared").notNull().default(false),
   share_phrase: text("share_phrase"),
-  gsheet_id: text("gsheet_id"),
   messages: json("messages").$type<Message[]>().notNull().default([]),
   all_details_collected: boolean("details_collected"),
 });
