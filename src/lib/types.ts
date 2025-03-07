@@ -28,11 +28,6 @@ export type UserSubmittedData = {
   specialRequirements: string | null;
 };
 
-export type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
-
 export const validUserDataFields = [
   "prompt",
   "startDate",
@@ -48,3 +43,8 @@ export const validUserDataFields = [
 ] as const;
 
 export type ValidFieldName = (typeof validUserDataFields)[number];
+
+export type Message = {
+  role: "user" | "assistant";
+  content: string;
+};

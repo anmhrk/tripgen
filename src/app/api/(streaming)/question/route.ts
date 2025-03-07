@@ -8,9 +8,6 @@ import { and, eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { validUserDataFields, type Message } from "~/lib/types";
 
-export const runtime = "edge";
-export const maxDuration = 30;
-
 export async function POST(request: NextRequest) {
   const session = await auth();
 
@@ -23,11 +20,6 @@ export async function POST(request: NextRequest) {
     tripId: string;
   };
 
-  const messages = data.messages.map((msg: Message) => ({
-    role: msg.role,
-    content: msg.content,
-  }));
-
   const tripId = data.tripId;
 
   const trip = await db.query.trips.findFirst({
@@ -38,22 +30,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Trip not found" }, { status: 404 });
   }
 
+  const existingMessages = trip.messages || [];
+  const allMessages = [...existingMessages, ...data.messages];
+
+  const chatMessages = allMessages.map((msg: Message) => ({
+    role: msg.role,
+    content: msg.content,
+  }));
+
   const userData = trip.user_submitted_data;
 
   if (!userData) {
     return NextResponse.json({ error: "User data not found" }, { status: 404 });
   }
 
-  const updatedMessages = [...messages];
-
   const response = streamText({
     model: openai("gpt-4o"),
-    messages: convertToCoreMessages(messages),
+    messages: convertToCoreMessages(chatMessages),
     system: `You are a thoughtful travel planning assistant focused on creating personalized trip plans. 
 
     When interacting with users:
     1. Begin by using the checkMissingFields tool to identify what information is needed.
-    2. Ask exactly ONE question at a time using the askQuestion tool, prioritizing important details first (dates, location, budget, etc.).
+    2. Ask exactly ONE question at a time using the askQuestion tool.
     3. After each user response, acknowledge their input in a friendly, conversational tone before moving to the next step.
     4. Use the updateTripData tool to record their answers immediately.
     5. Verify updated information before proceeding to your next question.
@@ -64,6 +62,7 @@ export async function POST(request: NextRequest) {
     - Ask if they'd like any aspect of their trip plan refined
 
     Original trip request: "${userData?.prompt}"
+    Today's date is: ${new Date().toLocaleDateString()}
 
     Style guide:
     - Be concise but warm
@@ -132,23 +131,35 @@ export async function POST(request: NextRequest) {
           if (!userData.travelStyle) missingFields.push("travelStyle");
           if (!userData.accommodation) missingFields.push("accommodation");
 
+          const isComplete = missingFields.length === 0;
+
+          // If all fields are complete, update the trip with a flag
+          if (isComplete && !trip.all_details_collected) {
+            await db
+              .update(trips)
+              .set({ all_details_collected: true })
+              .where(eq(trips.id, tripId));
+          }
+
           return {
             missingFields,
-            isComplete: missingFields.length === 0,
+            isComplete,
             currentData: userData,
           };
         },
       }),
     },
     onFinish: async (completion) => {
-      updatedMessages.push({
+      // Add the new response to all messages
+      allMessages.push({
         role: "assistant",
         content: completion.text,
       });
 
+      // Update with the complete message history
       await db
         .update(trips)
-        .set({ messages: updatedMessages })
+        .set({ messages: allMessages })
         .where(eq(trips.id, tripId));
     },
     maxSteps: 5,
@@ -157,5 +168,5 @@ export async function POST(request: NextRequest) {
   return response.toDataStreamResponse();
 }
 
-// TODO:
-// db flag that details have been collected
+export const runtime = "edge";
+export const maxDuration = 30;

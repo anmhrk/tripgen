@@ -89,3 +89,7 @@
   scrollbar-width: auto;
   scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
 }
+
+::selection {
+  background: rgba(255, 105, 180, 0.7);
+}

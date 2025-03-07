@@ -11,7 +11,7 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
-import type { Message, UserSubmittedData } from "~/lib/types";
+import type { UserSubmittedData, Message } from "~/lib/types";
 
 export const users = pgTable("user", {
   id: varchar("id", { length: 255 })
@@ -119,4 +119,5 @@ export const trips = pgTable("trip", {
   share_phrase: text("share_phrase"),
   gsheet_id: text("gsheet_id"),
   messages: json("messages").$type<Message[]>().notNull().default([]),
+  all_details_collected: boolean("details_collected"),
 });

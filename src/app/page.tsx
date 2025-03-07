@@ -23,7 +23,7 @@ const features = [
     icon: <Bot className="h-6 w-6 text-primary" />,
     title: "Automated Organization",
     description:
-      "Everything is automatically organized in Google Sheets for easy viewing and sharing",
+      "Everything is automatically organized in a spreadsheet for easy viewing and sharing",
   },
 ];
 

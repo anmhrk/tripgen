@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "~/trpc/react";
 
 import { Button } from "~/components/ui/button";
@@ -44,6 +44,7 @@ export function TopNav({
   const [tripNameInput, setTripNameInput] = useState(initialTripName);
   const [tripNameEdited, setTripNameEdited] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (tripNameEdited) {
@@ -88,6 +89,7 @@ export function TopNav({
       <div className="flex items-center gap-1">
         {isEditing ? (
           <Input
+            ref={inputRef}
             value={tripNameInput}
             onChange={(e) => setTripNameInput(e.target.value)}
             className="text-md w-48 font-medium"
@@ -122,6 +124,7 @@ export function TopNav({
             tripNameInput={tripNameInput}
             deleteTrip={deleteTrip}
             tripId={params.id}
+            inputRef={inputRef}
           />
         )}
       </div>
@@ -156,6 +159,7 @@ interface TripDropdownProps {
     mutateAsync: (data: { tripId: string }) => Promise<void>;
   };
   tripId: string;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 function TripDropdown({
@@ -163,6 +167,7 @@ function TripDropdown({
   tripNameInput,
   deleteTrip,
   tripId,
+  inputRef,
 }: TripDropdownProps) {
   return (
     <DropdownMenu>
@@ -183,7 +188,12 @@ function TripDropdown({
         </TooltipContent>
       </Tooltip>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+        <DropdownMenuItem
+          onClick={() => {
+            setIsEditing(true);
+            setTimeout(() => inputRef.current?.focus(), 200);
+          }}
+        >
           <PenLine className="mr-2 !h-4 !w-4" strokeWidth={2.5} />
           Rename
         </DropdownMenuItem>

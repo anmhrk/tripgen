@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Session } from "next-auth";
 import { api } from "~/trpc/react";
 import { Loader2, ArrowUp, Square } from "lucide-react";
@@ -34,7 +34,10 @@ export function Chat({ session }: { session: Session | null }) {
     tripId: params.id,
   });
 
-  const combinedMessages = [...(prevMessages.data ?? []), ...messages];
+  const combinedMessages = useMemo(() => {
+    const allMessages = [...(prevMessages.data ?? []), ...messages];
+    return allMessages as Message[];
+  }, [prevMessages.data, messages]);
 
   return (
     <div className="flex h-full w-full flex-col md:w-[450px]">
@@ -45,13 +48,13 @@ export function Chat({ session }: { session: Session | null }) {
           </div>
         ) : combinedMessages.length > 0 ? (
           <Messages
-            messages={combinedMessages as Message[]}
+            messages={combinedMessages}
             session={session}
             isLoading={isLoading}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted-foreground">
               Start planning your trip by sending a message!
             </p>
           </div>
