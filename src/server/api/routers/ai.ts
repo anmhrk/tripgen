@@ -50,37 +50,73 @@ export const aiRouter = createTRPCRouter({
       const response = streamText({
         model: openai("gpt-4o"),
         messages: convertToCoreMessages(allMessages),
-        system: `You are a thoughtful travel planning assistant focused on creating personalized trip plans.
+        system: `\n
+        You are a thoughtful travel planning assistant focused on creating personalized trip plans.
 
-        When interacting with users:
+        <main_instructions>
         1. Begin by using the checkMissingFields tool to identify what information is needed.
-        2. Ask exactly ONE question at a time using the askQuestion tool.
-        3. After each user response, acknowledge their input in a friendly, conversational tone before moving to the next step.
-        4. Use the updateTripData tool to record their answers immediately.
-        5. Verify updated information before proceeding to your next question.
+        2. Ask ONE question at a time using the askQuestion tool.
+        3a. After each user response, acknowledge their input in a friendly, conversational tone.
+        3b. Use the updateTripData tool to record their answers immediately.
+        4. Verify updated information before proceeding to your next question.
 
-        When all required information is collected:
-        - Summarize the trip details you've gathered
-        - Offer relevant suggestions based on their preferences
-        - Ask if they'd like any aspect of their trip plan refined
+        - When asking travel dates, make sure to ask for the start and end dates together. 
+          Then update both dates in the database together using the updateTripData tool.
+        - If user says no to a question, for example, they don't want to specify a budget or they don't have any special requirements,
+          then update the database with "not specified" for that particular field.
 
-        Today's date is: ${new Date().toLocaleDateString()}
+        - Once all fields are complete (meaning the checkMissingFields tool returns an empty array for missingFields),
+          say that you're all set and that you'll get started on the trip plan right away.
+        </main_instructions>
 
-        Style guide:
-        - Be concise but warm
+        <things_to_keep_in_mind>
+        - Be concise but warm and friendly
         - Show enthusiasm for the user's destination choices
         - Avoid overwhelming the user with too many options at once
         - If information is unclear, politely ask for clarification on that specific point only
+        - Today's date is: ${new Date().toLocaleDateString()}
+        </things_to_keep_in_mind>
         `,
         tools: {
+          checkMissingFields: tool({
+            description: "Check which fields are missing from the trip data",
+            parameters: z.object({}),
+            execute: async () => {
+              const missingFields = [];
+
+              if (!userData.startDate) missingFields.push("startDate");
+              if (!userData.endDate) missingFields.push("endDate");
+              if (!userData.numTravelers) missingFields.push("numTravelers");
+              if (!userData.budgetRange) missingFields.push("budgetRange");
+              if (!userData.startLocation) missingFields.push("startLocation");
+              if (!userData.destination) missingFields.push("destination");
+              if (!userData.travelStyle) missingFields.push("travelStyle");
+              if (!userData.accommodation) missingFields.push("accommodation");
+              if (!userData.activities) missingFields.push("activities");
+              if (!userData.specialRequirements)
+                missingFields.push("specialRequirements");
+
+              const isComplete = missingFields.length === 0;
+
+              // If all fields are complete, update the trip with a flag
+              if (isComplete && !trip.all_details_collected) {
+                await ctx.db
+                  .update(trips)
+                  .set({ all_details_collected: true })
+                  .where(eq(trips.id, tripId));
+              }
+
+              return {
+                missingFields,
+                isComplete,
+                currentData: userData,
+              };
+            },
+          }),
           askQuestion: tool({
             description: "Ask the user a question about their trip",
             parameters: z.object({
-              field: z
-                .string()
-                .describe(
-                  "The field we're asking about (e.g., 'startDate', 'numTravelers')",
-                ),
+              field: z.string().describe("The field we're asking about"),
               question: z.string().describe("The question to ask the user"),
               options: z
                 .array(z.string())
@@ -94,7 +130,8 @@ export const aiRouter = createTRPCRouter({
 
           // Save to database
           updateTripData: tool({
-            description: "Update the trip data with user's response",
+            description:
+              "Update the trip data in the database with user's response",
             parameters: z.object({
               field: z
                 .enum(validUserDataFields)
@@ -119,58 +156,33 @@ export const aiRouter = createTRPCRouter({
               return { success: true, field, value };
             },
           }),
-
-          checkMissingFields: tool({
-            description:
-              "Check which fields are still missing from the trip data",
-            parameters: z.object({}),
-            execute: async () => {
-              const missingFields = [];
-
-              if (!userData.startDate) missingFields.push("startDate");
-              if (!userData.endDate) missingFields.push("endDate");
-              if (!userData.numTravelers) missingFields.push("numTravelers");
-              if (!userData.budgetRange) missingFields.push("budgetRange");
-              if (!userData.startLocation) missingFields.push("startLocation");
-              if (!userData.destination) missingFields.push("destination");
-              if (!userData.travelStyle) missingFields.push("travelStyle");
-              if (!userData.accommodation) missingFields.push("accommodation");
-
-              const isComplete = missingFields.length === 0;
-
-              // If all fields are complete, update the trip with a flag
-              if (isComplete && !trip.all_details_collected) {
-                await ctx.db
-                  .update(trips)
-                  .set({ all_details_collected: true })
-                  .where(eq(trips.id, tripId));
-              }
-
-              return {
-                missingFields,
-                isComplete,
-                currentData: userData,
-              };
-            },
-          }),
         },
         onFinish: async (completion) => {
-          // Add the new response to all messages
+          // Add the assistant response to all messages
           allMessages.push({
             id: completion.response.id,
             role: "assistant",
             content: completion.text,
           });
 
-          // Update with the complete message history
+          // Unique filter
+          const uniqueMessages = allMessages.filter(
+            (message, idx, self) =>
+              idx ===
+              self.findIndex(
+                (t) => t.id === message.id || t.content === message.content,
+              ),
+          );
+
           await ctx.db
             .update(trips)
-            .set({ messages: allMessages })
+            .set({ messages: uniqueMessages })
             .where(eq(trips.id, tripId));
         },
         maxSteps: 5,
       });
 
+      // Stream chunks backs
       for await (const chunk of response.textStream) {
         yield { content: chunk };
       }

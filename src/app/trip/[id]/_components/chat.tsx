@@ -15,7 +15,6 @@ import { Loader2, ArrowUp, Square } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
-import { toast } from "sonner";
 
 export function Chat({
   session,
@@ -31,11 +30,19 @@ export function Chat({
   const params = useParams<{ id: string }>();
   const [isInitializing, setIsInitializing] = useState(false);
 
-  const prevMessages = api.chats.getMessages.useQuery({
-    tripId: params.id,
-  });
+  const prevMessages = api.chats.getMessages.useQuery(
+    {
+      tripId: params.id,
+    },
+    {
+      refetchOnMount: true,
+      staleTime: 1000 * 60 * 1,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const chat = useCustomChat({
+    session,
     tripId: params.id,
     initialMessages: prevMessages.data ?? [],
   });
@@ -59,15 +66,6 @@ export function Chat({
       });
     }
   }, [firstMessage, append, isInitializing, prevMessages.data, messages]);
-
-  const handleFormSubmit = () => {
-    if (!session) {
-      toast.error("Please sign in to send a message");
-      return;
-    }
-
-    handleSubmit();
-  };
 
   const allMessages = [...(prevMessages.data ?? []), ...messages];
 
@@ -103,7 +101,7 @@ export function Chat({
                   target: { value },
                 } as React.ChangeEvent<HTMLTextAreaElement>)
               }
-              onSubmit={handleFormSubmit}
+              onSubmit={handleSubmit}
               isLoading={isLoading}
               className="w-full dark:bg-zinc-900"
             >
@@ -119,7 +117,7 @@ export function Chat({
                     size="icon"
                     className="h-8 w-8 rounded-full"
                     disabled={!input || isLoading}
-                    onClick={handleFormSubmit}
+                    onClick={handleSubmit}
                   >
                     {isLoading ? (
                       <Square className="size-5 fill-current" />

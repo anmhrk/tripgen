@@ -2,11 +2,14 @@ import { useState, useRef } from "react";
 import { api } from "~/trpc/react";
 import { type Message } from "ai";
 import { toast } from "sonner";
+import type { Session } from "next-auth";
 
 export function useCustomChat({
+  session,
   tripId,
   initialMessages = [],
 }: {
+  session: Session | null;
   tripId: string;
   initialMessages: Message[];
 }) {
@@ -71,6 +74,11 @@ export function useCustomChat({
   };
 
   const handleSubmit = () => {
+    if (!session) {
+      toast.error("Please sign in to send a message");
+      return;
+    }
+
     const message: Message = {
       id: crypto.randomUUID(),
       role: "user",
