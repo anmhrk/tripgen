@@ -50,26 +50,15 @@ export function Chat({
   } = chat;
 
   useEffect(() => {
-    if (
-      firstMessage &&
-      !isInitializing &&
-      messages.length === 0 &&
-      prevMessages.data?.length === 0
-    ) {
+    if (firstMessage && !isInitializing && prevMessages.data?.length === 0) {
       setIsInitializing(true);
       void append({
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         role: "user",
         content: firstMessage,
       });
     }
-  }, [
-    firstMessage,
-    messages.length,
-    prevMessages.data,
-    append,
-    isInitializing,
-  ]);
+  }, [firstMessage, append, isInitializing, prevMessages.data, messages]);
 
   const handleFormSubmit = () => {
     if (!session) {
@@ -79,6 +68,8 @@ export function Chat({
 
     handleSubmit();
   };
+
+  const allMessages = [...(prevMessages.data ?? []), ...messages];
 
   return (
     <div className="flex h-full w-full flex-shrink-0 flex-col p-1.5 md:w-[450px]">
@@ -90,9 +81,9 @@ export function Chat({
         <>
           <ChatNav isShared={isShared} session={session} isOwner={isOwner} />
           <div className="flex-1 overflow-y-auto">
-            {messages.length > 0 ? (
+            {allMessages.length > 0 ? (
               <Messages
-                messages={messages}
+                messages={allMessages}
                 session={session}
                 isLoading={isLoading}
               />
@@ -127,7 +118,7 @@ export function Chat({
                     variant="default"
                     size="icon"
                     className="h-8 w-8 rounded-full"
-                    disabled={!input}
+                    disabled={!input || isLoading}
                     onClick={handleFormSubmit}
                   >
                     {isLoading ? (

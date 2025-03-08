@@ -21,20 +21,21 @@ export function useCustomChat({
     onSuccess: async (data) => {
       streamRef.current = data;
 
+      // Create and add empty assistant message to state
       const assistantMessage: Message = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         role: "assistant",
         content: "",
       };
 
-      // Add the empty assistant message
       setMessages((prev) => [...prev, assistantMessage]);
       latestMessageRef.current = assistantMessage;
 
+      // Collect the incoming stream
+      // Then update the assistant message
       let content = "";
       for await (const chunk of streamRef.current) {
         content += chunk.content;
-        // Update the assistant message with new content
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantMessage.id ? { ...msg, content } : msg,
@@ -59,7 +60,7 @@ export function useCustomChat({
     if (isLoading) return;
     setIsLoading(true);
 
-    // Add the user message to the UI
+    // Add the user message to state
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
 
@@ -69,12 +70,9 @@ export function useCustomChat({
     });
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!input.trim()) return;
-
+  const handleSubmit = () => {
     const message: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       role: "user",
       content: input,
     };
