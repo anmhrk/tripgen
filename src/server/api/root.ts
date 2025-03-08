@@ -1,6 +1,7 @@
 import { tripRouter } from "./routers/trip";
 import { chatRouter } from "./routers/chat";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { aiRouter } from "./routers/ai";
 
 /**
  * This is the primary router for your server.
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 export const appRouter = createTRPCRouter({
   trips: tripRouter,
   chats: chatRouter,
+  ai: aiRouter,
 });
 
 // export type definition of API

@@ -1,10 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 "use client";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { useEffect, useMemo, useState } from "react";
 import type { Session } from "next-auth";
 import { api } from "~/trpc/react";
-import { Loader2, ArrowUp, Square } from "lucide-react";
+import type { Message } from "ai";
 
 import {
   PromptInput,
@@ -12,31 +17,54 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "~/components/ui/prompt-input";
+import { Loader2, ArrowUp, Square } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
-import type { Message } from "~/lib/types";
 import { ChatNav } from "./chat-nav";
+import { toast } from "sonner";
 
-interface ChatProps {
+export function Chat({
+  session,
+  isShared,
+  isOwner,
+  firstMessage,
+}: {
   session: Session | null;
   isShared: boolean;
   isOwner: boolean;
   firstMessage: string;
-}
-
-export function Chat({ session, isShared, isOwner, firstMessage }: ChatProps) {
+}) {
   const params = useParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState(false);
+  const utils = api.useUtils();
 
-  const { messages, input, append, handleInputChange, handleSubmit } = useChat({
-    api: "/api/question",
-    body: {
-      tripId: params.id,
-    },
-    onFinish: () => {
-      setIsLoading(false);
+  const chat = useChat({
+    fetch: (...args: any[]) => {
+      const requestInit = args[1];
+      const parsedBody = JSON.parse(requestInit.body);
+
+      return utils.client.ai.gatherTripData.mutate(
+        {
+          messages: parsedBody.messages,
+          tripId: params.id,
+        },
+        {
+          signal: requestInit.signal,
+          context: {
+            skipBatch: true,
+          },
+        },
+      );
     },
   });
+
+  const {
+    messages,
+    input,
+    append,
+    handleInputChange,
+    handleSubmit: handleChatSubmit,
+  } = chat;
 
   const prevMessages = api.chats.getMessages.useQuery({
     tripId: params.id,
@@ -54,12 +82,22 @@ export function Chat({ session, isShared, isOwner, firstMessage }: ChatProps) {
   useEffect(() => {
     if (firstMessage && combinedMessages.length === 0) {
       setIsLoading(true);
-      append({
+      void append({
         role: "user",
         content: firstMessage,
       });
     }
   }, [firstMessage, combinedMessages.length, append]);
+
+  const handleSubmit = () => {
+    if (!session) {
+      toast.error("Please sign in to send a message");
+      return;
+    }
+
+    setIsLoading(true);
+    handleChatSubmit();
+  };
 
   return (
     <div className="flex h-full w-full flex-shrink-0 flex-col p-1.5 md:w-[450px]">
@@ -70,7 +108,7 @@ export function Chat({ session, isShared, isOwner, firstMessage }: ChatProps) {
       ) : (
         <>
           <ChatNav isShared={isShared} session={session} isOwner={isOwner} />
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
             {combinedMessages.length > 0 ? (
               <Messages
                 messages={combinedMessages}
@@ -93,10 +131,7 @@ export function Chat({ session, isShared, isOwner, firstMessage }: ChatProps) {
                   target: { value },
                 } as React.ChangeEvent<HTMLTextAreaElement>)
               }
-              onSubmit={() => {
-                setIsLoading(true);
-                handleSubmit();
-              }}
+              onSubmit={handleSubmit}
               isLoading={isLoading}
               className="w-full dark:bg-zinc-900"
             >
@@ -112,10 +147,7 @@ export function Chat({ session, isShared, isOwner, firstMessage }: ChatProps) {
                     size="icon"
                     className="h-8 w-8 rounded-full"
                     disabled={!input}
-                    onClick={() => {
-                      setIsLoading(true);
-                      handleSubmit();
-                    }}
+                    onClick={handleSubmit}
                   >
                     {isLoading ? (
                       <Square className="size-5 fill-current" />

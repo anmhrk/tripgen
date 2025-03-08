@@ -108,7 +108,7 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
-      let tripData = {
+      const tripData = {
         isShared: trip.is_shared,
         isOwner: trip.userId === ctx.session?.user.id,
         name: trip.name,
@@ -136,7 +136,7 @@ export const tripRouter = createTRPCRouter({
              if (value === undefined) {
                return `${key}: Not specified`;
              }
-             return `${key}: ${value}`;
+             return `${key}: ${value as string}`;
            })
            .join("\n")}`;
         }

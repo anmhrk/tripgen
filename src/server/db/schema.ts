@@ -11,7 +11,8 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
-import type { UserSubmittedData, Message } from "~/lib/types";
+import type { UserSubmittedData } from "~/lib/types";
+import type { Message } from "ai";
 
 export const users = pgTable("user", {
   id: varchar("id", { length: 255 })

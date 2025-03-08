@@ -28,8 +28,8 @@ export function Messages({
   }, [messages]);
 
   return (
-    <div className="h-full w-full py-4">
-      <div className="flex flex-col space-y-4 pr-1">
+    <div className="h-full w-full px-2 py-4">
+      <div className="flex flex-col space-y-4 pb-8 pr-1">
         {messages.map((msg, idx) => (
           <div
             key={idx}
@@ -65,10 +65,7 @@ export function Messages({
               {msg.content}
             </div>
 
-            {/* TODOs:
-               - make this work for anonymous users too
-               - fetch name and image from db instead of session
-            */}
+            {/* TODO: fetch name and image from db instead of session */}
             {msg.role === "user" && session?.user?.image && (
               <div className="ml-2">
                 <Tooltip>

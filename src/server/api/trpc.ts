@@ -55,6 +55,9 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       },
     };
   },
+  experimental: {
+    outputResponse: true,
+  },
 });
 
 /**
