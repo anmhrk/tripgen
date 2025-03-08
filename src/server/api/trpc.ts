@@ -55,8 +55,8 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       },
     };
   },
-  experimental: {
-    outputResponse: true,
+  jsonl: {
+    pingMs: 1000,
   },
 });
 

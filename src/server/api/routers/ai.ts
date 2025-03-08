@@ -9,19 +9,20 @@ import { validUserDataFields } from "~/lib/types";
 
 export const aiRouter = createTRPCRouter({
   gatherTripData: protectedProcedure
-    .use(async (opts) => {
-      return opts.next({
-        ctx: {
-          ...opts.ctx,
-          rawInput: (await opts.getRawInput()) as {
-            messages: Message[];
-            tripId: string;
-          },
-        },
-      });
-    })
-    .mutation(async ({ ctx }) => {
-      const { messages, tripId } = ctx.rawInput;
+    .input(
+      z.object({
+        messages: z.array(
+          z.object({
+            id: z.string(),
+            role: z.string(),
+            content: z.string(),
+          }),
+        ) as z.ZodType<Message[]>,
+        tripId: z.string(),
+      }),
+    )
+    .mutation(async function* ({ ctx, input }) {
+      const { messages, tripId } = input;
 
       const trip = await ctx.db.query.trips.findFirst({
         where: and(eq(trips.id, tripId), eq(trips.userId, ctx.session.user.id)),
@@ -51,26 +52,26 @@ export const aiRouter = createTRPCRouter({
         messages: convertToCoreMessages(allMessages),
         system: `You are a thoughtful travel planning assistant focused on creating personalized trip plans.
 
-    When interacting with users:
-    1. Begin by using the checkMissingFields tool to identify what information is needed.
-    2. Ask exactly ONE question at a time using the askQuestion tool.
-    3. After each user response, acknowledge their input in a friendly, conversational tone before moving to the next step.
-    4. Use the updateTripData tool to record their answers immediately.
-    5. Verify updated information before proceeding to your next question.
+        When interacting with users:
+        1. Begin by using the checkMissingFields tool to identify what information is needed.
+        2. Ask exactly ONE question at a time using the askQuestion tool.
+        3. After each user response, acknowledge their input in a friendly, conversational tone before moving to the next step.
+        4. Use the updateTripData tool to record their answers immediately.
+        5. Verify updated information before proceeding to your next question.
 
-    When all required information is collected:
-    - Summarize the trip details you've gathered
-    - Offer relevant suggestions based on their preferences
-    - Ask if they'd like any aspect of their trip plan refined
+        When all required information is collected:
+        - Summarize the trip details you've gathered
+        - Offer relevant suggestions based on their preferences
+        - Ask if they'd like any aspect of their trip plan refined
 
-    Today's date is: ${new Date().toLocaleDateString()}
+        Today's date is: ${new Date().toLocaleDateString()}
 
-    Style guide:
-    - Be concise but warm
-    - Show enthusiasm for the user's destination choices
-    - Avoid overwhelming the user with too many options at once
-    - If information is unclear, politely ask for clarification on that specific point only
-  `,
+        Style guide:
+        - Be concise but warm
+        - Show enthusiasm for the user's destination choices
+        - Avoid overwhelming the user with too many options at once
+        - If information is unclear, politely ask for clarification on that specific point only
+        `,
         tools: {
           askQuestion: tool({
             description: "Ask the user a question about their trip",
@@ -170,16 +171,8 @@ export const aiRouter = createTRPCRouter({
         maxSteps: 5,
       });
 
-      console.log("Response type:", typeof response);
-      console.log(
-        "DataStreamResponse type:",
-        typeof response.toDataStreamResponse(),
-      );
-      const dataStreamResponse = response.toDataStreamResponse();
-      console.log("Headers:", [...dataStreamResponse.headers.entries()]);
-      console.log("Body type:", typeof dataStreamResponse.body);
-      console.log("Response:", response.text);
-
-      return response.toDataStreamResponse();
+      for await (const chunk of response.textStream) {
+        yield { content: chunk };
+      }
     }),
 });
