@@ -5,8 +5,7 @@ import { auth } from "~/server/auth";
 import { cache } from "react";
 import Link from "next/link";
 
-import { Chat } from "./_components/chat";
-import { SheetEditor } from "./_components/sheet-editor";
+import { LayoutHelper } from "./_components/layout-helper";
 
 const getCachedTrip = cache(async (id: string, share?: string) => {
   try {
@@ -31,22 +30,19 @@ export default async function TripPage({
   const session = await auth();
 
   try {
-    const { name, isShared, isOwner, firstMessage } = await getCachedTrip(
-      id,
-      share,
-    );
+    const { name, isShared, isOwner, firstMessage, allDetailsCollected } =
+      await getCachedTrip(id, share);
 
     return (
       <HydrateClient>
-        <div className="flex h-screen flex-row">
-          <Chat
-            session={session}
-            isShared={isShared}
-            isOwner={isOwner}
-            firstMessage={firstMessage}
-          />
-          <SheetEditor name={name} isOwner={isOwner} />
-        </div>
+        <LayoutHelper
+          session={session}
+          isShared={isShared}
+          isOwner={isOwner}
+          firstMessage={firstMessage}
+          name={name}
+          allDetailsCollected={allDetailsCollected}
+        />
       </HydrateClient>
     );
   } catch (error) {

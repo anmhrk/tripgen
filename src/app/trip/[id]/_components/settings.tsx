@@ -28,9 +28,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 interface SettingsProps {
   session: Session | null;
   isOwner: boolean;
+  allDetailsCollected: boolean;
 }
 
-export function Settings({ session, isOwner }: SettingsProps) {
+export function Settings({
+  session,
+  isOwner,
+  allDetailsCollected,
+}: SettingsProps) {
   const params = useParams<{ id: string }>();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -118,6 +123,7 @@ export function Settings({ session, isOwner }: SettingsProps) {
                 <DropdownMenuItem
                   onSelect={(e) => e.preventDefault()}
                   className="font-medium text-muted-foreground transition-none"
+                  disabled={!allDetailsCollected}
                 >
                   <Share className="mr-2 !h-5 !w-5" />
                   Share Trip

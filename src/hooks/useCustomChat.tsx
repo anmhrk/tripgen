@@ -8,10 +8,14 @@ export function useCustomChat({
   session,
   tripId,
   initialMessages = [],
+  setAllDetailsCollected,
+  apiProcedure,
 }: {
   session: Session | null;
   tripId: string;
   initialMessages: Message[];
+  setAllDetailsCollected: (allDetailsCollected: boolean) => void;
+  apiProcedure: keyof typeof api.ai;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -20,7 +24,7 @@ export function useCustomChat({
   const streamRef = useRef<AsyncIterable<{ content: string }> | null>(null);
   const latestMessageRef = useRef<Message | null>(null);
 
-  const stream = api.ai.gatherTripData.useMutation({
+  const stream = api.ai[apiProcedure].useMutation({
     onSuccess: async (data) => {
       streamRef.current = data;
 
@@ -45,6 +49,16 @@ export function useCustomChat({
           ),
         );
       }
+
+      setTimeout(() => {
+        if (
+          content.includes(
+            "All right, thanks for providing all the information. Let's get started building your perfect itinerary!",
+          )
+        ) {
+          setAllDetailsCollected(true);
+        }
+      }, 500);
     },
     onError: (error) => {
       toast.error(error.message);

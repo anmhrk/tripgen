@@ -67,10 +67,11 @@ export const aiRouter = createTRPCRouter({
 
         - Once all fields are complete (meaning the checkMissingFields tool returns an empty array for missingFields),
           use the allFieldsComplete tool to set all_details_collected to true in the database.
-          Then say that you're all set and ask the user if they'd like to proceed with the trip plan.
+          Then say EXACTLY this: "All right, thanks for providing all the information. Let's get started building your perfect itinerary!"
         </main_instructions>
 
         <things_to_keep_in_mind>
+        - Your first message should introduce yourself and say that you will need to ask a few questions to help you create a personalized itinerary.
         - Be concise but warm and friendly
         - Show enthusiasm for the user's destination choices
         - Avoid overwhelming the user with too many options at once

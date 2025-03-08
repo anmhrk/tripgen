@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Sheet, SHEET_NAMES } from "~/lib/types";
+import { type Sheet, SHEET_NAMES } from "~/lib/types";
 
 interface SheetNavProps {
   name: string;
@@ -81,21 +81,6 @@ export function SheetNav({
       onClick: () => {
         console.log("clicked");
       },
-    },
-  ];
-
-  const sheetNames = [
-    {
-      label: "Itinerary",
-      value: "itinerary",
-    },
-    {
-      label: "Flights",
-      value: "flights",
-    },
-    {
-      label: "Hotels",
-      value: "hotels",
     },
   ];
 

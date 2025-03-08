@@ -83,6 +83,7 @@ export const tripRouter = createTRPCRouter({
           activities: input.activities ?? null,
           specialRequirements: input.specialRequirements ?? null,
         },
+        all_details_collected: true,
       });
 
       return { tripId };
@@ -113,6 +114,7 @@ export const tripRouter = createTRPCRouter({
         isOwner: trip.userId === ctx.session?.user.id,
         name: trip.name,
         firstMessage: "",
+        allDetailsCollected: trip.all_details_collected,
       };
 
       if (trip.messages.length === 0) {

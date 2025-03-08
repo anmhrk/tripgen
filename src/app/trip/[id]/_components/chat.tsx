@@ -11,21 +11,28 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "~/components/ui/prompt-input";
-import { Loader2, ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
+import { cn } from "~/lib/utils";
 
 export function Chat({
+  name,
   session,
   isShared,
   isOwner,
   firstMessage,
+  allDetailsCollected,
+  setAllDetailsCollected,
 }: {
+  name: string;
   session: Session | null;
   isShared: boolean;
   isOwner: boolean;
   firstMessage: string;
+  allDetailsCollected: boolean;
+  setAllDetailsCollected: (allDetailsCollected: boolean) => void;
 }) {
   const params = useParams<{ id: string }>();
   const [isInitializing, setIsInitializing] = useState(false);
@@ -45,6 +52,8 @@ export function Chat({
     session,
     tripId: params.id,
     initialMessages: prevMessages.data ?? [],
+    setAllDetailsCollected,
+    apiProcedure: "gatherTripData",
   });
 
   const {
@@ -57,7 +66,12 @@ export function Chat({
   } = chat;
 
   useEffect(() => {
-    if (firstMessage && !isInitializing && prevMessages.data?.length === 0) {
+    if (
+      firstMessage &&
+      !isInitializing &&
+      prevMessages.data?.length === 0 &&
+      messages.length === 0
+    ) {
       setIsInitializing(true);
       void append({
         id: crypto.randomUUID(),
@@ -70,14 +84,21 @@ export function Chat({
   const allMessages = [...(prevMessages.data ?? []), ...messages];
 
   return (
-    <div className="flex h-full w-full flex-shrink-0 flex-col p-1.5 md:w-[450px]">
-      {prevMessages.isLoading ? (
-        <div className="flex h-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      ) : (
+    <div
+      className={cn(
+        "flex h-full w-full flex-shrink-0 flex-col p-1.5",
+        allDetailsCollected ? "md:w-[450px]" : "mx-auto max-w-4xl",
+      )}
+    >
+      {!prevMessages.isLoading && (
         <>
-          <ChatNav isShared={isShared} session={session} isOwner={isOwner} />
+          <ChatNav
+            allDetailsCollected={allDetailsCollected}
+            name={name}
+            isShared={isShared}
+            session={session}
+            isOwner={isOwner}
+          />
           <div className="flex-1 overflow-y-auto">
             {allMessages.length > 0 ? (
               <Messages
