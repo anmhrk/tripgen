@@ -66,7 +66,8 @@ export const aiRouter = createTRPCRouter({
           then update the database with "not specified" for that particular field.
 
         - Once all fields are complete (meaning the checkMissingFields tool returns an empty array for missingFields),
-          say that you're all set and that you'll get started on the trip plan right away.
+          use the allFieldsComplete tool to set all_details_collected to true in the database.
+          Then say that you're all set and ask the user if they'd like to proceed with the trip plan.
         </main_instructions>
 
         <things_to_keep_in_mind>
@@ -128,7 +129,7 @@ export const aiRouter = createTRPCRouter({
             },
           }),
 
-          // Save to database
+          // Save user's response to database
           updateTripData: tool({
             description:
               "Update the trip data in the database with user's response",
@@ -156,9 +157,22 @@ export const aiRouter = createTRPCRouter({
               return { success: true, field, value };
             },
           }),
+          allFieldsComplete: tool({
+            description:
+              "Update the all_details_collected flag in the database if missing fields are now complete",
+            parameters: z.object({}),
+            execute: async () => {
+              await ctx.db
+                .update(trips)
+                .set({ all_details_collected: true })
+                .where(eq(trips.id, tripId));
+
+              return { success: true };
+            },
+          }),
         },
         onFinish: async (completion) => {
-          // Add the assistant response to all messages
+          // Append the assistant response to all messages
           allMessages.push({
             id: completion.response.id,
             role: "assistant",
@@ -182,7 +196,7 @@ export const aiRouter = createTRPCRouter({
         maxSteps: 5,
       });
 
-      // Stream chunks backs
+      // Stream chunks back
       for await (const chunk of response.textStream) {
         yield { content: chunk };
       }
