@@ -57,7 +57,7 @@ export const aiRouter = createTRPCRouter({
         1. Begin by using the checkMissingFields tool to identify what information is needed.
         2. Ask ONE question at a time using the askQuestion tool.
         3a. After each user response, acknowledge their input in a friendly, conversational tone.
-        3b. Use the updateTripData tool to record their answers immediately.
+        3b. Use the updateTripData tool to record their answers into the database immediately.
         4. Verify updated information before proceeding to your next question.
 
         - When asking travel dates, make sure to ask for the start and end dates together. 
@@ -71,7 +71,7 @@ export const aiRouter = createTRPCRouter({
         </main_instructions>
 
         <things_to_keep_in_mind>
-        - Your first message should introduce yourself and say that you will need to ask a few questions to help you create a personalized itinerary.
+        - Your first message should introduce yourself and say that you will need to ask a few questions to help create a personalized itinerary.
         - Be concise but warm and friendly
         - Show enthusiasm for the user's destination choices
         - Avoid overwhelming the user with too many options at once
@@ -99,15 +99,6 @@ export const aiRouter = createTRPCRouter({
                 missingFields.push("specialRequirements");
 
               const isComplete = missingFields.length === 0;
-
-              // If all fields are complete, update the trip with a flag
-              if (isComplete && !trip.all_details_collected) {
-                await ctx.db
-                  .update(trips)
-                  .set({ all_details_collected: true })
-                  .where(eq(trips.id, tripId));
-              }
-
               return {
                 missingFields,
                 isComplete,
@@ -129,7 +120,6 @@ export const aiRouter = createTRPCRouter({
               return { field, question, options };
             },
           }),
-
           // Save user's response to database
           updateTripData: tool({
             description:

@@ -43,7 +43,7 @@ export function Chat({
     },
     {
       refetchOnMount: true,
-      staleTime: 1000 * 60 * 1,
+      staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: false,
     },
   );
@@ -69,6 +69,7 @@ export function Chat({
     if (
       firstMessage &&
       !isInitializing &&
+      !allDetailsCollected &&
       prevMessages.data?.length === 0 &&
       messages.length === 0
     ) {
@@ -79,7 +80,14 @@ export function Chat({
         content: firstMessage,
       });
     }
-  }, [firstMessage, append, isInitializing, prevMessages.data, messages]);
+  }, [
+    firstMessage,
+    append,
+    isInitializing,
+    prevMessages.data,
+    messages,
+    allDetailsCollected,
+  ]);
 
   const allMessages = [...(prevMessages.data ?? []), ...messages];
 
@@ -100,18 +108,12 @@ export function Chat({
             isOwner={isOwner}
           />
           <div className="flex-1 overflow-y-auto">
-            {allMessages.length > 0 ? (
+            {allMessages.length > 0 && (
               <Messages
                 messages={allMessages}
                 session={session}
                 isLoading={isLoading}
               />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-md text-muted-foreground">
-                  Start planning your trip by sending a message!
-                </p>
-              </div>
             )}
           </div>
           <div className="w-full flex-shrink-0">

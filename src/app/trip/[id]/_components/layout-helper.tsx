@@ -46,7 +46,6 @@ export function LayoutHelper({
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={allDetailsCollected ? "collected" : "collecting"}
             className="w-full"
             initial={allDetailsCollected ? { scale: 0.98 } : { scale: 1 }}
             animate={{ scale: 1 }}
