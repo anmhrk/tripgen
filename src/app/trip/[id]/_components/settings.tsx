@@ -66,10 +66,7 @@ export function Settings({
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
-        <TooltipContent
-          className="rounded-lg px-2 py-1.5 text-sm font-medium"
-          side="left"
-        >
+        <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
           Settings
         </TooltipContent>
       </Tooltip>

@@ -4,9 +4,12 @@ import { api } from "~/trpc/react";
 import { formatDistance } from "date-fns";
 
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight, Copy, PenLine } from "lucide-react";
-import { TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
-import { Tooltip } from "~/components/ui/tooltip";
+import { ChevronLeft, ChevronRight, Copy, Menu, PenLine } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { toast } from "sonner";
 import { Input } from "~/components/ui/input";
 import {
@@ -16,7 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { cn } from "~/lib/utils";
 import { type Sheet, SHEET_NAMES } from "~/lib/types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { useIsMobile } from "~/hooks/useIsMobile";
 
 interface SheetNavProps {
   name: string;
@@ -35,6 +46,7 @@ export function SheetNav({
   const [tripNameInput, setTripNameInput] = useState(name);
   const [tripNameEdited, setTripNameEdited] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (tripNameEdited) {
@@ -57,7 +69,7 @@ export function SheetNav({
     },
   });
 
-  const navButtons = [
+  const navItems = [
     {
       disabled: false,
       label: "Previous Version",
@@ -85,12 +97,12 @@ export function SheetNav({
   ];
 
   return (
-    <div className="flex w-full items-center justify-between border-b border-zinc-100 bg-[#F9F9F9] p-2 px-4 shadow-sm dark:border-zinc-700 dark:bg-[#27272A]">
+    <div className="flex w-full items-center justify-between border-b border-zinc-100 bg-[#F9F9F9] p-2 shadow-sm dark:border-zinc-700 dark:bg-[#27272A]">
       <div className="flex flex-col">
         <div className="flex flex-row items-center gap-1">
           {isEditing ? (
             <Input
-              className="w-48 !text-[15px] font-medium"
+              className="w-52 !text-[15px] font-medium"
               value={tripNameInput}
               autoFocus
               onChange={(e) => setTripNameInput(e.target.value)}
@@ -117,7 +129,9 @@ export function SheetNav({
               }}
             />
           ) : (
-            <p className="font-medium">{tripNameInput}</p>
+            <p className={cn(isMobile && "max-w-52 truncate", "font-medium")}>
+              {tripNameInput}
+            </p>
           )}
           {isOwner && (
             <Tooltip>
@@ -151,9 +165,16 @@ export function SheetNav({
             setCurrentSheet(value as Sheet);
           }}
         >
-          <SelectTrigger className="min-w-32 rounded-full bg-zinc-100 font-medium dark:bg-zinc-700">
-            <SelectValue placeholder="Itinerary" />
-          </SelectTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SelectTrigger className="min-w-32 rounded-full bg-zinc-100 font-medium dark:bg-zinc-700">
+                <SelectValue placeholder="Itinerary" />
+              </SelectTrigger>
+            </TooltipTrigger>
+            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+              Switch Sheets
+            </TooltipContent>
+          </Tooltip>
           <SelectContent className="rounded-lg">
             {SHEET_NAMES.map((sheet, idx) => (
               <SelectItem key={idx} value={sheet}>
@@ -162,41 +183,52 @@ export function SheetNav({
             ))}
           </SelectContent>
         </Select>
-        {navButtons.map((button, idx) => (
-          <SheetNavButton key={idx} {...button} />
+
+        {navItems.map((item, idx) => (
+          <Tooltip key={idx}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="hidden h-fit w-fit p-1.5 dark:hover:bg-zinc-700 md:block"
+                onClick={item.onClick}
+                disabled={item.disabled}
+              >
+                {item.icon}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+              {item.label}
+            </TooltipContent>
+          </Tooltip>
         ))}
+
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-fit w-fit p-1.5 dark:hover:bg-zinc-700 md:hidden"
+                >
+                  <Menu className="!h-5 !w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+              Menu
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent className="rounded-lg">
+            {navItems.map((item, idx) => (
+              <DropdownMenuItem key={idx} onClick={item.onClick}>
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
-  );
-}
-
-function SheetNavButton({
-  label,
-  icon,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-fit w-fit p-1.5 dark:hover:bg-zinc-700"
-          onClick={onClick}
-          disabled={disabled}
-        >
-          {icon}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-        {label}
-      </TooltipContent>
-    </Tooltip>
   );
 }

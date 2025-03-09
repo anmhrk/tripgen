@@ -5,7 +5,7 @@ import { DataGrid, textEditor } from "react-data-grid";
 import { parse, unparse } from "papaparse";
 import { cn } from "~/lib/utils";
 import { SheetNav } from "./sheet-nav";
-import { Sheet } from "~/lib/types";
+import type { Sheet } from "~/lib/types";
 
 interface SheetEditorProps {
   name: string;
@@ -106,7 +106,7 @@ export function SheetEditor({ name, isOwner }: SheetEditorProps) {
   };
 
   return (
-    <div className="hidden h-full w-full flex-1 flex-col overflow-hidden border-l border-zinc-200 dark:border-zinc-700 md:flex">
+    <div className="flex h-full w-full flex-1 flex-col overflow-hidden border-l border-zinc-200 dark:border-zinc-700">
       {mounted && (
         <>
           <SheetNav

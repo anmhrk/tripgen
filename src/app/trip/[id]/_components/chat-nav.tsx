@@ -2,11 +2,18 @@
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { Settings } from "./settings";
-import Image from "next/image";
+import { useIsMobile } from "~/hooks/useIsMobile";
+import { FileSpreadsheet } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
 interface ChatNavProps {
   name: string;
@@ -14,6 +21,7 @@ interface ChatNavProps {
   session: Session | null;
   isOwner: boolean;
   allDetailsCollected: boolean;
+  setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
 }
 
 export function ChatNav({
@@ -22,7 +30,10 @@ export function ChatNav({
   session,
   isOwner,
   allDetailsCollected,
+  setIsMobileSheetOpen,
 }: ChatNavProps) {
+  const isMobile = useIsMobile();
+
   return (
     <header className="flex w-full items-center justify-between text-zinc-800 dark:text-zinc-300">
       <Link href="/" className="flex items-center gap-2">
@@ -36,11 +47,16 @@ export function ChatNav({
       {isShared ? (
         <>
           {session ? (
-            <Settings
-              allDetailsCollected={allDetailsCollected}
-              session={session}
-              isOwner={isOwner}
-            />
+            <div className="flex items-center">
+              {isMobile && allDetailsCollected && (
+                <OpenSheetButton setIsMobileSheetOpen={setIsMobileSheetOpen} />
+              )}
+              <Settings
+                allDetailsCollected={allDetailsCollected}
+                session={session}
+                isOwner={isOwner}
+              />
+            </div>
           ) : (
             <Button
               onClick={() => signIn("google", { redirect: false })}
@@ -51,12 +67,43 @@ export function ChatNav({
           )}
         </>
       ) : (
-        <Settings
-          allDetailsCollected={allDetailsCollected}
-          session={session}
-          isOwner={isOwner}
-        />
+        <div className="flex items-center">
+          {isMobile && allDetailsCollected && (
+            <OpenSheetButton setIsMobileSheetOpen={setIsMobileSheetOpen} />
+          )}
+          <Settings
+            allDetailsCollected={allDetailsCollected}
+            session={session}
+            isOwner={isOwner}
+          />
+        </div>
       )}
     </header>
+  );
+}
+
+function OpenSheetButton({
+  setIsMobileSheetOpen,
+}: {
+  setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
+}) {
+  return (
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            onClick={() => setIsMobileSheetOpen(true)}
+          >
+            <FileSpreadsheet className="!h-6 !w-6" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
+          Open Sheet
+        </TooltipContent>
+      </Tooltip>
+    </>
   );
 }

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Chat } from "./chat";
 import { SheetEditor } from "./sheet-editor";
 import { useIsMobile } from "~/hooks/useIsMobile";
+import { MobileSheet } from "./mobile-sheet";
 
 interface LayoutHelperProps {
   session: Session | null;
@@ -29,6 +30,7 @@ export function LayoutHelper({
     initialAllDetailsCollectedFlag,
   );
   const isMobile = useIsMobile();
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -63,13 +65,14 @@ export function LayoutHelper({
               firstMessage={firstMessage}
               allDetailsCollected={allDetailsCollected}
               setAllDetailsCollected={setAllDetailsCollected}
+              setIsMobileSheetOpen={setIsMobileSheetOpen}
             />
           </motion.div>
         </AnimatePresence>
       </motion.div>
 
       <AnimatePresence>
-        {allDetailsCollected && (
+        {allDetailsCollected && !isMobile && (
           <motion.div
             className="h-full flex-1"
             initial={{
@@ -103,6 +106,15 @@ export function LayoutHelper({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {allDetailsCollected && isMobile && (
+        <MobileSheet
+          name={name}
+          isOwner={isOwner}
+          open={isMobileSheetOpen}
+          setOpen={setIsMobileSheetOpen}
+        />
+      )}
     </div>
   );
 }

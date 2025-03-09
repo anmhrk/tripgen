@@ -25,6 +25,7 @@ export function Chat({
   firstMessage,
   allDetailsCollected,
   setAllDetailsCollected,
+  setIsMobileSheetOpen,
 }: {
   name: string;
   session: Session | null;
@@ -33,6 +34,7 @@ export function Chat({
   firstMessage: string;
   allDetailsCollected: boolean;
   setAllDetailsCollected: (allDetailsCollected: boolean) => void;
+  setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
 }) {
   const params = useParams<{ id: string }>();
   const [isInitializing, setIsInitializing] = useState(false);
@@ -106,6 +108,7 @@ export function Chat({
             isShared={isShared}
             session={session}
             isOwner={isOwner}
+            setIsMobileSheetOpen={setIsMobileSheetOpen}
           />
           <div className="flex-1 overflow-y-auto">
             {allMessages.length > 0 && (
