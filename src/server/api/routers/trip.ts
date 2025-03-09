@@ -219,4 +219,25 @@ export const tripRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(trips).where(eq(trips.id, input.tripId));
     }),
+
+  getTripMessages: publicProcedure
+    .input(
+      z.object({
+        tripId: z.string().min(1),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const trip = await ctx.db.query.trips.findFirst({
+        where: eq(trips.id, input.tripId),
+      });
+
+      if (!trip) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Trip not found",
+        });
+      }
+
+      return trip.messages;
+    }),
 });

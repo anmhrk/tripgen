@@ -1,5 +1,4 @@
 import { tripRouter } from "./routers/trip";
-import { chatRouter } from "./routers/chat";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { aiRouter } from "./routers/ai";
 
@@ -10,7 +9,6 @@ import { aiRouter } from "./routers/ai";
  */
 export const appRouter = createTRPCRouter({
   trips: tripRouter,
-  chats: chatRouter,
   ai: aiRouter,
 });
 

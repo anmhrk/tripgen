@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { Message } from "~/lib/types";
 import type { Session } from "next-auth";
+import type { Message } from "ai";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Bot, Loader2 } from "lucide-react";

@@ -35,8 +35,8 @@ export default async function Home() {
       <Header />
 
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pb-8 pt-20 text-center">
-        <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-zinc-300 md:text-6xl">
-          Plan your perfect trip with AI-powered itineraries
+        <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 dark:text-zinc-300 sm:text-5xl md:text-6xl">
+          Plan your perfect trip with AI itineraries
         </h1>
         <p className="mb-8 text-xl text-muted-foreground">
           it&apos;s like having a personal travel agent, but wayyy smarter

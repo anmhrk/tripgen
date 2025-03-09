@@ -39,7 +39,7 @@ export function Chat({
   const params = useParams<{ id: string }>();
   const [isInitializing, setIsInitializing] = useState(false);
 
-  const prevMessages = api.chats.getMessages.useQuery(
+  const prevMessages = api.trips.getTripMessages.useQuery(
     {
       tripId: params.id,
     },
@@ -55,7 +55,7 @@ export function Chat({
     tripId: params.id,
     initialMessages: prevMessages.data ?? [],
     setAllDetailsCollected,
-    apiProcedure: "gatherTripData",
+    sheetContent: "", // for now
   });
 
   const {

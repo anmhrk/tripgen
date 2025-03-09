@@ -9,13 +9,13 @@ export function useCustomChat({
   tripId,
   initialMessages = [],
   setAllDetailsCollected,
-  apiProcedure,
+  sheetContent,
 }: {
   session: Session | null;
   tripId: string;
   initialMessages: Message[];
   setAllDetailsCollected: (allDetailsCollected: boolean) => void;
-  apiProcedure: keyof typeof api.ai;
+  sheetContent: string;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -24,8 +24,9 @@ export function useCustomChat({
   const streamRef = useRef<AsyncIterable<{ content: string }> | null>(null);
   const latestMessageRef = useRef<Message | null>(null);
 
-  const stream = api.ai[apiProcedure].useMutation({
+  const stream = api.ai.aiChat.useMutation({
     onSuccess: async (data) => {
+      if (!data) return;
       streamRef.current = data;
 
       // Create and add empty assistant message to state
@@ -84,6 +85,7 @@ export function useCustomChat({
     stream.mutate({
       messages: newMessages,
       tripId,
+      sheetContent,
     });
   };
 
