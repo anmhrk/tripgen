@@ -44,7 +44,7 @@ export function TripPrompt() {
       value={input}
       onValueChange={setInput}
       onSubmit={handleSubmit}
-      className="max-w-(--breakpoint-md) w-full shadow-lg dark:bg-zinc-900"
+      className="max-w-(--breakpoint-md) w-full bg-zinc-100 shadow-lg dark:bg-zinc-900"
       isLoading={isLoading}
     >
       <PromptInputTextarea
@@ -52,7 +52,10 @@ export function TripPrompt() {
         className="min-h-[240px] !text-[15px]"
       />
       <PromptInputActions className="justify-end pt-2">
-        <PromptInputAction tooltip="Create Trip">
+        <PromptInputAction
+          tooltip="Create Trip"
+          className="rounded-lg px-2 py-1.5 text-sm font-medium"
+        >
           <Button
             size="icon"
             className="h-8 w-8 rounded-full"

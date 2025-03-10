@@ -1,15 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Session } from "next-auth";
 import type { Message } from "ai";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Bot, Loader2 } from "lucide-react";
+import { ArrowDown, Bot, Loader2 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { Button } from "~/components/ui/button";
 
 export function Messages({
   messages,
@@ -21,14 +22,40 @@ export function Messages({
   isLoading: boolean;
 }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
-  // Scroll to bottom on page load
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior });
+    }
+  };
+
+  // Instant scroll to bottom on page load
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+    scrollToBottom("instant");
   }, [messages]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      setShowScrollButton(distanceFromBottom > 100);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
-    <div className="h-full w-full px-2 py-4">
+    <div ref={containerRef} className="h-full w-full overflow-y-auto px-2 py-4">
       <div className="flex flex-col space-y-4 pb-8 pr-1">
         {messages.map((msg, idx) => (
           <div
@@ -65,7 +92,6 @@ export function Messages({
               {msg.content}
             </div>
 
-            {/* TODO: fetch name and image from db instead of session */}
             {msg.role === "user" && session?.user?.image && (
               <div className="ml-2">
                 <Tooltip>
@@ -86,6 +112,17 @@ export function Messages({
 
         <div ref={messagesEndRef} />
       </div>
+
+      {showScrollButton && (
+        <Button
+          onClick={() => scrollToBottom()}
+          className="fixed bottom-44 left-1/2 -translate-x-1/2 rounded-full"
+          variant="secondary"
+        >
+          <ArrowDown className="size-5" />
+          Scroll to bottom
+        </Button>
+      )}
     </div>
   );
 }

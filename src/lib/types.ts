@@ -14,20 +14,6 @@ export const formSchema = z.object({
   specialRequirements: z.string().optional(),
 });
 
-export type UserSubmittedData = {
-  prompt: string | null;
-  startDate: Date | null;
-  endDate: Date | null;
-  numTravelers: string | null;
-  budgetRange: string | null;
-  startLocation: string | null;
-  destination: string | null;
-  travelStyle: string | null;
-  accommodation: string | null;
-  activities: string | null;
-  specialRequirements: string | null;
-};
-
 export const validUserDataFields = [
   "prompt",
   "startDate",
@@ -42,7 +28,20 @@ export const validUserDataFields = [
   "specialRequirements",
 ] as const;
 
-export type ValidFieldName = (typeof validUserDataFields)[number];
+export type UserSubmittedData = {
+  prompt: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  numTravelers: string | null;
+  budgetRange: string | null;
+  startLocation: string | null;
+  destination: string | null;
+  travelStyle: string | null;
+  accommodation: string | null;
+  activities: string | null;
+  specialRequirements: string | null;
+};
 
-export type Sheet = "itinerary" | "flights" | "hotels";
 export const SHEET_NAMES = ["itinerary", "flights", "hotels"] as const;
+export type Sheet = (typeof SHEET_NAMES)[number];
+export type SheetContent = Record<Sheet, string>;

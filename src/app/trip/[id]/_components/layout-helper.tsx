@@ -2,10 +2,12 @@
 import type { Session } from "next-auth";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+
 import { Chat } from "./chat";
 import { SheetEditor } from "./sheet-editor";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { MobileSheet } from "./mobile-sheet";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 
 interface LayoutHelperProps {
   session: Session | null;
@@ -38,69 +40,79 @@ export function LayoutHelper({
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {mounted && (
-        <motion.div
-          initial={{
-            opacity: 0,
-            filter: "blur(3px)",
-          }}
-          animate={{
-            opacity: 1,
-            filter: "blur(0px)",
-          }}
-          transition={{
-            duration: 0.8,
-            ease: "easeOut",
-          }}
-        >
-          <Chat
-            name={name}
-            session={session}
-            isShared={isShared}
-            isOwner={isOwner}
-            firstMessage={firstMessage}
-            allDetailsCollected={allDetailsCollected}
-            setAllDetailsCollected={setAllDetailsCollected}
-            setIsMobileSheetOpen={setIsMobileSheetOpen}
-          />
-        </motion.div>
-      )}
+        <PanelGroup direction="horizontal" className="w-full">
+          <Panel
+            defaultSize={allDetailsCollected && !isMobile ? 30 : 100}
+            minSize={30}
+          >
+            <AnimatePresence>
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  filter: "blur(3px)",
+                }}
+                animate={{
+                  opacity: 1,
+                  filter: "blur(0px)",
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: "easeOut",
+                }}
+                className="h-full"
+              >
+                <Chat
+                  name={name}
+                  session={session}
+                  isShared={isShared}
+                  isOwner={isOwner}
+                  firstMessage={firstMessage}
+                  allDetailsCollected={allDetailsCollected}
+                  setAllDetailsCollected={setAllDetailsCollected}
+                  setIsMobileSheetOpen={setIsMobileSheetOpen}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </Panel>
 
-      {mounted && (
-        <AnimatePresence>
           {allDetailsCollected && !isMobile && (
-            <motion.div
-              className="h-full flex-1"
-              initial={{
-                opacity: 0,
-                x: 50,
-                width: 0,
-              }}
-              animate={{
-                opacity: 1,
-                x: 0,
-                width: isMobile ? "100%" : "450px",
-                transition: {
-                  delay: 0.1,
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 30,
-                },
-              }}
-              exit={{
-                opacity: 0,
-                x: 50,
-                width: 0,
-                transition: {
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                },
-              }}
-            >
-              <SheetEditor name={name} isOwner={isOwner} />
-            </motion.div>
+            <>
+              <PanelResizeHandle className="w-1 bg-zinc-200 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600" />
+              <Panel minSize={40}>
+                <AnimatePresence>
+                  <motion.div
+                    className="h-full w-full"
+                    initial={{
+                      opacity: 0,
+                      x: 50,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      transition: {
+                        delay: 0.1,
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 30,
+                      },
+                    }}
+                    exit={{
+                      opacity: 0,
+                      x: 50,
+                      transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      },
+                    }}
+                  >
+                    <SheetEditor name={name} isOwner={isOwner} />
+                  </motion.div>
+                </AnimatePresence>
+              </Panel>
+            </>
           )}
-        </AnimatePresence>
+        </PanelGroup>
       )}
 
       {allDetailsCollected && isMobile && (

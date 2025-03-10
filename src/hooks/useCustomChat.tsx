@@ -20,6 +20,7 @@ export function useCustomChat({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const streamRef = useRef<AsyncIterable<{ content: string }> | null>(null);
   const latestMessageRef = useRef<Message | null>(null);
@@ -43,6 +44,11 @@ export function useCustomChat({
       // Then update the assistant message
       let content = "";
       for await (const chunk of streamRef.current) {
+        if (abortControllerRef.current?.signal.aborted) {
+          toast.info("Stream stopped by user");
+          return;
+        }
+
         content += chunk.content;
         setMessages((prev) =>
           prev.map((msg) =>
@@ -78,6 +84,8 @@ export function useCustomChat({
     if (isLoading) return;
     setIsLoading(true);
 
+    abortControllerRef.current = new AbortController();
+
     // Add the user message to state
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -105,6 +113,13 @@ export function useCustomChat({
     void append(message);
   };
 
+  const stopStream = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsLoading(false);
+    }
+  };
+
   return {
     messages,
     input,
@@ -113,5 +128,6 @@ export function useCustomChat({
     handleInputChange,
     handleSubmit,
     setInput,
+    stopStream,
   };
 }
