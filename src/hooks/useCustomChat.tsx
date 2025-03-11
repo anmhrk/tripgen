@@ -9,13 +9,11 @@ export function useCustomChat({
   tripId,
   initialMessages = [],
   setAllDetailsCollected,
-  sheetContent,
 }: {
   session: Session | null;
   tripId: string;
   initialMessages: Message[];
   setAllDetailsCollected: (allDetailsCollected: boolean) => void;
-  sheetContent: string;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -93,7 +91,6 @@ export function useCustomChat({
     stream.mutate({
       messages: newMessages,
       tripId,
-      sheetContent,
     });
   };
 

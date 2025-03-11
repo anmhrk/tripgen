@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { trips } from "~/server/db/schema";
+import { trips, sheets } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { streamText, convertToCoreMessages, type Message, tool } from "ai";
@@ -20,11 +20,10 @@ export const aiRouter = createTRPCRouter({
           }),
         ) as z.ZodType<Message[]>,
         tripId: z.string(),
-        sheetContent: z.string(),
       }),
     )
     .mutation(async function* ({ ctx, input }) {
-      const { messages, tripId, sheetContent } = input;
+      const { messages, tripId } = input;
 
       const trip = await ctx.db.query.trips.findFirst({
         where: and(eq(trips.id, tripId), eq(trips.userId, ctx.session.user.id)),
@@ -45,6 +44,14 @@ export const aiRouter = createTRPCRouter({
           message: "User data not found",
         });
       }
+
+      const sheetData = await ctx.db.query.sheets.findMany({
+        where: eq(sheets.tripId, tripId),
+      });
+
+      const sheetContent = sheetData
+        .map((sheet) => `Sheet Name: ${sheet.name}\n${sheet.content}`)
+        .join("\n\n");
 
       // gatherTripData first if trip created from prompt, or else use generalChat
 

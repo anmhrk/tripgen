@@ -116,7 +116,7 @@ export function Messages({
       {showScrollButton && (
         <Button
           onClick={() => scrollToBottom()}
-          className="fixed bottom-44 left-1/2 -translate-x-1/2 rounded-full"
+          className="fixed bottom-44 left-1/2 -translate-x-1/2 rounded-full bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-800"
           variant="secondary"
         >
           <ArrowDown className="size-5" />

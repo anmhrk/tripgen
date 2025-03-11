@@ -28,12 +28,16 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useIsMobile } from "~/hooks/useIsMobile";
+import { Skeleton } from "~/components/ui/skeleton";
 
 interface SheetNavProps {
   name: string;
   isOwner: boolean;
   currentSheet: Sheet;
   setCurrentSheet: (sheet: Sheet) => void;
+  lastSaved: Date | undefined;
+  saving: boolean;
+  isDataLoading: boolean;
 }
 
 export function SheetNav({
@@ -41,6 +45,9 @@ export function SheetNav({
   isOwner,
   currentSheet,
   setCurrentSheet,
+  lastSaved,
+  saving,
+  isDataLoading,
 }: SheetNavProps) {
   const params = useParams<{ id: string }>();
   const [tripNameInput, setTripNameInput] = useState(name);
@@ -152,9 +159,21 @@ export function SheetNav({
           )}
         </div>
         <div className="text-sm text-muted-foreground">
-          {`Updated ${formatDistance(new Date(), new Date(), {
-            addSuffix: true,
-          })}`}
+          {isDataLoading ? (
+            <Skeleton className="mt-1 h-4 w-44" />
+          ) : (
+            <>
+              {saving
+                ? "Saving..."
+                : `Updated ${
+                    lastSaved
+                      ? formatDistance(lastSaved, new Date(), {
+                          addSuffix: true,
+                        })
+                      : "never"
+                  }`}
+            </>
+          )}
         </div>
       </div>
 

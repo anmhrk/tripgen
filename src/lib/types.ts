@@ -42,6 +42,5 @@ export type UserSubmittedData = {
   specialRequirements: string | null;
 };
 
-export const SHEET_NAMES = ["itinerary", "flights", "hotels"] as const;
+export const SHEET_NAMES = ["itinerary", "flights", "accommodation"] as const;
 export type Sheet = (typeof SHEET_NAMES)[number];
-export type SheetContent = Record<Sheet, string>;

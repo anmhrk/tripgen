@@ -7,9 +7,9 @@ import {
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { TRPCError } from "@trpc/server";
-import { trips } from "~/server/db/schema";
-import { formSchema } from "~/lib/types";
-import { eq, and } from "drizzle-orm";
+import { sheets, trips } from "~/server/db/schema";
+import { formSchema, SHEET_NAMES, type Sheet } from "~/lib/types";
+import { eq, and, sql } from "drizzle-orm";
 
 export const tripRouter = createTRPCRouter({
   createTripFromPrompt: protectedProcedure
@@ -58,6 +58,13 @@ export const tripRouter = createTRPCRouter({
         },
       });
 
+      for (const sheetName of SHEET_NAMES) {
+        await ctx.db.insert(sheets).values({
+          tripId,
+          name: sheetName,
+        });
+      }
+
       return { tripId };
     }),
 
@@ -85,6 +92,13 @@ export const tripRouter = createTRPCRouter({
         },
         all_details_collected: true,
       });
+
+      for (const sheetName of SHEET_NAMES) {
+        await ctx.db.insert(sheets).values({
+          tripId,
+          name: sheetName,
+        });
+      }
 
       return { tripId };
     }),
@@ -239,5 +253,44 @@ export const tripRouter = createTRPCRouter({
       }
 
       return trip.messages;
+    }),
+
+  updateTripSheet: protectedProcedure
+    .input(
+      z.object({
+        tripId: z.string().min(1),
+        sheetName: z.string().min(1),
+        sheetContent: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(sheets)
+        .set({
+          content: input.sheetContent,
+          last_updated: sql`CURRENT_TIMESTAMP`,
+        })
+        .where(
+          and(
+            eq(sheets.tripId, input.tripId),
+            eq(sheets.name, input.sheetName as Sheet),
+          ),
+        );
+    }),
+
+  getSheetData: publicProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const tripSheets = await ctx.db.query.sheets.findMany({
+        where: eq(sheets.tripId, input.tripId),
+      });
+
+      return tripSheets.map((sheet) => {
+        return {
+          name: sheet.name,
+          content: sheet.content,
+          lastUpdated: sheet.last_updated,
+        };
+      });
     }),
 });

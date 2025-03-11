@@ -55,7 +55,6 @@ export function Chat({
     tripId: params.id,
     initialMessages: prevMessages.data ?? [],
     setAllDetailsCollected,
-    sheetContent: "", // for now
   });
 
   const {

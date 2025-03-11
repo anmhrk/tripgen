@@ -106,7 +106,11 @@ export function LayoutHelper({
                       },
                     }}
                   >
-                    <SheetEditor name={name} isOwner={isOwner} />
+                    <SheetEditor
+                      name={name}
+                      isOwner={isOwner}
+                      session={session}
+                    />
                   </motion.div>
                 </AnimatePresence>
               </Panel>
@@ -121,6 +125,7 @@ export function LayoutHelper({
           isOwner={isOwner}
           open={isMobileSheetOpen}
           setOpen={setIsMobileSheetOpen}
+          session={session}
         />
       )}
     </div>

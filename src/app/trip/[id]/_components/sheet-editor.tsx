@@ -1,29 +1,66 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import { useTheme } from "next-themes";
-import { DataGrid, textEditor } from "react-data-grid";
+import { api } from "~/trpc/react";
 import { parse, unparse } from "papaparse";
+import type { Session } from "next-auth";
+
+import { DataGrid, textEditor } from "react-data-grid";
 import { cn } from "~/lib/utils";
 import { SheetNav } from "./sheet-nav";
 import type { Sheet } from "~/lib/types";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface SheetEditorProps {
   name: string;
   isOwner: boolean;
+  session: Session | null;
 }
 
 const MIN_ROWS = 100;
 const MIN_COLS = 26;
 
-export function SheetEditor({ name, isOwner }: SheetEditorProps) {
+export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
-  const [content, setContent] = useState("");
+  const params = useParams<{ id: string }>();
   const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
   const [mounted, setMounted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const tripSheets = api.trips.getSheetData.useQuery({
+    tripId: params.id,
+  });
+  const sheetData = tripSheets.data?.find(
+    (sheet) => sheet.name === currentSheet,
+  );
+
+  const [lastSaved, setLastSaved] = useState(sheetData?.lastUpdated);
+  const [content, setContent] = useState(sheetData?.content);
+
+  useEffect(() => {
+    if (sheetData) {
+      setContent(sheetData.content);
+      setLastSaved(sheetData.lastUpdated);
+    }
+  }, [sheetData]);
+
+  const updateTripSheet = api.trips.updateTripSheet.useMutation({
+    onSuccess: () => {
+      setLastSaved(new Date());
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSettled: () => {
+      setSaving(false);
+    },
+  });
 
   const parseData = useMemo(() => {
     if (!content)
@@ -95,6 +132,10 @@ export function SheetEditor({ name, isOwner }: SheetEditorProps) {
   }, [initialRows]);
 
   const handleRowsChange = (newRows: Record<string, string>[]) => {
+    if (!session) {
+      toast.error("Please sign in to save your changes");
+      return;
+    }
     setRows(newRows);
 
     const updatedData = newRows.map((row) => {
@@ -102,7 +143,13 @@ export function SheetEditor({ name, isOwner }: SheetEditorProps) {
     });
 
     const newCsvContent = unparse(updatedData);
-    // saveContent(newCsvContent, true);
+
+    setSaving(true);
+    updateTripSheet.mutate({
+      tripId: params.id,
+      sheetName: currentSheet,
+      sheetContent: newCsvContent,
+    });
   };
 
   return (
@@ -114,28 +161,37 @@ export function SheetEditor({ name, isOwner }: SheetEditorProps) {
             isOwner={isOwner}
             currentSheet={currentSheet}
             setCurrentSheet={setCurrentSheet}
+            lastSaved={lastSaved}
+            saving={saving}
+            isDataLoading={tripSheets.isLoading}
           />
           <div className="flex-1 overflow-auto">
-            <DataGrid
-              columns={columns}
-              rows={rows}
-              className={resolvedTheme === "dark" ? "rdg-dark" : "rdg-light"}
-              enableVirtualization
-              style={{
-                height: "100%",
-                width: "100%",
-              }}
-              defaultColumnOptions={{
-                resizable: true,
-                sortable: true,
-              }}
-              onRowsChange={handleRowsChange}
-              onCellClick={(args) => {
-                if (args.column.key !== "rowNumber") {
-                  args.selectCell(true);
-                }
-              }}
-            />
+            {tripSheets.isLoading ? (
+              <div className="flex h-full w-full items-center justify-center">
+                <Loader2 className="size-8 animate-spin" />
+              </div>
+            ) : (
+              <DataGrid
+                columns={columns}
+                rows={rows}
+                className={resolvedTheme === "dark" ? "rdg-dark" : "rdg-light"}
+                enableVirtualization
+                style={{
+                  height: "100%",
+                  width: "100%",
+                }}
+                defaultColumnOptions={{
+                  resizable: true,
+                  sortable: true,
+                }}
+                onRowsChange={handleRowsChange}
+                onCellClick={(args) => {
+                  if (args.column.key !== "rowNumber") {
+                    args.selectCell(true);
+                  }
+                }}
+              />
+            )}
           </div>
         </>
       )}

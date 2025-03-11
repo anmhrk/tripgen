@@ -9,9 +9,10 @@ import {
   timestamp,
   varchar,
   json,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
-import type { SheetContent, UserSubmittedData } from "~/lib/types";
+import { type UserSubmittedData, SHEET_NAMES } from "~/lib/types";
 import type { Message } from "ai";
 
 export const users = pgTable("user", {
@@ -122,5 +123,28 @@ export const trips = pgTable("trip", {
   all_details_collected: boolean("all_details_collected")
     .notNull()
     .default(false),
-  sheet_content: json("sheet_content").$type<SheetContent>(),
 });
+
+export const sheetNames = pgEnum("sheet_name", SHEET_NAMES);
+
+export const sheets = pgTable("sheet", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  tripId: varchar("trip_id", { length: 255 })
+    .notNull()
+    .references(() => trips.id),
+  name: sheetNames("name").notNull(),
+  content: text("content").notNull().default(""),
+  last_updated: timestamp("last_updated", {
+    mode: "date",
+    withTimezone: true,
+  })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const sheetsRelations = relations(sheets, ({ one }) => ({
+  trip: one(trips, { fields: [sheets.tripId], references: [trips.id] }),
+}));
