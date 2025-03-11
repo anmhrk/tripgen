@@ -28,6 +28,7 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
   const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const trpcUtils = api.useUtils();
 
   useEffect(() => {
     setMounted(true);
@@ -51,8 +52,19 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
   }, [sheetData]);
 
   const updateTripSheet = api.trips.updateTripSheet.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const { sheetName, sheetContent } = variables;
       setLastSaved(new Date());
+      setContent(sheetContent);
+
+      trpcUtils.trips.getSheetData.setData({ tripId: params.id }, (old) => {
+        if (!old) return [];
+        return old.map((sheet) =>
+          sheet.name === sheetName
+            ? { ...sheet, content: sheetContent, lastUpdated: new Date() }
+            : sheet,
+        );
+      });
     },
     onError: (error) => {
       toast.error(error.message);
