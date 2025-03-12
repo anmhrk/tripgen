@@ -4,6 +4,9 @@ import { type Message } from "ai";
 import { toast } from "sonner";
 import type { Session } from "next-auth";
 
+const startMarker = "<<<CSV_START>>>";
+const endMarker = "<<<CSV_END>>>";
+
 export function useCustomChat({
   session,
   tripId,
@@ -19,6 +22,7 @@ export function useCustomChat({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [csvContent, setCsvContent] = useState("");
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamRef = useRef<AsyncIterable<{ content: string }> | null>(null);
   const latestMessageRef = useRef<Message | null>(null);
@@ -56,8 +60,6 @@ export function useCustomChat({
         processChunk(chunk.content, assistantMessage.id);
       }
 
-      finalizeProcessing(assistantMessage.id);
-
       setTimeout(() => {
         if (
           accumulatedTextRef.current.includes(
@@ -78,21 +80,12 @@ export function useCustomChat({
   });
 
   const processChunk = (chunk: string, messageId: string) => {
-    console.log("Processing chunk:", chunk);
-
-    // Add this chunk to our accumulated text
+    // Add chunk to accumulated text buffer
     accumulatedTextRef.current += chunk;
 
-    // Check for complete start marker
-    const startMarker = "<<<CSV_START>>>";
-    const endMarker = "<<<CSV_END>>>";
-
-    // If we're not inside CSV content yet, check if we have a complete start marker
     if (!insideCsvRef.current) {
       const startIndex = accumulatedTextRef.current.indexOf(startMarker);
       if (startIndex !== -1) {
-        console.log("Found complete CSV start marker");
-
         // Extract text before the marker
         const textBeforeMarker = accumulatedTextRef.current.substring(
           0,
@@ -109,7 +102,7 @@ export function useCustomChat({
         // Set flag that we're now inside CSV content
         insideCsvRef.current = true;
 
-        // Start collecting CSV content (everything after the marker)
+        // Start collecting CSV content
         csvBufferRef.current = accumulatedTextRef.current.substring(
           startIndex + startMarker.length,
         );
@@ -127,31 +120,26 @@ export function useCustomChat({
         );
       }
     } else {
-      // We're inside CSV content, check for end marker
+      // Inside CSV content
+      csvBufferRef.current += chunk;
+
       const endIndex = csvBufferRef.current.indexOf(endMarker);
       if (endIndex !== -1) {
-        console.log("Found complete CSV end marker");
-
-        // Extract CSV content (everything before the end marker)
+        // Extract CSV content
         const csvContent = csvBufferRef.current.substring(0, endIndex).trim();
-        console.log("Extracted CSV content:", csvContent);
-
-        // Set CSV content state
-        setCsvContent(csvContent);
+        setCsvContent(csvContent); // Update CSV content as we get it
 
         // Extract text after the end marker
         const textAfterMarker = csvBufferRef.current.substring(
           endIndex + endMarker.length,
         );
 
-        // Update accumulated text with text after marker
+        // Update the message with the text after marker
         accumulatedTextRef.current += textAfterMarker;
-
-        // Update the message
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === messageId
-              ? { ...msg, content: accumulatedTextRef.current }
+              ? { ...msg, content: accumulatedTextRef.current.trim() }
               : msg,
           ),
         );
@@ -159,45 +147,7 @@ export function useCustomChat({
         // Reset CSV state
         insideCsvRef.current = false;
         csvBufferRef.current = "";
-      } else {
-        // Still inside CSV, keep accumulating
-        csvBufferRef.current += chunk;
       }
-    }
-  };
-
-  const finalizeProcessing = (messageId: string) => {
-    // If we're still inside CSV content when stream ends
-    if (insideCsvRef.current) {
-      console.log("Stream ended while still inside CSV content");
-
-      // Check if we have a partial end marker
-      const endMarker = "<<<CSV_END>>>";
-      const endIndex = csvBufferRef.current.indexOf(endMarker);
-
-      if (endIndex !== -1) {
-        // Extract CSV content
-        const csvContent = csvBufferRef.current.substring(0, endIndex).trim();
-        setCsvContent(csvContent);
-
-        // Extract text after marker
-        const textAfterMarker = csvBufferRef.current.substring(
-          endIndex + endMarker.length,
-        );
-        accumulatedTextRef.current += textAfterMarker;
-      } else {
-        // No end marker found, treat everything as text
-        accumulatedTextRef.current += csvBufferRef.current;
-      }
-
-      // Update message with final text
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, content: accumulatedTextRef.current }
-            : msg,
-        ),
-      );
     }
   };
 

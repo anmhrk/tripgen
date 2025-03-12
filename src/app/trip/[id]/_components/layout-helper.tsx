@@ -2,6 +2,9 @@
 import type { Session } from "next-auth";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { api } from "~/trpc/react";
+import { useParams } from "next/navigation";
+import { useCustomChat } from "~/hooks/useCustomChat";
 
 import { Chat } from "./chat";
 import { SheetEditor } from "./sheet-editor";
@@ -32,10 +35,39 @@ export function LayoutHelper({
   const isMobile = useIsMobile();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-
+  const params = useParams<{ id: string }>();
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const prevMessages = api.trips.getTripMessages.useQuery(
+    {
+      tripId: params.id,
+    },
+    {
+      refetchOnMount: true,
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+    },
+  );
+
+  const chat = useCustomChat({
+    session,
+    tripId: params.id,
+    initialMessages: prevMessages.data ?? [],
+    setAllDetailsCollected,
+  });
+
+  const {
+    messages,
+    input,
+    isLoading,
+    append,
+    handleInputChange,
+    handleSubmit,
+    stopStream,
+    csvContent,
+  } = chat;
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -45,34 +77,24 @@ export function LayoutHelper({
             defaultSize={allDetailsCollected && !isMobile ? 30 : 100}
             minSize={30}
           >
-            <AnimatePresence>
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  filter: "blur(3px)",
-                }}
-                animate={{
-                  opacity: 1,
-                  filter: "blur(0px)",
-                }}
-                transition={{
-                  duration: 0.8,
-                  ease: "easeOut",
-                }}
-                className="h-full"
-              >
-                <Chat
-                  name={name}
-                  session={session}
-                  isShared={isShared}
-                  isOwner={isOwner}
-                  firstMessage={firstMessage}
-                  allDetailsCollected={allDetailsCollected}
-                  setAllDetailsCollected={setAllDetailsCollected}
-                  setIsMobileSheetOpen={setIsMobileSheetOpen}
-                />
-              </motion.div>
-            </AnimatePresence>
+            <Chat
+              name={name}
+              session={session}
+              isShared={isShared}
+              isOwner={isOwner}
+              firstMessage={firstMessage}
+              allDetailsCollected={allDetailsCollected}
+              setIsMobileSheetOpen={setIsMobileSheetOpen}
+              prevMessages={prevMessages.data ?? []}
+              messages={messages}
+              input={input}
+              isLoading={isLoading}
+              append={append}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              stopStream={stopStream}
+              prevMessagesLoading={prevMessages.isLoading}
+            />
           </Panel>
 
           {allDetailsCollected && !isMobile && (
@@ -110,6 +132,7 @@ export function LayoutHelper({
                       name={name}
                       isOwner={isOwner}
                       session={session}
+                      csvContent={csvContent}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -126,6 +149,7 @@ export function LayoutHelper({
           open={isMobileSheetOpen}
           setOpen={setIsMobileSheetOpen}
           session={session}
+          csvContent={csvContent}
         />
       )}
     </div>

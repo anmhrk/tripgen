@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { api } from "~/trpc/react";
 import { parse, unparse } from "papaparse";
 import type { Session } from "next-auth";
+import debounce from "lodash.debounce";
 
 import { DataGrid, textEditor } from "react-data-grid";
 import { cn } from "~/lib/utils";
@@ -17,12 +18,19 @@ interface SheetEditorProps {
   name: string;
   isOwner: boolean;
   session: Session | null;
+  csvContent: string;
 }
 
 const MIN_ROWS = 100;
 const MIN_COLS = 26;
+const DEBOUNCE_MS = 1000;
 
-export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
+export function SheetEditor({
+  name,
+  isOwner,
+  session,
+  csvContent,
+}: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
   const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
@@ -74,6 +82,37 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
     },
   });
 
+  const debouncedUpdateSheet = useCallback(
+    debounce((sheetContent: string) => {
+      if (!session) return;
+
+      setSaving(true);
+      updateTripSheet.mutate({
+        tripId: params.id,
+        sheetName: currentSheet,
+        sheetContent,
+      });
+    }, DEBOUNCE_MS) as ReturnType<typeof debounce>,
+    [params.id, currentSheet, session, updateTripSheet],
+  );
+
+  useEffect(() => {
+    // For now, only support the itinerary sheet
+    if (csvContent && currentSheet === "itinerary" && session) {
+      const result = parse<string[]>(csvContent, { skipEmptyLines: true });
+
+      if (result.data && result.data.length > 0) {
+        const formattedCsv = unparse(result.data);
+        setContent(formattedCsv);
+        debouncedUpdateSheet(formattedCsv);
+      }
+    }
+
+    return () => {
+      debouncedUpdateSheet.cancel();
+    };
+  }, [csvContent, currentSheet, session, debouncedUpdateSheet]);
+
   const parseData = useMemo(() => {
     if (!content)
       return Array(MIN_ROWS).fill(Array(MIN_COLS).fill("")) as string[][];
@@ -110,10 +149,13 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
       key: i.toString(),
       name: String.fromCharCode(65 + i),
       renderEditCell: textEditor,
-      width: 120,
-      cellClass: cn(`border-t dark:bg-zinc-950 dark:text-zinc-50`, {
-        "border-l": i !== 0,
-      }),
+      width: i === 4 ? 250 : i === 5 ? 400 : 120,
+      cellClass: cn(
+        `border-t dark:bg-zinc-950 dark:text-zinc-50 whitespace-normal`,
+        {
+          "border-l": i !== 0,
+        },
+      ),
       headerCellClass: cn(`border-t dark:bg-zinc-900 dark:text-zinc-50`, {
         "border-l": i !== 0,
       }),
@@ -186,6 +228,7 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
               <DataGrid
                 columns={columns}
                 rows={rows}
+                rowHeight={40}
                 className={resolvedTheme === "dark" ? "rdg-dark" : "rdg-light"}
                 enableVirtualization
                 style={{
