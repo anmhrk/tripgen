@@ -11,7 +11,7 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "~/components/ui/prompt-input";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Loader2, Square } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
@@ -111,7 +111,11 @@ export function Chat({
             setIsMobileSheetOpen={setIsMobileSheetOpen}
           />
           <div className="flex-1 overflow-y-auto">
-            {allMessages.length > 0 && (
+            {prevMessages.isLoading ? (
+              <div className="flex h-full w-full items-center justify-center">
+                <Loader2 className="size-8 animate-spin" />
+              </div>
+            ) : (
               <Messages
                 messages={allMessages}
                 session={session}

@@ -7,6 +7,8 @@ import { streamText, convertToCoreMessages, type Message, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { tavily } from "@tavily/core";
 import { validUserDataFields } from "~/lib/types";
+import { env } from "~/env";
+import { splitMessageContent } from "~/lib/utils";
 
 export const aiRouter = createTRPCRouter({
   aiChat: protectedProcedure
@@ -172,7 +174,7 @@ export const aiRouter = createTRPCRouter({
 
       const generalChatPrompt = `\n
         You are an expert travel planning assistant with deep knowledge of destinations worldwide. 
-        Your goal is to create highly detailed, personalized travel experiences while ensuring practical logistics.
+        Your goal is to create highly detailed, personalized itineraries for the user's trip and assist them with any questions they may have.
 
         <main_instructions>
           1. Core Responsibilities:
@@ -181,17 +183,22 @@ export const aiRouter = createTRPCRouter({
             - Factor in local events, seasonal closures, and real-time travel conditions.
             - Maintain and enhance the itinerary in CSV format.
 
-          2. Itinerary Structure:
-            - Format: CSV with "Date, Day, Time, Location, Activity, Notes" headers
-            - Each day should have:
-              - Morning, Afternoon, and Evening sections.
-              - Maximum two activities per time slot (unless user specifies otherwise).
-              - Detailed transportation options (e.g., "Take Metro Line 1 from X to Y"). Use webSearch tool for this.
-              - Estimated cost breakdown for major expenses.
+          2. CRITICAL FORMATTING REQUIREMENT:
+            - NEVER USE MARKDOWN FORMATTING IN YOUR RESPONSES.
+            - When creating or updating itineraries, ALWAYS use plain CSV format with the following headers:
+              "Date,Day,Time,Location,Activity,Notes"
+             - Example of correct CSV format:
+                Date,Day,Time,Location,Activity,Notes
+                2025-06-24,Tuesday,Morning,Paris,Arrival and check-in,Allow time for jet lag
+                2025-06-24,Tuesday,Afternoon,Paris,Explore local area,Visit nearby cafes
+                2025-06-24,Tuesday,Evening,Paris,Dinner at Les Arlots,Make reservation in advance
 
-          REFRAIN FROM USING MARKDOWN IN THE ITINERARY. ALWAYS USE CSV FORMAT.
+          3. Itinerary Structure:
+            - Each day should have Morning, Afternoon, and Evening sections.
+            - Maximum two activities per time slot (unless user specifies otherwise).
+            - DO NOT use bullet points, headers, or any Markdown formatting.
 
-          3. Personalization Guidelines Given By User:
+          4. Personalization Guidelines Given By User:
             - Travel Style: ${userData.travelStyle} - Adjust activities accordingly.
             - Budget: ${userData.budgetRange} - Respect this budget.
             - Group Size: ${userData.numTravelers} - Consider group logistics.
@@ -208,51 +215,60 @@ export const aiRouter = createTRPCRouter({
         </current_trip_context>
 
         <response_guidelines>
-          1. Always use webSearch before suggesting activities, transport, or venues. Or if the user asks for recommendations.
-            - Queries should cover top attractions, hidden gems, dining, transport, and events.
+          1. Always use webSearch before suggesting activities or venues or if the user asks for recommendations.
 
           2. Detailed Planning Approach:
             - Group activities by proximity to minimize unnecessary travel.
             - Alternate between high-energy & relaxed experiences to maintain balance.
             - Suggest dining options relevant to the itinerary.
-            - Provide transportation details (mode, time, cost, and duration).
+            - Provide transportation details.
 
-          4. Key Considerations:
-            - Always check opening hours, ticket availability, and travel restrictions.
-            - Provide alternative options in case of closures.
+          3. Key Considerations:
+            - Always factor in opening hours and travel restrictions.
             - Today's date: ${new Date().toLocaleDateString()}.
 
-          If no itinerary exists, create a fully structured plan that:
+          4. Format Enforcement:
+            - NEVER use Markdown formatting (###, -, *, etc.) in your responses.
+            - ALWAYS present itineraries in plain CSV format only.
+            - If you need to provide explanations, use plain text before or after the CSV data.
+            - When the user asks for an itinerary, respond with ONLY the CSV format.
+
+          5. If no itinerary exists yet, create a fully structured plan in CSV format that:
             - Starts with an arrival & adjustment day.
             - Balances activity levels to prevent exhaustion.
             - Includes local dining recommendations every day.
             - Factors in realistic travel times.
-            - Adapts to the user’s preferences & budget.
+            - Adapts to the user's preferences & budget.
         </response_guidelines>
-      `;
+`;
 
       const generalChatTools = {
         webSearch: tool({
-          description: "Search the web with multiple queries and search depth",
+          description:
+            "Search the web with multiple queries or a single query to validate information before suggesting activities or venues",
           parameters: z.object({
-            queries: z.array(
-              z
-                .string()
-                .describe("Array of search queries to look up on the web."),
-            ),
+            queries: z
+              .array(
+                z
+                  .string()
+                  .describe("Array of search queries to look up on the web."),
+              )
+              .max(5, "You can only search up to 5 queries at a time."),
           }),
           execute: async ({ queries }) => {
-            const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
+            const tvly = tavily({ apiKey: env.TAVILY_API_KEY });
+
+            console.log("queries", queries);
 
             const searchResults = await Promise.all(
               queries.map((query) =>
                 tvly.search(query, {
                   max_results: 5,
-                  search_depth: "advanced",
                 }),
               ),
             );
 
+            console.log("searchResults", searchResults);
             return { searchResults };
           },
         }),
@@ -283,7 +299,11 @@ export const aiRouter = createTRPCRouter({
 
       // Stream chunks back
       for await (const chunk of response.textStream) {
-        yield { content: chunk };
+        const { text, csv } = splitMessageContent(chunk);
+        yield {
+          content: text,
+          csv: csv ?? undefined,
+        };
       }
     }),
 });

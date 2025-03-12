@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
+import { env } from "~/env";
 
 import {
   DialogTitle,
@@ -42,7 +43,7 @@ export function ShareDialog() {
     }
   }, [getSharePhrase.data]);
 
-  const shareLink = `${process.env.NEXT_PUBLIC_BASE_URL}/trip/${params.id}?share=${sharePhrase}`;
+  const shareLink = `${env.NEXT_PUBLIC_BASE_URL}/trip/${params.id}?share=${sharePhrase}`;
 
   const shareTrip = api.trips.shareTrip.useMutation({
     onSuccess: async () => {
