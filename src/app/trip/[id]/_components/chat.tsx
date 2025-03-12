@@ -65,7 +65,10 @@ export function Chat({
     handleInputChange,
     handleSubmit,
     stopStream,
+    csvContent,
   } = chat;
+
+  console.log("csvContent", csvContent);
 
   useEffect(() => {
     if (

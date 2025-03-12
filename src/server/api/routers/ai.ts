@@ -8,7 +8,6 @@ import { openai } from "@ai-sdk/openai";
 import { tavily } from "@tavily/core";
 import { validUserDataFields } from "~/lib/types";
 import { env } from "~/env";
-import { splitMessageContent } from "~/lib/utils";
 
 export const aiRouter = createTRPCRouter({
   aiChat: protectedProcedure
@@ -177,70 +176,70 @@ export const aiRouter = createTRPCRouter({
         Your goal is to create highly detailed, personalized itineraries for the user's trip and assist them with any questions they may have.
 
         <main_instructions>
-          1. Core Responsibilities:
-            - Provide detailed, actionable travel plans with structured itineraries.
-            - Use the webSearch tool to validate all information before suggesting activities.
-            - Factor in local events, seasonal closures, and real-time travel conditions.
-            - Maintain and enhance the itinerary in CSV format.
+        1. Core Responsibilities:
+          - Provide detailed, actionable travel plans with structured itineraries.
+          - Use the webSearch tool to validate all information before suggesting activities.
+          - Factor in local events, seasonal closures, and real-time travel conditions.
+          - Maintain and enhance the itinerary in CSV format.
 
-          2. CRITICAL FORMATTING REQUIREMENT:
-            - NEVER USE MARKDOWN FORMATTING IN YOUR RESPONSES.
-            - When creating or updating itineraries, ALWAYS use plain CSV format with the following headers:
-              "Date,Day,Time,Location,Activity,Notes"
-             - Example of correct CSV format:
-                Date,Day,Time,Location,Activity,Notes
-                2025-06-24,Tuesday,Morning,Paris,Arrival and check-in,Allow time for jet lag
-                2025-06-24,Tuesday,Afternoon,Paris,Explore local area,Visit nearby cafes
-                2025-06-24,Tuesday,Evening,Paris,Dinner at Les Arlots,Make reservation in advance
+        2. CRITICAL FORMATTING REQUIREMENT:
+          - NEVER USE MARKDOWN FORMATTING IN YOUR RESPONSES.
+          - When creating or updating itineraries, ALWAYS wrap CSV content with these exact delimiters:
+            <<<CSV_START>>>
+            Date,Day,Time,Location,Activity,Notes
+            ...additional rows...
+            <<<CSV_END>>>
+          - Always include these delimiters even for small CSV updates or corrections.
+          - The CSV must have these exact headers: "Date,Day,Time,Location,Activity,Notes"
 
-          3. Itinerary Structure:
-            - Each day should have Morning, Afternoon, and Evening sections.
-            - Maximum two activities per time slot (unless user specifies otherwise).
-            - DO NOT use bullet points, headers, or any Markdown formatting.
+        3. Itinerary Structure:
+          - Each day should have Morning, Afternoon, and Evening sections.
+          - Maximum two activities per time slot (unless user specifies otherwise).
+          - DO NOT use bullet points, headers, or any Markdown formatting.
 
-          4. Personalization Guidelines Given By User:
-            - Travel Style: ${userData.travelStyle} - Adjust activities accordingly.
-            - Budget: ${userData.budgetRange} - Respect this budget.
-            - Group Size: ${userData.numTravelers} - Consider group logistics.
-            - Special Requirements: ${userData.specialRequirements} - Prioritize these needs.
+        4. Personalization Guidelines Given By User:
+          - Travel Style: ${userData.travelStyle} - Adjust activities accordingly.
+          - Budget: ${userData.budgetRange} - Respect this budget.
+          - Group Size: ${userData.numTravelers} - Consider group logistics.
+          - Special Requirements: ${userData.specialRequirements} - Prioritize these needs.
         </main_instructions>
 
         <current_trip_context>
-          Trip Name: ${trip.name}
-          Trip Details Provided By User: 
-          ${JSON.stringify(userData)}
+        Trip Name: ${trip.name}
+        Trip Details Provided By User: 
+        ${JSON.stringify(userData)}
 
-          Current Itinerary in parsed CSV Format:
-          ${sheetContent}
+        Current Itinerary in parsed CSV Format:
+        ${sheetContent}
         </current_trip_context>
 
         <response_guidelines>
-          1. Always use webSearch before suggesting activities or venues or if the user asks for recommendations.
+        1. Always use the webSearch tool before suggesting activities or venues or if the user asks for recommendations.
 
-          2. Detailed Planning Approach:
-            - Group activities by proximity to minimize unnecessary travel.
-            - Alternate between high-energy & relaxed experiences to maintain balance.
-            - Suggest dining options relevant to the itinerary.
-            - Provide transportation details.
+        2. Detailed Planning Approach:
+          - Group activities by proximity to minimize unnecessary travel.
+          - Alternate between high-energy & relaxed experiences to maintain balance.
+          - Suggest dining options relevant to the itinerary.
+          - Provide transportation details.
 
-          3. Key Considerations:
-            - Always factor in opening hours and travel restrictions.
-            - Today's date: ${new Date().toLocaleDateString()}.
+        3. Key Considerations:
+          - Always factor in opening hours and travel restrictions.
+          - Today's date: ${new Date().toLocaleDateString()}.
 
-          4. Format Enforcement:
-            - NEVER use Markdown formatting (###, -, *, etc.) in your responses.
-            - ALWAYS present itineraries in plain CSV format only.
-            - If you need to provide explanations, use plain text before or after the CSV data.
-            - When the user asks for an itinerary, respond with ONLY the CSV format.
+        4. Format Enforcement:
+          - NEVER use Markdown formatting (###, -, *, etc.) in your responses.
+          - ALWAYS wrap CSV content with <<<CSV_START>>> and <<<CSV_END>>> delimiters.
+          - When the user asks for an itinerary, first explain what you're providing, then include the CSV with delimiters.
+          - When the user asks for an itinerary, respond with ONLY the CSV format.
 
-          5. If no itinerary exists yet, create a fully structured plan in CSV format that:
-            - Starts with an arrival & adjustment day.
-            - Balances activity levels to prevent exhaustion.
-            - Includes local dining recommendations every day.
-            - Factors in realistic travel times.
-            - Adapts to the user's preferences & budget.
+        5. If no itinerary exists yet, create a fully structured plan in CSV format that:
+          - Starts with an arrival & adjustment day.
+          - Balances activity levels to prevent exhaustion.
+          - Includes local dining recommendations every day.
+          - Factors in realistic travel times.
+          - Adapts to the user's preferences & budget.
         </response_guidelines>
-`;
+      `;
 
       const generalChatTools = {
         webSearch: tool({
@@ -299,11 +298,7 @@ export const aiRouter = createTRPCRouter({
 
       // Stream chunks back
       for await (const chunk of response.textStream) {
-        const { text, csv } = splitMessageContent(chunk);
-        yield {
-          content: text,
-          csv: csv ?? undefined,
-        };
+        yield { content: chunk };
       }
     }),
 });
