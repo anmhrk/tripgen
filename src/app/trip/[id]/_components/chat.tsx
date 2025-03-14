@@ -28,7 +28,7 @@ interface ChatProps {
   input: string;
   append: (message: Message) => void;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleSubmit: () => void;
+  handleMessageSubmit: () => void;
   isLoading: boolean;
   stopStream: () => void;
   prevMessagesLoading: boolean;
@@ -47,7 +47,7 @@ export function Chat({
   input,
   append,
   handleInputChange,
-  handleSubmit,
+  handleMessageSubmit,
   isLoading,
   stopStream,
   prevMessagesLoading,
@@ -78,8 +78,6 @@ export function Chat({
     allDetailsCollected,
   ]);
 
-  const allMessages = [...prevMessages, ...messages];
-
   return (
     <div
       className={cn(
@@ -102,7 +100,7 @@ export function Chat({
           </div>
         ) : (
           <Messages
-            messages={allMessages}
+            messages={messages}
             session={session}
             isLoading={isLoading}
           />
@@ -116,7 +114,7 @@ export function Chat({
               target: { value },
             } as React.ChangeEvent<HTMLTextAreaElement>)
           }
-          onSubmit={handleSubmit}
+          onSubmit={handleMessageSubmit}
           isLoading={isLoading}
           className="w-full bg-zinc-100 dark:bg-zinc-900"
         >
@@ -139,7 +137,7 @@ export function Chat({
                   if (isLoading) {
                     stopStream();
                   }
-                  handleSubmit();
+                  handleMessageSubmit();
                 }}
               >
                 {isLoading ? (

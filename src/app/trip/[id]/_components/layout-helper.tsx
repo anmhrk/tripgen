@@ -11,6 +11,7 @@ import { SheetEditor } from "./sheet-editor";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { MobileSheet } from "./mobile-sheet";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { toast } from "sonner";
 
 interface LayoutHelperProps {
   session: Session | null;
@@ -53,27 +54,50 @@ export function LayoutHelper({
     },
   );
 
-  const { messages, input, handleInputChange, handleSubmit, stop, append } =
-    useChat({
-      body: {
-        tripId: params.id,
-      },
-      onResponse: () => {
-        setIsLoading(false);
-      },
-      onFinish: (response) => {
-        if (
-          response.content.includes(
-            "All right, thanks for providing all the information. Let's get started building your perfect itinerary!",
-          )
-        ) {
-          setAllDetailsCollected(true);
-        }
-      },
-      onToolCall: (toolCall) => {
-        console.log("toolCall", toolCall.toolCall.toolName);
-      },
-    });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    stop,
+    append,
+    status,
+  } = useChat({
+    initialMessages: prevMessages.data ?? [],
+    body: {
+      tripId: params.id,
+    },
+    onFinish: (response) => {
+      if (
+        response.content.includes(
+          "All right, thanks for providing all the information. Let's get started building your perfect itinerary!",
+        )
+      ) {
+        setAllDetailsCollected(true);
+      }
+    },
+    onToolCall: (toolCall) => {
+      console.log("toolCall", toolCall.toolCall.toolName);
+    },
+    onError: (error) => {
+      toast.error("Error", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleMessageSubmit = () => {
+    setIsLoading(true);
+    void handleSubmit();
+  };
+
+  useEffect(() => {
+    if (status === "streaming" || status === "submitted") {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+    }
+  }, [status]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -96,7 +120,7 @@ export function LayoutHelper({
               input={input}
               append={append}
               handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
+              handleMessageSubmit={handleMessageSubmit}
               isLoading={isLoading}
               stopStream={stop}
               prevMessagesLoading={prevMessages.isLoading}

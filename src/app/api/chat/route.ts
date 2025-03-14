@@ -9,7 +9,7 @@ import { tavily } from "@tavily/core";
 import { env } from "~/env";
 import { validUserDataFields } from "~/lib/types";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   const { messages, tripId } = (await req.json()) as {
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
 
     <main_instructions>
     First, in the context given to you, check if there is an existing itinerary for this trip.
-      - If there is no itinerary, use the generateOrUpdateItinerary tool to create a new itinerary (action=generate)
+      - If there is no itinerary, use the generateOrUpdateItinerary tool to create a new itinerary
       - A web search tool is also available to you. This will allow you to get up-to-date and accurate information
         that you can use when creating this itinerary. Use this tool first and gather information. Then create the itinerary.
       - Once you have created the itinerary and it's saved in the database, summarize what you just created in a nice and
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
       a) Simply refer to the itinerary in the context below and answer their question
       b) - Refer to the itinerary in the context below
          - Use the web search tool if needed (will allow you to get up-to-date and accurate information)
-         - Then use the generateOrUpdateItinerary tool to update the itinerary with your changes (action=update)
+         - Then use the generateOrUpdateItinerary tool to update the itinerary in the db with your changes
          - Once changes are saved in the db, say to the user that the changes are now applied to the db
       c) Use the web search tool if needed or use your training data
       d) Again, use the web search tool if needed or your training data
@@ -250,36 +250,20 @@ export async function POST(req: NextRequest) {
     // For now only working with the itinerary sheet
     generateOrUpdateItinerary: tool({
       description:
-        "A tool to generate a new itinerary or update existing ones based on user request",
+        "A tool to generate a new itinerary or update an existing one",
       parameters: z.object({
-        action: z.enum(["generate", "update"]).describe("The action to take"),
         content: z.string().describe("CSV content for the itinerary"),
       }),
-      execute: async ({ action, content }) => {
-        if (action === "generate") {
-          await db.insert(sheets).values({
-            name: "itinerary",
-            content,
-            tripId,
-          });
+      execute: async ({ content }) => {
+        await db
+          .update(sheets)
+          .set({ content })
+          .where(and(eq(sheets.tripId, tripId), eq(sheets.name, "itinerary")));
 
-          return {
-            success: true,
-            message: "Itinerary generated successfully",
-          };
-        } else {
-          await db
-            .update(sheets)
-            .set({ content })
-            .where(
-              and(eq(sheets.tripId, tripId), eq(sheets.name, "itinerary")),
-            );
-
-          return {
-            success: true,
-            message: "Itinerary updated successfully",
-          };
-        }
+        return {
+          success: true,
+          message: "Itinerary generated orupdated successfully",
+        };
       },
     }),
   };
@@ -290,14 +274,25 @@ export async function POST(req: NextRequest) {
     system: useGeneralChat ? generalChatPrompt : gatherTripDataPrompt,
     tools: useGeneralChat ? generalChatTools : gatherTripDataTools,
     onFinish: async (completion) => {
-      const processedMessage = {
+      const userMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: messages[messages.length - 1]?.content ?? "",
+      } as Message;
+
+      const assistantMessage = {
         id: completion.response.id,
         role: "assistant",
         content: completion.text,
       } as Message;
 
-      messages.push(processedMessage);
-      await db.update(trips).set({ messages }).where(eq(trips.id, tripId));
+      const newMessages = [userMessage, assistantMessage];
+      const updatedMessages = [...(trip.messages ?? []), ...newMessages];
+
+      await db
+        .update(trips)
+        .set({ messages: updatedMessages })
+        .where(eq(trips.id, tripId));
     },
     maxSteps: 5,
   });
