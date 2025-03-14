@@ -11,7 +11,6 @@ import { SheetEditor } from "./sheet-editor";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { MobileSheet } from "./mobile-sheet";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import { toast } from "sonner";
 
 interface LayoutHelperProps {
   session: Session | null;
@@ -61,6 +60,8 @@ export function LayoutHelper({
     stop,
     append,
     status,
+    data,
+    error,
   } = useChat({
     initialMessages: prevMessages.data ?? [],
     body: {
@@ -74,11 +75,6 @@ export function LayoutHelper({
       ) {
         setAllDetailsCollected(true);
       }
-    },
-    onError: (error) => {
-      toast.error("Error", {
-        description: error.message,
-      });
     },
   });
 
@@ -145,6 +141,7 @@ export function LayoutHelper({
                       name={name}
                       isOwner={isOwner}
                       session={session}
+                      data={data}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -161,6 +158,7 @@ export function LayoutHelper({
           open={isMobileSheetOpen}
           setOpen={setIsMobileSheetOpen}
           session={session}
+          data={data}
         />
       )}
     </div>

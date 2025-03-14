@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { parse, unparse } from "papaparse";
 import type { Session } from "next-auth";
 import debounce from "lodash.debounce";
+import type { JSONValue } from "ai";
 
 import { DataGrid, textEditor } from "react-data-grid";
 import { cn } from "~/lib/utils";
@@ -18,13 +19,19 @@ interface SheetEditorProps {
   name: string;
   isOwner: boolean;
   session: Session | null;
+  data: JSONValue[] | undefined;
 }
 
 const MIN_ROWS = 100;
 const MIN_COLS = 26;
 const DEBOUNCE_MS = 1000;
 
-export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
+export function SheetEditor({
+  name,
+  isOwner,
+  session,
+  data,
+}: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
   const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
@@ -183,6 +190,23 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
       debouncedUpdateSheet.cancel();
     };
   };
+
+  useEffect(() => {
+    if (data && Array.isArray(data) && data.length > 0) {
+      const csvData = data.find(
+        (item) =>
+          typeof item === "object" &&
+          item !== null &&
+          "type" in item &&
+          item.type === "csv" &&
+          "content" in item,
+      ) as { type: string; content: string };
+      if (csvData) {
+        setContent(csvData.content);
+        setLastSaved(new Date());
+      }
+    }
+  }, [data]);
 
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden border-l border-zinc-200 dark:border-zinc-700">

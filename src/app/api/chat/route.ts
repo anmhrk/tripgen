@@ -1,5 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { convertToCoreMessages, streamText, tool, type Message } from "ai";
+import {
+  convertToCoreMessages,
+  createDataStreamResponse,
+  streamText,
+  tool,
+  type Message,
+} from "ai";
 import { openai } from "@ai-sdk/openai";
 import { sheets, trips } from "~/server/db/schema";
 import { db } from "~/server/db";
@@ -225,79 +231,93 @@ export async function POST(req: NextRequest) {
     </stuff_to_remember>
   `;
 
-  const generalChatTools = {
-    webSearch: tool({
-      description:
-        "A tool for searching the web with access to multiple queries for validating and getting up to date information",
-      parameters: z.object({
-        query: z
-          .array(z.string())
-          .describe("Array of search queries to look up on the web."),
-      }),
-      execute: async ({ query }) => {
-        const tvly = tavily({ apiKey: env.TAVILY_API_KEY });
+  return createDataStreamResponse({
+    execute: async (dataStream) => {
+      const generalChatTools = {
+        webSearch: tool({
+          description:
+            "A tool for searching the web with access to multiple queries for validating and getting up to date information",
+          parameters: z.object({
+            query: z
+              .array(z.string())
+              .max(3)
+              .describe(
+                "Array of search queries to look up on the web. Max 3 at a time.",
+              ),
+          }),
+          execute: async ({ query }) => {
+            const tvly = tavily({ apiKey: env.TAVILY_API_KEY });
 
-        const searchResults = await Promise.all(
-          query.map((query) =>
-            tvly.search(query, {
-              max_results: 5,
-            }),
-          ),
-        );
+            const searchResults = await Promise.all(
+              query.map((query) =>
+                tvly.search(query, {
+                  max_results: 3,
+                }),
+              ),
+            );
 
-        return { searchResults };
-      },
-    }),
-    // For now only working with the itinerary sheet
-    generateOrUpdateItinerary: tool({
-      description:
-        "A tool to generate a new itinerary or update an existing one",
-      parameters: z.object({
-        content: z.string().describe("CSV content for the itinerary"),
-      }),
-      execute: async ({ content }) => {
-        await db
-          .update(sheets)
-          .set({ content, last_updated: new Date() })
-          .where(and(eq(sheets.tripId, tripId), eq(sheets.name, "itinerary")));
+            return { searchResults };
+          },
+        }),
+        // For now only working with the itinerary sheet
+        generateOrUpdateItinerary: tool({
+          description:
+            "A tool to generate a new itinerary or update an existing one",
+          parameters: z.object({
+            content: z.string().describe("CSV content for the itinerary"),
+          }),
+          execute: async ({ content }) => {
+            await db
+              .update(sheets)
+              .set({ content, last_updated: new Date() })
+              .where(
+                and(eq(sheets.tripId, tripId), eq(sheets.name, "itinerary")),
+              );
 
-        return {
-          success: true,
-          message: "Itinerary generated orupdated successfully",
-        };
-      },
-    }),
-  };
+            dataStream.writeData({
+              type: "csv",
+              content,
+            });
 
-  const response = streamText({
-    model: openai("gpt-4o"),
-    messages: convertToCoreMessages(messages),
-    system: useGeneralChat ? generalChatPrompt : gatherTripDataPrompt,
-    tools: useGeneralChat ? generalChatTools : gatherTripDataTools,
-    onFinish: async (completion) => {
-      const userMessage = {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: messages[messages.length - 1]?.content ?? "",
-      } as Message;
+            return {
+              success: true,
+              message: "Itinerary generated orupdated successfully",
+            };
+          },
+        }),
+      };
 
-      const assistantMessage = {
-        id: completion.response.id,
-        role: "assistant",
-        content: completion.text,
-      } as Message;
+      const result = streamText({
+        model: openai("gpt-4o"),
+        messages: convertToCoreMessages(messages),
+        system: useGeneralChat ? generalChatPrompt : gatherTripDataPrompt,
+        tools: useGeneralChat ? generalChatTools : gatherTripDataTools,
+        onFinish: async (completion) => {
+          const userMessage = {
+            id: crypto.randomUUID(),
+            role: "user",
+            content: messages[messages.length - 1]?.content ?? "",
+          } as Message;
 
-      const newMessages = [userMessage, assistantMessage];
-      const updatedMessages = [...(trip.messages ?? []), ...newMessages];
+          const assistantMessage = {
+            id: completion.response.id,
+            role: "assistant",
+            content: completion.text,
+          } as Message;
 
-      await db
-        .update(trips)
-        .set({ messages: updatedMessages })
-        .where(eq(trips.id, tripId));
+          const newMessages = [userMessage, assistantMessage];
+          const updatedMessages = [...(trip.messages ?? []), ...newMessages];
+
+          await db
+            .update(trips)
+            .set({ messages: updatedMessages })
+            .where(eq(trips.id, tripId));
+        },
+        maxSteps: 5,
+        toolCallStreaming: true,
+      });
+
+      result.mergeIntoDataStream(dataStream);
     },
-    maxSteps: 5,
-    toolCallStreaming: true,
   });
-
-  return response.toDataStreamResponse();
 }

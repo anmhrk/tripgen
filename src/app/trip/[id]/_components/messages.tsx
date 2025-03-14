@@ -24,6 +24,7 @@ export function Messages({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const renderedToolIds = new Set<string>();
 
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     if (messagesEndRef.current) {
@@ -64,13 +65,11 @@ export function Messages({
       } else if (part.type === "tool-invocation") {
         const toolInvocation = part.toolInvocation;
         const callId = toolInvocation.toolCallId || `tool-${partIdx}`;
-        const renderedToolIds = new Set();
+        let message = "";
 
-        if (renderedToolIds.has(callId)) {
+        if (renderedToolIds.has(toolInvocation.toolName)) {
           return null;
         }
-
-        let message = "";
 
         switch (toolInvocation.toolName) {
           case "checkMissingFields":
@@ -94,12 +93,13 @@ export function Messages({
             break;
         }
 
+        renderedToolIds.add(toolInvocation.toolName);
+
         const visibleStates = ["call", "partial-call", "running"];
         if (
           !toolInvocation.state ||
           visibleStates.includes(toolInvocation.state)
         ) {
-          renderedToolIds.add(callId);
           return (
             <div
               key={callId}
