@@ -35,7 +35,6 @@ export function LayoutHelper({
   );
   const isMobile = useIsMobile();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const params = useParams<{ id: string }>();
 
@@ -76,28 +75,12 @@ export function LayoutHelper({
         setAllDetailsCollected(true);
       }
     },
-    onToolCall: (toolCall) => {
-      console.log("toolCall", toolCall.toolCall.toolName);
-    },
     onError: (error) => {
       toast.error("Error", {
         description: error.message,
       });
     },
   });
-
-  const handleMessageSubmit = () => {
-    setIsLoading(true);
-    void handleSubmit();
-  };
-
-  useEffect(() => {
-    if (status === "streaming" || status === "submitted") {
-      setIsLoading(true);
-    } else {
-      setIsLoading(false);
-    }
-  }, [status]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -120,8 +103,8 @@ export function LayoutHelper({
               input={input}
               append={append}
               handleInputChange={handleInputChange}
-              handleMessageSubmit={handleMessageSubmit}
-              isLoading={isLoading}
+              handleSubmit={handleSubmit}
+              isLoading={status === "submitted" || status === "streaming"}
               stopStream={stop}
               prevMessagesLoading={prevMessages.isLoading}
             />

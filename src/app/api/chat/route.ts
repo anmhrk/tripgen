@@ -221,6 +221,7 @@ export async function POST(req: NextRequest) {
     - Be concise but warm and friendly
     - Show genuine enthusiasm so that the user feels good about chatting with you
     - If the user's query seems off, say that you didn't quite get that
+    - Never use markdown in your response. Just plain text.
     </stuff_to_remember>
   `;
 
@@ -257,7 +258,7 @@ export async function POST(req: NextRequest) {
       execute: async ({ content }) => {
         await db
           .update(sheets)
-          .set({ content })
+          .set({ content, last_updated: new Date() })
           .where(and(eq(sheets.tripId, tripId), eq(sheets.name, "itinerary")));
 
         return {
@@ -295,6 +296,7 @@ export async function POST(req: NextRequest) {
         .where(eq(trips.id, tripId));
     },
     maxSteps: 5,
+    toolCallStreaming: true,
   });
 
   return response.toDataStreamResponse();

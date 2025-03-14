@@ -28,7 +28,7 @@ interface ChatProps {
   input: string;
   append: (message: Message) => void;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleMessageSubmit: () => void;
+  handleSubmit: () => void;
   isLoading: boolean;
   stopStream: () => void;
   prevMessagesLoading: boolean;
@@ -47,7 +47,7 @@ export function Chat({
   input,
   append,
   handleInputChange,
-  handleMessageSubmit,
+  handleSubmit,
   isLoading,
   stopStream,
   prevMessagesLoading,
@@ -114,8 +114,8 @@ export function Chat({
               target: { value },
             } as React.ChangeEvent<HTMLTextAreaElement>)
           }
-          onSubmit={handleMessageSubmit}
-          isLoading={isLoading}
+          onSubmit={handleSubmit}
+          isLoading={status === "submitted" || status === "streaming"}
           className="w-full bg-zinc-100 dark:bg-zinc-900"
         >
           <PromptInputTextarea
@@ -137,7 +137,7 @@ export function Chat({
                   if (isLoading) {
                     stopStream();
                   }
-                  handleMessageSubmit();
+                  handleSubmit();
                 }}
               >
                 {isLoading ? (

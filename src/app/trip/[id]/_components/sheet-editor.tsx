@@ -90,13 +90,6 @@ export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
     [params.id, currentSheet, session, updateTripSheet],
   );
 
-  // useEffect(() => {
-  //   // For now, only support the itinerary sheet
-  //   if (showUpdatedSheet) {
-  //     tripSheets.refetch();
-  //   }
-  // }, [showUpdatedSheet, tripSheets]);
-
   const parseData = useMemo(() => {
     if (!content)
       return Array(MIN_ROWS).fill(Array(MIN_COLS).fill("")) as string[][];
