@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { Session } from "next-auth";
+import { type Message } from "ai";
 
 import {
   PromptInput,
@@ -13,7 +14,6 @@ import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
 import { cn } from "~/lib/utils";
-import { type Message } from "ai";
 
 interface ChatProps {
   name: string;
@@ -26,10 +26,10 @@ interface ChatProps {
   prevMessages: Message[];
   messages: Message[];
   input: string;
-  isLoading: boolean;
   append: (message: Message) => void;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: () => void;
+  isLoading: boolean;
   stopStream: () => void;
   prevMessagesLoading: boolean;
 }
@@ -45,10 +45,10 @@ export function Chat({
   prevMessages,
   messages,
   input,
-  isLoading,
   append,
   handleInputChange,
   handleSubmit,
+  isLoading,
   stopStream,
   prevMessagesLoading,
 }: ChatProps) {

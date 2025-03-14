@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { useCustomChat } from "~/hooks/useCustomChat";
+import { useChat } from "@ai-sdk/react";
 
 import { Chat } from "./chat";
 import { SheetEditor } from "./sheet-editor";
@@ -34,8 +34,10 @@ export function LayoutHelper({
   );
   const isMobile = useIsMobile();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const params = useParams<{ id: string }>();
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -51,23 +53,27 @@ export function LayoutHelper({
     },
   );
 
-  const chat = useCustomChat({
-    session,
-    tripId: params.id,
-    initialMessages: prevMessages.data ?? [],
-    setAllDetailsCollected,
-  });
-
-  const {
-    messages,
-    input,
-    isLoading,
-    append,
-    handleInputChange,
-    handleSubmit,
-    stopStream,
-    csvContent,
-  } = chat;
+  const { messages, input, handleInputChange, handleSubmit, stop, append } =
+    useChat({
+      body: {
+        tripId: params.id,
+      },
+      onResponse: () => {
+        setIsLoading(false);
+      },
+      onFinish: (response) => {
+        if (
+          response.content.includes(
+            "All right, thanks for providing all the information. Let's get started building your perfect itinerary!",
+          )
+        ) {
+          setAllDetailsCollected(true);
+        }
+      },
+      onToolCall: (toolCall) => {
+        console.log("toolCall", toolCall.toolCall.toolName);
+      },
+    });
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -88,11 +94,11 @@ export function LayoutHelper({
               prevMessages={prevMessages.data ?? []}
               messages={messages}
               input={input}
-              isLoading={isLoading}
               append={append}
               handleInputChange={handleInputChange}
               handleSubmit={handleSubmit}
-              stopStream={stopStream}
+              isLoading={isLoading}
+              stopStream={stop}
               prevMessagesLoading={prevMessages.isLoading}
             />
           </Panel>
@@ -132,7 +138,6 @@ export function LayoutHelper({
                       name={name}
                       isOwner={isOwner}
                       session={session}
-                      csvContent={csvContent}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -149,7 +154,6 @@ export function LayoutHelper({
           open={isMobileSheetOpen}
           setOpen={setIsMobileSheetOpen}
           session={session}
-          csvContent={csvContent}
         />
       )}
     </div>

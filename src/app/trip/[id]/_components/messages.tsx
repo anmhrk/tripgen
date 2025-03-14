@@ -3,7 +3,7 @@ import type { Session } from "next-auth";
 import type { Message } from "ai";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { ArrowDown, Bot, Loader2 } from "lucide-react";
+import { ArrowDown, Bot } from "lucide-react";
 import { cn } from "~/lib/utils";
 import {
   Tooltip,
@@ -65,20 +65,10 @@ export function Messages({
               msg.role === "user" ? "justify-end" : "justify-start",
             )}
           >
-            {isLoading &&
-            msg.role === "assistant" &&
-            idx === messages.length - 1 ? (
+            {msg.role === "assistant" && (
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <Loader2 className="size-5 animate-spin text-primary" />
+                <Bot className="h-5 w-5 text-primary" />
               </div>
-            ) : (
-              <>
-                {msg.role === "assistant" && (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                    <Bot className="h-5 w-5 text-primary" />
-                  </div>
-                )}
-              </>
             )}
 
             <div
@@ -89,7 +79,13 @@ export function Messages({
                   : "px-3 text-foreground",
               )}
             >
-              {msg.content}
+              {isLoading &&
+              msg.role === "assistant" &&
+              idx === messages.length - 1 ? (
+                <Loading />
+              ) : (
+                msg.content
+              )}
             </div>
 
             {msg.role === "user" && session?.user?.image && (
@@ -111,18 +107,62 @@ export function Messages({
         ))}
 
         <div ref={messagesEndRef} />
+        {showScrollButton && (
+          <Button
+            onClick={() => scrollToBottom()}
+            className="fixed bottom-44 left-1/2 -translate-x-1/2 rounded-full bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-800"
+            variant="secondary"
+          >
+            <ArrowDown className="size-5" />
+            Scroll to bottom
+          </Button>
+        )}
       </div>
-
-      {showScrollButton && (
-        <Button
-          onClick={() => scrollToBottom()}
-          className="fixed bottom-44 left-1/2 -translate-x-1/2 rounded-full bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-800"
-          variant="secondary"
-        >
-          <ArrowDown className="size-5" />
-          Scroll to bottom
-        </Button>
-      )}
     </div>
+  );
+}
+
+function Loading() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className="text-zinc-500 dark:text-zinc-400"
+    >
+      <circle cx="4" cy="12" r="3" className="fill-current">
+        <animate
+          id="spinner_qFRN"
+          begin="0;spinner_OcgL.end+0.25s"
+          attributeName="cy"
+          calcMode="spline"
+          dur="0.6s"
+          values="12;6;12"
+          keySplines=".33,.66,.66,1;.33,0,.66,.33"
+        />
+      </circle>
+      <circle cx="12" cy="12" r="3" className="fill-current">
+        <animate
+          begin="spinner_qFRN.begin+0.1s"
+          attributeName="cy"
+          calcMode="spline"
+          dur="0.6s"
+          values="12;6;12"
+          keySplines=".33,.66,.66,1;.33,0,.66,.33"
+        />
+      </circle>
+      <circle cx="20" cy="12" r="3" className="fill-current">
+        <animate
+          id="spinner_OcgL"
+          begin="spinner_qFRN.begin+0.2s"
+          attributeName="cy"
+          calcMode="spline"
+          dur="0.6s"
+          values="12;6;12"
+          keySplines=".33,.66,.66,1;.33,0,.66,.33"
+        />
+      </circle>
+    </svg>
   );
 }

@@ -18,19 +18,13 @@ interface SheetEditorProps {
   name: string;
   isOwner: boolean;
   session: Session | null;
-  csvContent: string;
 }
 
 const MIN_ROWS = 100;
 const MIN_COLS = 26;
 const DEBOUNCE_MS = 1000;
 
-export function SheetEditor({
-  name,
-  isOwner,
-  session,
-  csvContent,
-}: SheetEditorProps) {
+export function SheetEditor({ name, isOwner, session }: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
   const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
@@ -96,22 +90,12 @@ export function SheetEditor({
     [params.id, currentSheet, session, updateTripSheet],
   );
 
-  useEffect(() => {
-    // For now, only support the itinerary sheet
-    if (csvContent && currentSheet === "itinerary" && session) {
-      const result = parse<string[]>(csvContent, { skipEmptyLines: true });
-
-      if (result.data && result.data.length > 0) {
-        const formattedCsv = unparse(result.data);
-        setContent(formattedCsv);
-        debouncedUpdateSheet(formattedCsv);
-      }
-    }
-
-    return () => {
-      debouncedUpdateSheet.cancel();
-    };
-  }, [csvContent, currentSheet, session, debouncedUpdateSheet]);
+  // useEffect(() => {
+  //   // For now, only support the itinerary sheet
+  //   if (showUpdatedSheet) {
+  //     tripSheets.refetch();
+  //   }
+  // }, [showUpdatedSheet, tripSheets]);
 
   const parseData = useMemo(() => {
     if (!content)
@@ -149,7 +133,8 @@ export function SheetEditor({
       key: i.toString(),
       name: String.fromCharCode(65 + i),
       renderEditCell: textEditor,
-      width: i === 4 ? 250 : i === 5 ? 400 : 120,
+      // width: i === 4 ? 250 : i === 5 ? 400 : 120,
+      width: 120,
       cellClass: cn(
         `border-t dark:bg-zinc-950 dark:text-zinc-50 whitespace-normal`,
         {
@@ -199,11 +184,11 @@ export function SheetEditor({
     const newCsvContent = unparse(updatedData);
 
     setSaving(true);
-    updateTripSheet.mutate({
-      tripId: params.id,
-      sheetName: currentSheet,
-      sheetContent: newCsvContent,
-    });
+    debouncedUpdateSheet(newCsvContent);
+
+    return () => {
+      debouncedUpdateSheet.cancel();
+    };
   };
 
   return (
