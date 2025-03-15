@@ -41,6 +41,3 @@ export type UserSubmittedData = {
   activities: string | null;
   specialRequirements: string | null;
 };
-
-export const SHEET_NAMES = ["itinerary", "flights", "accommodation"] as const;
-export type Sheet = (typeof SHEET_NAMES)[number];

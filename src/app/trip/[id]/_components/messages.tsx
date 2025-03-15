@@ -73,39 +73,40 @@ export function Messages({
 
         switch (toolInvocation.toolName) {
           case "checkMissingFields":
-            message = "Checking missing trip information...";
+            message = "Checking missing trip information";
             break;
 
           case "updateTripData":
-            message = "Updating trip information...";
+            message = "Updating trip information";
             break;
 
           case "allFieldsComplete":
-            message = "Finalizing trip information...";
+            message = "Finalizing trip information";
             break;
 
           case "webSearch":
-            message = "Performing web search...";
+            message = "Performing web search";
             break;
 
           case "generateOrUpdateItinerary":
-            message = "Working on the itinerary...";
+            message = "Working on the itinerary";
             break;
         }
-
-        renderedToolIds.add(toolInvocation.toolName);
 
         const visibleStates = ["call", "partial-call", "running"];
         if (
           !toolInvocation.state ||
           visibleStates.includes(toolInvocation.state)
         ) {
+          renderedToolIds.add(toolInvocation.toolName);
+
           return (
             <div
               key={callId}
-              className="my-1 border-l-2 border-primary/20 pl-2 text-sm italic text-muted-foreground"
+              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary/10 text-sm text-muted-foreground"
             >
               {message}
+              <Loader2 className="size-4 animate-spin" />
             </div>
           );
         }

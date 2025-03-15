@@ -11,6 +11,7 @@ import { SheetEditor } from "./sheet-editor";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { MobileSheet } from "./mobile-sheet";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { toast } from "sonner";
 
 interface LayoutHelperProps {
   session: Session | null;
@@ -77,6 +78,12 @@ export function LayoutHelper({
       }
     },
   });
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message);
+    }
+  }, [error]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">

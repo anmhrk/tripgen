@@ -12,15 +12,7 @@ import {
 } from "~/components/ui/tooltip";
 import { toast } from "sonner";
 import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectItem,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { cn } from "~/lib/utils";
-import { type Sheet, SHEET_NAMES } from "~/lib/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,9 +25,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 interface SheetNavProps {
   name: string;
   isOwner: boolean;
-  currentSheet: Sheet;
-  setCurrentSheet: (sheet: Sheet) => void;
-  lastSaved: Date | undefined;
+  lastSaved: Date | null | undefined;
   saving: boolean;
   isDataLoading: boolean;
 }
@@ -43,8 +33,6 @@ interface SheetNavProps {
 export function SheetNav({
   name,
   isOwner,
-  currentSheet,
-  setCurrentSheet,
   lastSaved,
   saving,
   isDataLoading,
@@ -178,31 +166,6 @@ export function SheetNav({
       </div>
 
       <div className="flex flex-row gap-2">
-        <Select
-          value={currentSheet}
-          onValueChange={(value) => {
-            setCurrentSheet(value as Sheet);
-          }}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SelectTrigger className="min-w-32 rounded-full bg-zinc-100 font-medium dark:bg-zinc-700">
-                <SelectValue placeholder="Itinerary" />
-              </SelectTrigger>
-            </TooltipTrigger>
-            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-              Switch Sheets
-            </TooltipContent>
-          </Tooltip>
-          <SelectContent className="rounded-lg">
-            {SHEET_NAMES.map((sheet, idx) => (
-              <SelectItem key={idx} value={sheet}>
-                {sheet.charAt(0).toUpperCase() + sheet.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {navItems.map((item, idx) => (
           <Tooltip key={idx}>
             <TooltipTrigger asChild>

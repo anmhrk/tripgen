@@ -11,7 +11,7 @@ const features = [
     icon: <Plane className="h-6 w-6 text-primary" />,
     title: "Smart Travel Planning",
     description:
-      "AI assistant that understands your needs for flights, accommodations, and attractions",
+      "AI assistant that truly understands your needs and requirements",
   },
   {
     icon: <Map className="h-6 w-6 text-primary" />,

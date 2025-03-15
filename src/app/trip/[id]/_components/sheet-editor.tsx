@@ -11,7 +11,6 @@ import type { JSONValue } from "ai";
 import { DataGrid, textEditor } from "react-data-grid";
 import { cn } from "~/lib/utils";
 import { SheetNav } from "./sheet-nav";
-import type { Sheet } from "~/lib/types";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -34,46 +33,32 @@ export function SheetEditor({
 }: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
-  const [currentSheet, setCurrentSheet] = useState<Sheet>("itinerary");
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
-  const trpcUtils = api.useUtils();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const tripSheets = api.trips.getSheetData.useQuery({
+  const csvData = api.trips.getItineraryCsv.useQuery({
     tripId: params.id,
   });
-  const sheetData = tripSheets.data?.find(
-    (sheet) => sheet.name === currentSheet,
-  );
 
-  const [lastSaved, setLastSaved] = useState(sheetData?.lastUpdated);
-  const [content, setContent] = useState(sheetData?.content);
+  const [lastSaved, setLastSaved] = useState(csvData.data?.lastUpdated);
+  const [content, setContent] = useState(csvData.data?.content);
 
   useEffect(() => {
-    if (sheetData) {
-      setContent(sheetData.content);
-      setLastSaved(sheetData.lastUpdated);
+    if (csvData.data) {
+      setContent(csvData.data.content);
+      setLastSaved(csvData.data.lastUpdated);
     }
-  }, [sheetData]);
+  }, [csvData.data]);
 
-  const updateTripSheet = api.trips.updateTripSheet.useMutation({
+  const updateItineraryCsv = api.trips.updateItineraryCsv.useMutation({
     onSuccess: (_, variables) => {
-      const { sheetName, sheetContent } = variables;
+      const { newCsv } = variables;
       setLastSaved(new Date());
-      setContent(sheetContent);
-
-      trpcUtils.trips.getSheetData.setData({ tripId: params.id }, (old) => {
-        if (!old) return [];
-        return old.map((sheet) =>
-          sheet.name === sheetName
-            ? { ...sheet, content: sheetContent, lastUpdated: new Date() }
-            : sheet,
-        );
-      });
+      setContent(newCsv);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -88,13 +73,12 @@ export function SheetEditor({
       if (!session) return;
 
       setSaving(true);
-      updateTripSheet.mutate({
+      updateItineraryCsv.mutate({
         tripId: params.id,
-        sheetName: currentSheet,
-        sheetContent,
+        newCsv: sheetContent,
       });
     }, DEBOUNCE_MS) as ReturnType<typeof debounce>,
-    [params.id, currentSheet, session, updateTripSheet],
+    [params.id, session, updateItineraryCsv],
   );
 
   const parseData = useMemo(() => {
@@ -215,14 +199,12 @@ export function SheetEditor({
           <SheetNav
             name={name}
             isOwner={isOwner}
-            currentSheet={currentSheet}
-            setCurrentSheet={setCurrentSheet}
             lastSaved={lastSaved}
             saving={saving}
-            isDataLoading={tripSheets.isLoading}
+            isDataLoading={csvData.isLoading}
           />
           <div className="flex-1 overflow-auto">
-            {tripSheets.isLoading ? (
+            {csvData.isLoading ? (
               <div className="flex h-full w-full items-center justify-center">
                 <Loader2 className="size-8 animate-spin" />
               </div>
