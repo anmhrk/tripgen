@@ -13,6 +13,7 @@ import { cn } from "~/lib/utils";
 import { SheetNav } from "./sheet-nav";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { VersionBanner } from "./version-banner";
 
 interface SheetEditorProps {
   name: string;
@@ -240,8 +241,6 @@ export function SheetEditor({
     }
   }, [data, setSendingFirstMessage]);
 
-  console.log(version, currentVersion);
-
   const handleColumnResize = useCallback(
     (column: { key: string }, width: number) => {
       const newColumnWidths = {
@@ -273,7 +272,7 @@ export function SheetEditor({
             handlePrevVersion={handlePrevVersion}
             handleNextVersion={handleNextVersion}
           />
-          <div className="flex-1 overflow-auto">
+          <div className="relative flex-1 overflow-auto">
             {itineraries.isLoading ? (
               <div className="flex h-full w-full items-center justify-center">
                 <Loader2 className="size-8 animate-spin" />
@@ -295,11 +294,23 @@ export function SheetEditor({
                 }}
                 onRowsChange={handleRowsChange}
                 onCellClick={(args) => {
+                  if (version !== currentVersion) {
+                    return;
+                  }
+
                   if (args.column.key !== "rowNumber") {
                     args.selectCell(true);
                   }
                 }}
                 onColumnResize={handleColumnResize}
+              />
+            )}
+            {version !== currentVersion && (
+              <VersionBanner
+                version={currentVersion}
+                goToLatestVersion={() => setCurrentVersion(version)}
+                setVersion={setVersion}
+                setCurrentVersion={setCurrentVersion}
               />
             )}
           </div>
