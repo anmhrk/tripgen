@@ -276,6 +276,8 @@ export function LayoutHelper({
           data={data}
           creatingFirstItinerary={creatingFirstItinerary}
           setCreatingFirstItinerary={setCreatingFirstItinerary}
+          itineraryExists={itineraryExists}
+          setItineraryExists={setItineraryExists}
         />
       )}
     </div>

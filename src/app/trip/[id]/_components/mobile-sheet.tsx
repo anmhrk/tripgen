@@ -12,6 +12,8 @@ interface MobileSheetProps {
   data: JSONValue[] | undefined;
   creatingFirstItinerary: boolean;
   setCreatingFirstItinerary: (creatingFirstItinerary: boolean) => void;
+  itineraryExists: boolean;
+  setItineraryExists: (itineraryExists: boolean) => void;
 }
 
 export function MobileSheet({
@@ -23,6 +25,8 @@ export function MobileSheet({
   data,
   creatingFirstItinerary,
   setCreatingFirstItinerary,
+  itineraryExists,
+  setItineraryExists,
 }: MobileSheetProps) {
   return (
     <Drawer.Root open={open} onOpenChange={setOpen}>
@@ -38,6 +42,8 @@ export function MobileSheet({
             data={data}
             creatingFirstItinerary={creatingFirstItinerary}
             setCreatingFirstItinerary={setCreatingFirstItinerary}
+            itineraryExists={itineraryExists}
+            setItineraryExists={setItineraryExists}
           />
         </Drawer.Content>
       </Drawer.Portal>
