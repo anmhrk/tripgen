@@ -19,6 +19,8 @@ interface SheetEditorProps {
   isOwner: boolean;
   session: Session | null;
   data: JSONValue[] | undefined;
+  sendingFirstMessage: boolean;
+  setSendingFirstMessage: (sendingFirstMessage: boolean) => void;
 }
 
 const MIN_ROWS = 100;
@@ -30,29 +32,74 @@ export function SheetEditor({
   isOwner,
   session,
   data,
+  sendingFirstMessage,
+  setSendingFirstMessage,
 }: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
   const [mounted, setMounted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const localStorageKey = `tripSheet_columnWidths_${params.id}`;
 
   useEffect(() => {
     setMounted(true);
-  }, []);
 
-  const csvData = api.trips.getItineraryCsv.useQuery({
+    if (typeof window !== "undefined") {
+      const savedWidths = localStorage.getItem(localStorageKey);
+      if (savedWidths) {
+        try {
+          setColumnWidths(JSON.parse(savedWidths));
+        } catch (e) {
+          console.error("Failed to parse saved column widths", e);
+        }
+      }
+    }
+  }, [localStorageKey]);
+
+  const itineraries = api.trips.getItineraries.useQuery({
     tripId: params.id,
   });
 
-  const [lastSaved, setLastSaved] = useState(csvData.data?.lastUpdated);
-  const [content, setContent] = useState(csvData.data?.content);
+  const latestItinerary = itineraries.data?.find(
+    (itinerary) => itinerary.version === itineraries.data?.length,
+  );
+
+  const [lastSaved, setLastSaved] = useState(latestItinerary?.lastUpdated);
+  const [content, setContent] = useState(latestItinerary?.csv);
+  const [version, setVersion] = useState(latestItinerary?.version);
+  const [currentVersion, setCurrentVersion] = useState(
+    latestItinerary?.version,
+  );
 
   useEffect(() => {
-    if (csvData.data) {
-      setContent(csvData.data.content);
-      setLastSaved(csvData.data.lastUpdated);
+    if (latestItinerary) {
+      setContent(latestItinerary?.csv);
+      setLastSaved(latestItinerary?.lastUpdated);
+      setVersion(latestItinerary?.version);
+      setCurrentVersion(latestItinerary?.version);
     }
-  }, [csvData.data]);
+  }, [latestItinerary]);
+
+  const handlePrevVersion = () => {
+    const prevVersion = itineraries.data?.find(
+      (itinerary) => itinerary.version === currentVersion! - 1,
+    );
+    if (prevVersion) {
+      setContent(prevVersion.csv);
+      setCurrentVersion(prevVersion.version);
+    }
+  };
+
+  const handleNextVersion = () => {
+    const nextVersion = itineraries.data?.find(
+      (itinerary) => itinerary.version === currentVersion! + 1,
+    );
+    if (nextVersion) {
+      setContent(nextVersion.csv);
+      setCurrentVersion(nextVersion.version);
+    }
+  };
 
   const updateItineraryCsv = api.trips.updateItineraryCsv.useMutation({
     onSuccess: (_, variables) => {
@@ -107,7 +154,7 @@ export function SheetEditor({
       key: "rowNumber",
       name: "",
       frozen: true,
-      width: 50,
+      width: columnWidths["rowNumber"] || 50,
       renderCell: ({ rowIdx }: { rowIdx: number }) => rowIdx + 1,
       cellClass: "border-t border-r dark:bg-zinc-950 dark:text-zinc-50",
       headerCellClass: "border-t border-r dark:bg-zinc-900 dark:text-zinc-50",
@@ -117,8 +164,7 @@ export function SheetEditor({
       key: i.toString(),
       name: String.fromCharCode(65 + i),
       renderEditCell: textEditor,
-      // width: i === 4 ? 250 : i === 5 ? 400 : 120,
-      width: 120,
+      width: columnWidths[i.toString()] || 120,
       cellClass: cn(
         `border-t dark:bg-zinc-950 dark:text-zinc-50 whitespace-normal`,
         {
@@ -131,7 +177,7 @@ export function SheetEditor({
     }));
 
     return [rowNumberColumn, ...dataColumns];
-  }, []);
+  }, [columnWidths]);
 
   const initialRows = useMemo(() => {
     return parseData.map((row, rowIndex) => {
@@ -178,19 +224,38 @@ export function SheetEditor({
   useEffect(() => {
     if (data && Array.isArray(data) && data.length > 0) {
       const csvData = data.find(
-        (item) =>
-          typeof item === "object" &&
+        (item): item is { type: string; content: string; version: number } =>
           item !== null &&
+          typeof item === "object" &&
           "type" in item &&
-          item.type === "csv" &&
-          "content" in item,
-      ) as { type: string; content: string };
+          item.type === "csv",
+      );
       if (csvData) {
         setContent(csvData.content);
         setLastSaved(new Date());
+        setVersion(csvData.version);
+        setCurrentVersion(csvData.version);
+        setSendingFirstMessage(false);
       }
     }
-  }, [data]);
+  }, [data, setSendingFirstMessage]);
+
+  console.log(version, currentVersion);
+
+  const handleColumnResize = useCallback(
+    (column: { key: string }, width: number) => {
+      const newColumnWidths = {
+        ...columnWidths,
+        [column.key]: width,
+      };
+      setColumnWidths(newColumnWidths);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem(localStorageKey, JSON.stringify(newColumnWidths));
+      }
+    },
+    [columnWidths, localStorageKey],
+  );
 
   return (
     <div className="flex h-full w-full flex-1 flex-col overflow-hidden border-l border-zinc-200 dark:border-zinc-700">
@@ -201,10 +266,15 @@ export function SheetEditor({
             isOwner={isOwner}
             lastSaved={lastSaved}
             saving={saving}
-            isDataLoading={csvData.isLoading}
+            isDataLoading={itineraries.isLoading || sendingFirstMessage}
+            csvContent={content ?? ""}
+            version={version ?? 1}
+            currentVersion={currentVersion ?? 1}
+            handlePrevVersion={handlePrevVersion}
+            handleNextVersion={handleNextVersion}
           />
           <div className="flex-1 overflow-auto">
-            {csvData.isLoading ? (
+            {itineraries.isLoading ? (
               <div className="flex h-full w-full items-center justify-center">
                 <Loader2 className="size-8 animate-spin" />
               </div>
@@ -229,6 +299,7 @@ export function SheetEditor({
                     args.selectCell(true);
                   }
                 }}
+                onColumnResize={handleColumnResize}
               />
             )}
           </div>

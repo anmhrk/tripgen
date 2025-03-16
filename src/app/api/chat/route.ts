@@ -8,7 +8,7 @@ import {
   smoothStream,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { trips } from "~/server/db/schema";
+import { itineraries, trips } from "~/server/db/schema";
 import { db } from "~/server/db";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -40,6 +40,16 @@ export async function POST(req: NextRequest) {
   }
 
   const useGeneralChat = trip.all_details_collected;
+
+  const itineraryResults = await db.query.itineraries.findMany({
+    where: eq(itineraries.tripId, tripId),
+  });
+
+  const latestItineraryVersion = itineraryResults.length;
+
+  const latestItineraryCsv = itineraryResults.find(
+    (itinerary) => itinerary.version === latestItineraryVersion,
+  )?.csv;
 
   const gatherTripDataTools = {
     checkMissingFields: tool({
@@ -156,18 +166,17 @@ export async function POST(req: NextRequest) {
             content: z.string().describe("CSV content for the itinerary sheet"),
           }),
           execute: async ({ content }) => {
-            await db
-              .update(trips)
-              .set({
-                itinerary_csv: content,
-                itinerary_last_updated: new Date(),
-                itinerary_version: trip.itinerary_version + 1,
-              })
-              .where(eq(trips.id, tripId));
+            await db.insert(itineraries).values({
+              csv: content,
+              last_updated: new Date(),
+              tripId: tripId,
+              version: latestItineraryVersion + 1,
+            });
 
             dataStream.writeData({
               type: "csv",
               content,
+              version: latestItineraryVersion + 1,
             });
 
             return {
@@ -182,7 +191,7 @@ export async function POST(req: NextRequest) {
         model: openai("gpt-4o"),
         messages: convertToCoreMessages(messages),
         system: useGeneralChat
-          ? generalChatPrompt(trip.name, userData, trip.itinerary_csv)
+          ? generalChatPrompt(trip.name, userData, latestItineraryCsv ?? "")
           : gatherTripDataPrompt,
         tools: useGeneralChat ? generalChatTools : gatherTripDataTools,
         onFinish: async (completion) => {

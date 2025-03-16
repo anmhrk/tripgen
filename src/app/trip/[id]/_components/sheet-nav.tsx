@@ -4,7 +4,7 @@ import { api } from "~/trpc/react";
 import { formatDistance } from "date-fns";
 
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight, Copy, Menu, PenLine } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, PenLine } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -13,12 +13,6 @@ import {
 import { toast } from "sonner";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { Skeleton } from "~/components/ui/skeleton";
 
@@ -28,6 +22,11 @@ interface SheetNavProps {
   lastSaved: Date | null | undefined;
   saving: boolean;
   isDataLoading: boolean;
+  csvContent: string;
+  version: number;
+  currentVersion: number;
+  handlePrevVersion: () => void;
+  handleNextVersion: () => void;
 }
 
 export function SheetNav({
@@ -36,6 +35,11 @@ export function SheetNav({
   lastSaved,
   saving,
   isDataLoading,
+  csvContent,
+  version,
+  currentVersion,
+  handlePrevVersion,
+  handleNextVersion,
 }: SheetNavProps) {
   const params = useParams<{ id: string }>();
   const [tripNameInput, setTripNameInput] = useState(name);
@@ -66,27 +70,24 @@ export function SheetNav({
 
   const navItems = [
     {
-      disabled: false,
+      disabled: currentVersion === 1,
       label: "Previous Version",
       icon: <ChevronLeft className="!h-5 !w-5" />,
-      onClick: () => {
-        console.log("clicked");
-      },
+      onClick: handlePrevVersion,
     },
     {
-      disabled: false,
+      disabled: currentVersion === version,
       label: "Next Version",
       icon: <ChevronRight className="!h-5 !w-5" />,
-      onClick: () => {
-        console.log("clicked");
-      },
+      onClick: handleNextVersion,
     },
     {
       disabled: false,
-      label: "Copy as .csv",
+      label: `Copy version ${currentVersion} as .csv`,
       icon: <Copy className="!h-5 !w-5" />,
-      onClick: () => {
-        console.log("clicked");
+      onClick: async () => {
+        await navigator.clipboard.writeText(csvContent);
+        toast.success("Copied to clipboard");
       },
     },
   ];
@@ -172,7 +173,7 @@ export function SheetNav({
               <Button
                 variant="outline"
                 size="icon"
-                className="hidden h-fit w-fit p-1.5 dark:hover:bg-zinc-700 md:block"
+                className="h-fit w-fit p-1.5 dark:hover:bg-zinc-700"
                 onClick={item.onClick}
                 disabled={item.disabled}
               >
@@ -184,32 +185,6 @@ export function SheetNav({
             </TooltipContent>
           </Tooltip>
         ))}
-
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-fit w-fit p-1.5 dark:hover:bg-zinc-700 md:hidden"
-                >
-                  <Menu className="!h-5 !w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-              Menu
-            </TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent className="rounded-lg">
-            {navItems.map((item, idx) => (
-              <DropdownMenuItem key={idx} onClick={item.onClick}>
-                {item.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </div>
   );

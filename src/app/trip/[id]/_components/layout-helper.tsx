@@ -1,17 +1,18 @@
 "use client";
 import type { Session } from "next-auth";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
+import { useIsMobile } from "~/hooks/useIsMobile";
 
+import { motion, AnimatePresence } from "motion/react";
 import { Chat } from "./chat";
 import { SheetEditor } from "./sheet-editor";
-import { useIsMobile } from "~/hooks/useIsMobile";
 import { MobileSheet } from "./mobile-sheet";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 
 interface LayoutHelperProps {
   session: Session | null;
@@ -30,13 +31,16 @@ export function LayoutHelper({
   name,
   allDetailsCollected: initialAllDetailsCollectedFlag,
 }: LayoutHelperProps) {
+  const isMobile = useIsMobile();
+  const params = useParams<{ id: string }>();
   const [allDetailsCollected, setAllDetailsCollected] = useState(
     initialAllDetailsCollectedFlag,
   );
-  const isMobile = useIsMobile();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const params = useParams<{ id: string }>();
+  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [panelGroupKey, setPanelGroupKey] = useState(0);
+  const [sendingFirstMessage, setSendingFirstMessage] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -68,6 +72,7 @@ export function LayoutHelper({
     body: {
       tripId: params.id,
     },
+    experimental_throttle: 50,
     onFinish: (response) => {
       if (
         response.content.includes(
@@ -85,38 +90,89 @@ export function LayoutHelper({
     }
   }, [error]);
 
+  const handleShowChat = () => {
+    setIsChatCollapsed(false);
+    // Doing this because the panel resize handle action became inverted after collapsing and uncollapsing the chat
+    setPanelGroupKey((prev) => prev + 1);
+  };
+
+  useEffect(() => {
+    if (firstMessage && !mounted && messages.length === 0) {
+      setSendingFirstMessage(true);
+      void append({
+        id: crypto.randomUUID(),
+        role: "user",
+        content: firstMessage,
+      });
+    }
+  }, [firstMessage, append, mounted, messages]);
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {mounted && (
-        <PanelGroup direction="horizontal" className="w-full">
-          <Panel
-            defaultSize={allDetailsCollected && !isMobile ? 30 : 100}
-            minSize={30}
-          >
-            <Chat
-              name={name}
-              session={session}
-              isShared={isShared}
-              isOwner={isOwner}
-              firstMessage={firstMessage}
-              allDetailsCollected={allDetailsCollected}
-              setIsMobileSheetOpen={setIsMobileSheetOpen}
-              prevMessages={prevMessages.data ?? []}
-              messages={messages}
-              input={input}
-              append={append}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={status === "submitted" || status === "streaming"}
-              stopStream={stop}
-              prevMessagesLoading={prevMessages.isLoading}
-            />
-          </Panel>
+        <PanelGroup
+          key={panelGroupKey}
+          direction="horizontal"
+          className="w-full"
+          onLayout={(sizes) => {
+            if (
+              sizes?.[0] &&
+              sizes[0] < 30 &&
+              !isChatCollapsed &&
+              allDetailsCollected &&
+              !isMobile
+            ) {
+              setIsChatCollapsed(true);
+            }
+          }}
+        >
+          {isChatCollapsed ? (
+            <div className="relative">
+              <Button
+                onClick={handleShowChat}
+                className="text-vertical fixed left-0 top-1/2 z-10 h-fit -translate-y-1/2 rounded-r-md bg-zinc-100 px-2 py-6 shadow-md transition-colors hover:bg-zinc-200 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+              >
+                <span className="text-sm font-medium [writing-mode:vertical-lr]">
+                  Show Chat
+                </span>
+              </Button>
+            </div>
+          ) : (
+            <Panel
+              defaultSize={allDetailsCollected && !isMobile ? 30 : 100}
+              minSize={10}
+              onResize={(size) => {
+                if (size < 30 && allDetailsCollected && !isMobile) {
+                  setIsChatCollapsed(true);
+                }
+              }}
+            >
+              <Chat
+                name={name}
+                session={session}
+                isShared={isShared}
+                isOwner={isOwner}
+                allDetailsCollected={allDetailsCollected}
+                setIsMobileSheetOpen={setIsMobileSheetOpen}
+                messages={messages}
+                input={input}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                isLoading={status === "submitted" || status === "streaming"}
+                stopStream={stop}
+                prevMessagesLoading={prevMessages.isLoading}
+              />
+            </Panel>
+          )}
 
           {allDetailsCollected && !isMobile && (
             <>
-              <PanelResizeHandle className="w-1 bg-zinc-200 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600" />
-              <Panel minSize={40}>
+              {!isChatCollapsed && (
+                <PanelResizeHandle className="flex w-1.5 cursor-col-resize items-center justify-center bg-zinc-200 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600">
+                  <div className="h-8 w-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+                </PanelResizeHandle>
+              )}
+              <Panel minSize={40} defaultSize={isChatCollapsed ? 100 : 70}>
                 <AnimatePresence>
                   <motion.div
                     className="h-full w-full"
@@ -149,6 +205,8 @@ export function LayoutHelper({
                       isOwner={isOwner}
                       session={session}
                       data={data}
+                      sendingFirstMessage={sendingFirstMessage}
+                      setSendingFirstMessage={setSendingFirstMessage}
                     />
                   </motion.div>
                 </AnimatePresence>

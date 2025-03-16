@@ -1,7 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
 import type { Session } from "next-auth";
-import { type Message } from "ai";
+import type { Message } from "ai";
 
 import {
   PromptInput,
@@ -20,13 +19,10 @@ interface ChatProps {
   session: Session | null;
   isShared: boolean;
   isOwner: boolean;
-  firstMessage: string;
   allDetailsCollected: boolean;
   setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
-  prevMessages: Message[];
   messages: Message[];
   input: string;
-  append: (message: Message) => void;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: () => void;
   isLoading: boolean;
@@ -39,45 +35,16 @@ export function Chat({
   session,
   isShared,
   isOwner,
-  firstMessage,
   allDetailsCollected,
   setIsMobileSheetOpen,
-  prevMessages,
   messages,
   input,
-  append,
   handleInputChange,
   handleSubmit,
   isLoading,
   stopStream,
   prevMessagesLoading,
 }: ChatProps) {
-  const [isInitializing, setIsInitializing] = useState(false);
-
-  useEffect(() => {
-    if (
-      firstMessage &&
-      !isInitializing &&
-      !allDetailsCollected &&
-      prevMessages.length === 0 &&
-      messages.length === 0
-    ) {
-      setIsInitializing(true);
-      void append({
-        id: crypto.randomUUID(),
-        role: "user",
-        content: firstMessage,
-      });
-    }
-  }, [
-    firstMessage,
-    append,
-    isInitializing,
-    prevMessages,
-    messages,
-    allDetailsCollected,
-  ]);
-
   return (
     <div
       className={cn(
@@ -115,7 +82,7 @@ export function Chat({
             } as React.ChangeEvent<HTMLTextAreaElement>)
           }
           onSubmit={handleSubmit}
-          isLoading={status === "submitted" || status === "streaming"}
+          isLoading={isLoading}
           className="w-full bg-zinc-100 dark:bg-zinc-900"
         >
           <PromptInputTextarea
@@ -136,6 +103,7 @@ export function Chat({
                 onClick={() => {
                   if (isLoading) {
                     stopStream();
+                    return;
                   }
                   handleSubmit();
                 }}

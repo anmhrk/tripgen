@@ -7,7 +7,7 @@ import {
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { TRPCError } from "@trpc/server";
-import { trips } from "~/server/db/schema";
+import { trips, itineraries } from "~/server/db/schema";
 import { formSchema } from "~/lib/types";
 import { eq, and, sql } from "drizzle-orm";
 
@@ -241,6 +241,20 @@ export const tripRouter = createTRPCRouter({
       return trip.messages;
     }),
 
+  getItineraries: publicProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const trip = await ctx.db.query.itineraries.findMany({
+        where: eq(itineraries.tripId, input.tripId),
+      });
+
+      return trip.map((itinerary) => ({
+        csv: itinerary.csv,
+        lastUpdated: itinerary.last_updated,
+        version: itinerary.version,
+      }));
+    }),
+
   updateItineraryCsv: protectedProcedure
     .input(
       z.object({
@@ -249,25 +263,21 @@ export const tripRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(trips)
-        .set({
-          itinerary_csv: input.newCsv,
-          itinerary_last_updated: sql`CURRENT_TIMESTAMP`,
-        })
-        .where(eq(trips.id, input.tripId));
-    }),
-
-  getItineraryCsv: publicProcedure
-    .input(z.object({ tripId: z.string().min(1) }))
-    .query(async ({ ctx, input }) => {
-      const trip = await ctx.db.query.trips.findFirst({
-        where: eq(trips.id, input.tripId),
+      const itinerary = await ctx.db.query.itineraries.findMany({
+        where: eq(itineraries.tripId, input.tripId),
       });
 
-      return {
-        content: trip?.itinerary_csv,
-        lastUpdated: trip?.itinerary_last_updated,
-      };
+      await ctx.db
+        .update(itineraries)
+        .set({
+          csv: input.newCsv,
+          last_updated: sql`CURRENT_TIMESTAMP`,
+        })
+        .where(
+          and(
+            eq(itineraries.tripId, input.tripId),
+            eq(itineraries.version, itinerary.length),
+          ),
+        );
     }),
 });

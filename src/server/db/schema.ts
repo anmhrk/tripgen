@@ -122,10 +122,20 @@ export const trips = pgTable("trip", {
   all_details_collected: boolean("all_details_collected")
     .notNull()
     .default(false),
-  itinerary_csv: text("itinerary_csv").notNull().default(""),
-  itinerary_last_updated: timestamp("itinerary_last_updated", {
+});
+
+export const itineraries = pgTable("itinerary", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  tripId: varchar("trip_id", { length: 255 })
+    .notNull()
+    .references(() => trips.id),
+  version: integer("version").notNull().default(0),
+  csv: text("csv").notNull().default(""),
+  last_updated: timestamp("last_updated", {
     mode: "date",
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
-  itinerary_version: integer("itinerary_version").notNull().default(0),
 });
