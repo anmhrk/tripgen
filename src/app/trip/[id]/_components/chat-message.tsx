@@ -31,25 +31,18 @@ function ChatMessage({ message, session }: ChatMessageProps) {
                 } else if (part.type === "tool-invocation") {
                   const toolInvocation = part.toolInvocation;
                   const visibleStates = ["call", "partial-call", "running"];
+                  const visibleTools = [
+                    "webSearch",
+                    "generateOrUpdateItinerary",
+                  ];
 
                   if (
-                    !toolInvocation.state ||
-                    visibleStates.includes(toolInvocation.state)
+                    visibleTools.includes(toolInvocation.toolName) &&
+                    (!toolInvocation.state ||
+                      visibleStates.includes(toolInvocation.state))
                   ) {
                     let messageText = "";
                     switch (toolInvocation.toolName) {
-                      case "checkMissingFields":
-                        messageText = "Checking missing trip information";
-                        break;
-
-                      case "updateTripData":
-                        messageText = "Updating trip information";
-                        break;
-
-                      case "allFieldsComplete":
-                        messageText = "Finalizing trip information";
-                        break;
-
                       case "webSearch":
                         messageText = "Performing web search";
                         break;

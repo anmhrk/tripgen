@@ -20,7 +20,7 @@ export function Messages({
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "instant" });
     }
-  }, []);
+  }, [messages]);
 
   return (
     <div className="relative h-full w-full overflow-y-auto px-2 py-4">

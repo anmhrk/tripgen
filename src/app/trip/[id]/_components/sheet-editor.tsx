@@ -20,8 +20,10 @@ interface SheetEditorProps {
   isOwner: boolean;
   session: Session | null;
   data: JSONValue[] | undefined;
-  sendingFirstMessage: boolean;
-  setSendingFirstMessage: (sendingFirstMessage: boolean) => void;
+  creatingFirstItinerary: boolean;
+  setCreatingFirstItinerary: (creatingFirstItinerary: boolean) => void;
+  itineraryExists: boolean;
+  setItineraryExists: (itineraryExists: boolean) => void;
 }
 
 const MIN_ROWS = 100;
@@ -33,8 +35,10 @@ export function SheetEditor({
   isOwner,
   session,
   data,
-  sendingFirstMessage,
-  setSendingFirstMessage,
+  creatingFirstItinerary,
+  setCreatingFirstItinerary,
+  itineraryExists,
+  setItineraryExists,
 }: SheetEditorProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
@@ -126,7 +130,7 @@ export function SheetEditor({
         newCsv: sheetContent,
       });
     }, DEBOUNCE_MS) as ReturnType<typeof debounce>,
-    [params.id, session, updateItineraryCsv],
+    [params.id, session, updateItineraryCsv, setSaving],
   );
 
   const parseData = useMemo(() => {
@@ -206,6 +210,12 @@ export function SheetEditor({
       toast.error("Please sign in to save your changes");
       return;
     }
+
+    if (version !== currentVersion) {
+      toast.error("First restore this version to make changes");
+      return;
+    }
+
     setRows(newRows);
 
     const updatedData = newRows.map((row) => {
@@ -236,10 +246,13 @@ export function SheetEditor({
         setLastSaved(new Date());
         setVersion(csvData.version);
         setCurrentVersion(csvData.version);
-        setSendingFirstMessage(false);
+        setCreatingFirstItinerary(false);
+        if (!itineraryExists) {
+          setItineraryExists(true);
+        }
       }
     }
-  }, [data, setSendingFirstMessage]);
+  }, [data, setCreatingFirstItinerary, itineraryExists, setItineraryExists]);
 
   const handleColumnResize = useCallback(
     (column: { key: string }, width: number) => {
@@ -265,7 +278,7 @@ export function SheetEditor({
             isOwner={isOwner}
             lastSaved={lastSaved}
             saving={saving}
-            isDataLoading={itineraries.isLoading || sendingFirstMessage}
+            isDataLoading={itineraries.isLoading || creatingFirstItinerary}
             csvContent={content ?? ""}
             version={version ?? 1}
             currentVersion={currentVersion ?? 1}
@@ -294,10 +307,6 @@ export function SheetEditor({
                 }}
                 onRowsChange={handleRowsChange}
                 onCellClick={(args) => {
-                  if (version !== currentVersion) {
-                    return;
-                  }
-
                   if (args.column.key !== "rowNumber") {
                     args.selectCell(true);
                   }

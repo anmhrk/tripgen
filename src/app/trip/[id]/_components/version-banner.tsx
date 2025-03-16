@@ -22,6 +22,9 @@ export function VersionBanner({
       setVersion(version!);
       setCurrentVersion(version!);
     },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 
   return (
@@ -47,7 +50,6 @@ export function VersionBanner({
               {
                 loading: "Restoring version...",
                 success: "Version restored",
-                error: "Failed to restore version",
               },
             )
           }

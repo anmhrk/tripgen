@@ -47,7 +47,6 @@ export function ShareDialog() {
 
   const shareTrip = api.trips.shareTrip.useMutation({
     onSuccess: async () => {
-      toast.success("Share link copied to clipboard");
       setLinkCopied(true);
       await navigator.clipboard.writeText(shareLink);
       setIsShared(true);
@@ -105,6 +104,7 @@ export function ShareDialog() {
                   }),
                   {
                     loading: "Sharing trip...",
+                    success: "Share link copied to clipboard",
                   },
                 );
               }

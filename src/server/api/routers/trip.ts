@@ -25,7 +25,7 @@ export const tripRouter = createTRPCRouter({
         You are a helpful assistant that validates prompts and generates a name for trip planning.
         If the prompt looks valid to help plan a trip, return a valid object with the boolean set to true and a name for the trip.
         If the prompt does not look valid, return a valid object with the boolean set to false and an empty string for the name.
-        Something that looks like a valid prompt: "I want to go to London for 1 week".
+        Don't be too strict. Only reject prompts that are pure gibberish, spam, or don't make sense in the context of trip planning.
         `,
         prompt: input.prompt,
       });
@@ -48,12 +48,10 @@ export const tripRouter = createTRPCRouter({
           startDate: null,
           endDate: null,
           numTravelers: null,
-          budgetRange: null,
           startLocation: null,
           destination: null,
           travelStyle: null,
-          accommodation: null,
-          activities: null,
+          preferredActivities: null,
           specialRequirements: null,
         },
       });
@@ -75,12 +73,11 @@ export const tripRouter = createTRPCRouter({
           startDate: input.startDate,
           endDate: input.endDate,
           numTravelers: input.numTravelers,
-          budgetRange: input.budgetRange,
+
           startLocation: input.startLocation,
           destination: input.destination,
           travelStyle: input.travelStyle,
-          accommodation: input.accommodation,
-          activities: input.activities ?? null,
+          preferredActivities: input.preferredActivities ?? null,
           specialRequirements: input.specialRequirements ?? null,
         },
         all_details_collected: true,
@@ -109,38 +106,25 @@ export const tripRouter = createTRPCRouter({
         });
       }
 
+      const itineraryResults = await ctx.db.query.itineraries.findMany({
+        where: eq(itineraries.tripId, input.tripId),
+      });
+
       const tripData = {
         isShared: trip.is_shared,
         isOwner: trip.userId === ctx.session?.user.id,
         name: trip.name,
         firstMessage: "",
         allDetailsCollected: trip.all_details_collected,
+        itineraryExists: itineraryResults.length > 0,
       };
 
       if (trip.messages.length === 0) {
         if (trip.user_submitted_data?.prompt) {
           tripData.firstMessage = trip.user_submitted_data.prompt;
         } else {
-          tripData.firstMessage = `Please help me plan a trip. Here are the details:
-         ${Object.entries(trip.user_submitted_data ?? {})
-           .filter(([key]) => key !== "prompt")
-           .map(([key, value]) => {
-             if (key === "startDate" || key === "endDate") {
-               return `${key}: ${new Date(value as string).toLocaleDateString(
-                 "en-US",
-                 {
-                   month: "long",
-                   day: "numeric",
-                   year: "numeric",
-                 },
-               )}`;
-             }
-             if (value === undefined) {
-               return `${key}: Not specified`;
-             }
-             return `${key}: ${value as string}`;
-           })
-           .join("\n")}`;
+          tripData.firstMessage = `Please make me an itinerary for my trip. Here are the details:\n\n
+          ${JSON.stringify(trip.user_submitted_data, null, 2)}`;
         }
       }
 
@@ -244,11 +228,11 @@ export const tripRouter = createTRPCRouter({
   getItineraries: publicProcedure
     .input(z.object({ tripId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      const trip = await ctx.db.query.itineraries.findMany({
+      const itineraryResults = await ctx.db.query.itineraries.findMany({
         where: eq(itineraries.tripId, input.tripId),
       });
 
-      return trip.map((itinerary) => ({
+      return itineraryResults.map((itinerary) => ({
         csv: itinerary.csv,
         lastUpdated: itinerary.last_updated,
         version: itinerary.version,

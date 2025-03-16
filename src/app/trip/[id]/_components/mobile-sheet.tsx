@@ -10,6 +10,8 @@ interface MobileSheetProps {
   setOpen: (open: boolean) => void;
   session: Session | null;
   data: JSONValue[] | undefined;
+  creatingFirstItinerary: boolean;
+  setCreatingFirstItinerary: (creatingFirstItinerary: boolean) => void;
 }
 
 export function MobileSheet({
@@ -19,6 +21,8 @@ export function MobileSheet({
   setOpen,
   session,
   data,
+  creatingFirstItinerary,
+  setCreatingFirstItinerary,
 }: MobileSheetProps) {
   return (
     <Drawer.Root open={open} onOpenChange={setOpen}>
@@ -32,6 +36,8 @@ export function MobileSheet({
             isOwner={isOwner}
             session={session}
             data={data}
+            creatingFirstItinerary={creatingFirstItinerary}
+            setCreatingFirstItinerary={setCreatingFirstItinerary}
           />
         </Drawer.Content>
       </Drawer.Portal>

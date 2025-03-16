@@ -21,6 +21,7 @@ interface LayoutHelperProps {
   firstMessage: string;
   name: string;
   allDetailsCollected: boolean;
+  itineraryExists: boolean;
 }
 
 export function LayoutHelper({
@@ -30,17 +31,21 @@ export function LayoutHelper({
   firstMessage,
   name,
   allDetailsCollected: initialAllDetailsCollectedFlag,
+  itineraryExists: initialItineraryExistsFlag,
 }: LayoutHelperProps) {
   const isMobile = useIsMobile();
   const params = useParams<{ id: string }>();
   const [allDetailsCollected, setAllDetailsCollected] = useState(
     initialAllDetailsCollectedFlag,
   );
+  const [itineraryExists, setItineraryExists] = useState(
+    initialItineraryExistsFlag,
+  );
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   const [panelGroupKey, setPanelGroupKey] = useState(0);
-  const [sendingFirstMessage, setSendingFirstMessage] = useState(false);
+  const [creatingFirstItinerary, setCreatingFirstItinerary] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -97,15 +102,58 @@ export function LayoutHelper({
   };
 
   useEffect(() => {
-    if (firstMessage && !mounted && messages.length === 0) {
-      setSendingFirstMessage(true);
+    if (!mounted) return;
+
+    const isProcessingSend = status === "submitted" || status === "streaming";
+
+    if (messages.length === 0) {
+      // Case 1: Created from form with all details collected, create first itinerary
+      if (
+        firstMessage &&
+        allDetailsCollected &&
+        !itineraryExists &&
+        !creatingFirstItinerary
+      ) {
+        setCreatingFirstItinerary(true);
+        void append({
+          id: crypto.randomUUID(),
+          role: "user",
+          content: firstMessage,
+        });
+      }
+      // Case 2: Created from prompt, need to collect details
+      else if (!allDetailsCollected && !itineraryExists) {
+        void append({
+          id: crypto.randomUUID(),
+          role: "user",
+          content: firstMessage,
+        });
+      }
+    }
+    // Case 3: Created from prompt, all details collected, create first itinerary
+    else if (
+      allDetailsCollected &&
+      !itineraryExists &&
+      !creatingFirstItinerary &&
+      !isProcessingSend
+    ) {
+      setCreatingFirstItinerary(true);
       void append({
         id: crypto.randomUUID(),
         role: "user",
-        content: firstMessage,
+        content: "Please create an itinerary for my trip",
       });
     }
-  }, [firstMessage, append, mounted, messages]);
+  }, [
+    mounted,
+    messages,
+    allDetailsCollected,
+    itineraryExists,
+    creatingFirstItinerary,
+    firstMessage,
+    append,
+    status,
+  ]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -205,8 +253,10 @@ export function LayoutHelper({
                       isOwner={isOwner}
                       session={session}
                       data={data}
-                      sendingFirstMessage={sendingFirstMessage}
-                      setSendingFirstMessage={setSendingFirstMessage}
+                      creatingFirstItinerary={creatingFirstItinerary}
+                      setCreatingFirstItinerary={setCreatingFirstItinerary}
+                      itineraryExists={itineraryExists}
+                      setItineraryExists={setItineraryExists}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -224,6 +274,8 @@ export function LayoutHelper({
           setOpen={setIsMobileSheetOpen}
           session={session}
           data={data}
+          creatingFirstItinerary={creatingFirstItinerary}
+          setCreatingFirstItinerary={setCreatingFirstItinerary}
         />
       )}
     </div>

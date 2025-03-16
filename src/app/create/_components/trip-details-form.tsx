@@ -41,16 +41,8 @@ const travelStyles = [
   "Active & Adventurous",
   "Cultural & Historical",
   "Family-oriented",
-];
-
-const accommodationTypes = ["Hotels", "Airbnbs/Vacation Rentals", "Resorts"];
-
-const budgetRanges = [
-  "Budget ($)",
-  "Mid-Range ($$)",
-  "Luxury ($$$)",
-  "Ultra Luxury ($$$$)",
-  "No Preference",
+  "Fast-paced",
+  "Packed with Activities",
 ];
 
 export function TripDetailsForm() {
@@ -71,16 +63,16 @@ export function TripDetailsForm() {
       startLocation: "",
       destination: "",
       numTravelers: "1",
-      budgetRange: "",
       travelStyle: "",
-      accommodation: "",
-      activities: "",
+      preferredActivities: "",
       specialRequirements: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await createTripFromForm.mutateAsync(values);
+    toast.promise(createTripFromForm.mutateAsync(values), {
+      loading: "Creating trip...",
+    });
   };
 
   return (
@@ -237,55 +229,6 @@ export function TripDetailsForm() {
         <div className="grid gap-8 md:grid-cols-2">
           <FormField
             control={form.control}
-            name="numTravelers"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Number of Travelers</FormLabel>
-                <FormControl>
-                  <Input
-                    className="!text-sm"
-                    type="number"
-                    min="1"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="budgetRange"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Budget Range</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your budget range" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {budgetRanges.map((range) => (
-                      <SelectItem key={range} value={range}>
-                        {range}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2">
-          <FormField
-            control={form.control}
             name="travelStyle"
             render={({ field }) => (
               <FormItem>
@@ -314,27 +257,18 @@ export function TripDetailsForm() {
 
           <FormField
             control={form.control}
-            name="accommodation"
+            name="numTravelers"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Accommodation Preference</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select accommodation type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {accommodationTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Number of Travelers</FormLabel>
+                <FormControl>
+                  <Input
+                    className="!text-sm"
+                    type="number"
+                    min="1"
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -343,7 +277,7 @@ export function TripDetailsForm() {
 
         <FormField
           control={form.control}
-          name="activities"
+          name="preferredActivities"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Preferred Activities</FormLabel>

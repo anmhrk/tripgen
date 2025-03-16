@@ -60,13 +60,12 @@ export async function POST(req: NextRequest) {
 
         if (!userData.startDate) missingFields.push("startDate");
         if (!userData.endDate) missingFields.push("endDate");
-        if (!userData.numTravelers) missingFields.push("numTravelers");
-        if (!userData.budgetRange) missingFields.push("budgetRange");
         if (!userData.startLocation) missingFields.push("startLocation");
         if (!userData.destination) missingFields.push("destination");
         if (!userData.travelStyle) missingFields.push("travelStyle");
-        if (!userData.accommodation) missingFields.push("accommodation");
-        if (!userData.activities) missingFields.push("activities");
+        if (!userData.numTravelers) missingFields.push("numTravelers");
+        if (!userData.preferredActivities)
+          missingFields.push("preferredActivities");
         if (!userData.specialRequirements)
           missingFields.push("specialRequirements");
 

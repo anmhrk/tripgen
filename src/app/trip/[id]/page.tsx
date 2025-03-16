@@ -30,8 +30,14 @@ export default async function TripPage({
   const session = await auth();
 
   try {
-    const { name, isShared, isOwner, firstMessage, allDetailsCollected } =
-      await getCachedTrip(id, share);
+    const {
+      name,
+      isShared,
+      isOwner,
+      firstMessage,
+      allDetailsCollected,
+      itineraryExists,
+    } = await getCachedTrip(id, share);
 
     return (
       <HydrateClient>
@@ -42,6 +48,7 @@ export default async function TripPage({
           firstMessage={firstMessage}
           name={name}
           allDetailsCollected={allDetailsCollected}
+          itineraryExists={itineraryExists}
         />
       </HydrateClient>
     );
