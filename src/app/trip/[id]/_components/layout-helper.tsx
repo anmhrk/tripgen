@@ -5,6 +5,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { useIsMobile } from "~/hooks/useIsMobile";
+import type { MessageWithUserInfo } from "~/lib/types";
 
 import { motion, AnimatePresence } from "motion/react";
 import { Chat } from "./chat";
@@ -89,6 +90,20 @@ export function LayoutHelper({
     },
   });
 
+  const handleChatSubmit = () => {
+    if (!session) {
+      toast.error("Please sign in to send messages");
+      return;
+    }
+
+    if (status === "submitted" || status === "streaming") {
+      stop();
+      return;
+    }
+
+    handleSubmit();
+  };
+
   useEffect(() => {
     if (error) {
       toast.error(error.message);
@@ -119,7 +134,9 @@ export function LayoutHelper({
           id: crypto.randomUUID(),
           role: "user",
           content: firstMessage,
-        });
+          profileImage: session?.user.image,
+          name: session?.user.name,
+        } as MessageWithUserInfo);
       }
       // Case 2: Created from prompt, need to collect details
       else if (!allDetailsCollected && !itineraryExists) {
@@ -153,6 +170,7 @@ export function LayoutHelper({
     firstMessage,
     append,
     status,
+    session,
   ]);
 
   return (
@@ -202,12 +220,11 @@ export function LayoutHelper({
                 isOwner={isOwner}
                 allDetailsCollected={allDetailsCollected}
                 setIsMobileSheetOpen={setIsMobileSheetOpen}
-                messages={messages}
+                messages={messages as MessageWithUserInfo[]}
                 input={input}
                 handleInputChange={handleInputChange}
-                handleSubmit={handleSubmit}
+                handleChatSubmit={handleChatSubmit}
                 isLoading={status === "submitted" || status === "streaming"}
-                stopStream={stop}
                 prevMessagesLoading={prevMessages.isLoading}
               />
             </Panel>

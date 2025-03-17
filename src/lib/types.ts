@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Message } from "ai";
 
 export const formSchema = z.object({
   tripName: z.string().min(3, "Trip name needs to be at least 3 characters"),
@@ -34,4 +35,9 @@ export type UserSubmittedData = {
   travelStyle: string | null;
   preferredActivities: string | null;
   specialRequirements: string | null;
+};
+
+export type MessageWithUserInfo = Message & {
+  profileImage: string | null;
+  name: string | null;
 };

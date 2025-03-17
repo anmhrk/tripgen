@@ -4,7 +4,6 @@ import {
   createDataStreamResponse,
   streamText,
   tool,
-  type Message,
   smoothStream,
 } from "ai";
 import { openai } from "@ai-sdk/openai";
@@ -16,12 +15,20 @@ import { tavily } from "@tavily/core";
 import { env } from "~/env";
 import { validUserDataFields } from "~/lib/types";
 import { gatherTripDataPrompt, generalChatPrompt } from "~/lib/prompts";
+import { auth } from "~/server/auth";
+import type { MessageWithUserInfo } from "~/lib/types";
 
 // export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { messages, tripId } = (await req.json()) as {
-    messages: Message[];
+    messages: MessageWithUserInfo[];
     tripId: string;
   };
 
@@ -198,13 +205,15 @@ export async function POST(req: NextRequest) {
             id: crypto.randomUUID(),
             role: "user",
             content: messages[messages.length - 1]?.content ?? "",
-          } as Message;
+            profileImage: session.user.image,
+            name: session.user.name,
+          } as MessageWithUserInfo;
 
           const assistantMessage = {
             id: completion.response.id,
             role: "assistant",
             content: completion.text,
-          } as Message;
+          } as MessageWithUserInfo;
 
           const newMessages = [userMessage, assistantMessage];
           const updatedMessages = [...(trip.messages ?? []), ...newMessages];

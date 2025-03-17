@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Session } from "next-auth";
-import type { Message } from "ai";
+import type { MessageWithUserInfo } from "~/lib/types";
 
 import { Bot, Loader2 } from "lucide-react";
 import ChatMessage from "./chat-message";
@@ -10,7 +10,7 @@ export function Messages({
   session,
   isLoading,
 }: {
-  messages: Message[];
+  messages: MessageWithUserInfo[];
   session: Session | null;
   isLoading: boolean;
 }) {

@@ -1,6 +1,6 @@
 "use client";
 import type { Session } from "next-auth";
-import type { Message } from "ai";
+import type { MessageWithUserInfo } from "~/lib/types";
 
 import {
   PromptInput,
@@ -13,7 +13,6 @@ import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
 import { cn } from "~/lib/utils";
-
 interface ChatProps {
   name: string;
   session: Session | null;
@@ -21,12 +20,11 @@ interface ChatProps {
   isOwner: boolean;
   allDetailsCollected: boolean;
   setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
-  messages: Message[];
+  messages: MessageWithUserInfo[];
   input: string;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleSubmit: () => void;
+  handleChatSubmit: () => void;
   isLoading: boolean;
-  stopStream: () => void;
   prevMessagesLoading: boolean;
 }
 
@@ -40,9 +38,8 @@ export function Chat({
   messages,
   input,
   handleInputChange,
-  handleSubmit,
+  handleChatSubmit,
   isLoading,
-  stopStream,
   prevMessagesLoading,
 }: ChatProps) {
   return (
@@ -81,7 +78,7 @@ export function Chat({
               target: { value },
             } as React.ChangeEvent<HTMLTextAreaElement>)
           }
-          onSubmit={handleSubmit}
+          onSubmit={handleChatSubmit}
           isLoading={isLoading}
           className="w-full bg-zinc-100 dark:bg-zinc-900"
         >
@@ -100,13 +97,7 @@ export function Chat({
                 size="icon"
                 className="h-8 w-8 rounded-full"
                 disabled={!input && !isLoading}
-                onClick={() => {
-                  if (isLoading) {
-                    stopStream();
-                    return;
-                  }
-                  handleSubmit();
-                }}
+                onClick={handleChatSubmit}
               >
                 {isLoading ? (
                   <Square className="size-5 fill-current" />

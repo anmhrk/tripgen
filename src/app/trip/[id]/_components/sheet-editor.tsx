@@ -316,6 +316,7 @@ export function SheetEditor({
             )}
             {version !== currentVersion && (
               <VersionBanner
+                session={session}
                 version={currentVersion}
                 goToLatestVersion={() => setCurrentVersion(version)}
                 setVersion={setVersion}

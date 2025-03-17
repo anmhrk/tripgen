@@ -11,8 +11,7 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
-import { type UserSubmittedData } from "~/lib/types";
-import type { Message } from "ai";
+import type { UserSubmittedData, MessageWithUserInfo } from "~/lib/types";
 
 export const users = pgTable("user", {
   id: varchar("id", { length: 255 })
@@ -118,7 +117,10 @@ export const trips = pgTable("trip", {
   user_submitted_data: json("user_submitted_data").$type<UserSubmittedData>(),
   is_shared: boolean("is_shared").notNull().default(false),
   share_phrase: text("share_phrase"),
-  messages: json("messages").$type<Message[]>().notNull().default([]),
+  messages: json("messages")
+    .$type<MessageWithUserInfo[]>()
+    .notNull()
+    .default([]),
   all_details_collected: boolean("all_details_collected")
     .notNull()
     .default(false),

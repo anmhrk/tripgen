@@ -1,7 +1,8 @@
 import { memo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import type { Message } from "ai";
+import type { MessageWithUserInfo } from "~/lib/types";
 import type { Session } from "next-auth";
+import Image from "next/image";
 
 import { Bot, Loader2 } from "lucide-react";
 import {
@@ -12,7 +13,7 @@ import {
 import { cn } from "~/lib/utils";
 
 interface ChatMessageProps {
-  message: Message;
+  message: MessageWithUserInfo;
   session: Session | null;
 }
 
@@ -71,7 +72,7 @@ function ChatMessage({ message, session }: ChatMessageProps) {
     );
   }
 
-  if (message.role === "user" && session?.user?.image) {
+  if (message.role === "user") {
     return (
       <div className={cn("flex w-full justify-end")}>
         <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2 text-primary-foreground">
@@ -81,12 +82,23 @@ function ChatMessage({ message, session }: ChatMessageProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Avatar className="h-8 w-8">
-                <AvatarImage src={session.user.image} alt="User" />
-                <AvatarFallback>{session.user.name?.[0]}</AvatarFallback>
+                {/* <AvatarImage
+                  src={message.profileImage ?? session?.user.image ?? ""}
+                  alt="User"
+                /> */}
+                <Image
+                  src={message.profileImage ?? session?.user.image ?? ""}
+                  alt="User"
+                  width={32}
+                  height={32}
+                />
+                <AvatarFallback>
+                  {message.name?.[0] ?? session?.user.name?.[0] ?? ""}
+                </AvatarFallback>
               </Avatar>
             </TooltipTrigger>
             <TooltipContent className="rounded-lg px-2 py-1.5 text-sm font-medium">
-              {session.user.name}
+              {message.name ?? session?.user.name ?? ""}
             </TooltipContent>
           </Tooltip>
         </div>
