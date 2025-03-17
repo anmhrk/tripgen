@@ -12,6 +12,7 @@ import { formSchema } from "~/lib/types";
 import { eq, and, sql, gt, inArray, desc } from "drizzle-orm";
 
 export const tripRouter = createTRPCRouter({
+  // Mutations
   createTripFromPrompt: protectedProcedure
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -86,8 +87,87 @@ export const tripRouter = createTRPCRouter({
       return { tripId };
     }),
 
-  // Also validates trip page access, and shared user access
-  getTripDataOnLoad: publicProcedure
+  updateTripName: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1), name: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(trips)
+        .set({ name: input.name })
+        .where(eq(trips.id, input.tripId));
+    }),
+
+  shareTrip: protectedProcedure
+    .input(
+      z.object({ tripId: z.string().min(1), sharePhrase: z.string().min(1) }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(trips)
+        .set({ share_phrase: input.sharePhrase, is_shared: true })
+        .where(and(eq(trips.id, input.tripId), eq(trips.is_shared, false)));
+    }),
+
+  unshareTrip: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(trips)
+        .set({ is_shared: false, share_phrase: null })
+        .where(eq(trips.id, input.tripId));
+    }),
+
+  deleteTrip: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(trips).where(eq(trips.id, input.tripId));
+    }),
+
+  updateItineraryCsv: protectedProcedure
+    .input(
+      z.object({
+        tripId: z.string().min(1),
+        newCsv: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const itinerary = await ctx.db.query.itineraries.findMany({
+        where: eq(itineraries.tripId, input.tripId),
+      });
+
+      await ctx.db
+        .update(itineraries)
+        .set({
+          csv: input.newCsv,
+          last_updated: sql`CURRENT_TIMESTAMP`,
+        })
+        .where(
+          and(
+            eq(itineraries.tripId, input.tripId),
+            eq(itineraries.version, itinerary.length),
+          ),
+        );
+    }),
+
+  restoreItineraryVersion: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1), version: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const toDelete = await ctx.db.query.itineraries.findMany({
+        where: and(
+          eq(itineraries.tripId, input.tripId),
+          gt(itineraries.version, input.version),
+        ),
+      });
+
+      await ctx.db.delete(itineraries).where(
+        inArray(
+          itineraries.id,
+          toDelete.map((itinerary) => itinerary.id),
+        ),
+      );
+    }),
+
+  // Queries
+  validateTrip: publicProcedure
     .input(
       z.object({
         tripId: z.string().min(1),
@@ -159,130 +239,6 @@ export const tripRouter = createTRPCRouter({
       return tripData;
     }),
 
-  updateTripName: protectedProcedure
-    .input(z.object({ tripId: z.string().min(1), name: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(trips)
-        .set({ name: input.name })
-        .where(eq(trips.id, input.tripId));
-    }),
-
-  shareTrip: protectedProcedure
-    .input(
-      z.object({ tripId: z.string().min(1), sharePhrase: z.string().min(1) }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(trips)
-        .set({ share_phrase: input.sharePhrase, is_shared: true })
-        .where(and(eq(trips.id, input.tripId), eq(trips.is_shared, false)));
-    }),
-
-  getSharePhrase: protectedProcedure
-    .input(z.object({ tripId: z.string().min(1) }))
-    .query(async ({ ctx, input }) => {
-      const trip = await ctx.db.query.trips.findFirst({
-        where: and(eq(trips.id, input.tripId)),
-      });
-
-      return trip?.share_phrase;
-    }),
-
-  unshareTrip: protectedProcedure
-    .input(z.object({ tripId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(trips)
-        .set({ is_shared: false, share_phrase: null })
-        .where(eq(trips.id, input.tripId));
-    }),
-
-  deleteTrip: protectedProcedure
-    .input(z.object({ tripId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.delete(trips).where(eq(trips.id, input.tripId));
-    }),
-
-  getTripMessages: publicProcedure
-    .input(
-      z.object({
-        tripId: z.string().min(1),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const trip = await ctx.db.query.trips.findFirst({
-        where: eq(trips.id, input.tripId),
-      });
-
-      if (!trip) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Trip not found",
-        });
-      }
-
-      return trip.messages;
-    }),
-
-  getItineraries: publicProcedure
-    .input(z.object({ tripId: z.string().min(1) }))
-    .query(async ({ ctx, input }) => {
-      const itineraryResults = await ctx.db.query.itineraries.findMany({
-        where: eq(itineraries.tripId, input.tripId),
-      });
-
-      return itineraryResults.map((itinerary) => ({
-        csv: itinerary.csv,
-        lastUpdated: itinerary.last_updated,
-        version: itinerary.version,
-      }));
-    }),
-
-  updateItineraryCsv: protectedProcedure
-    .input(
-      z.object({
-        tripId: z.string().min(1),
-        newCsv: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const itinerary = await ctx.db.query.itineraries.findMany({
-        where: eq(itineraries.tripId, input.tripId),
-      });
-
-      await ctx.db
-        .update(itineraries)
-        .set({
-          csv: input.newCsv,
-          last_updated: sql`CURRENT_TIMESTAMP`,
-        })
-        .where(
-          and(
-            eq(itineraries.tripId, input.tripId),
-            eq(itineraries.version, itinerary.length),
-          ),
-        );
-    }),
-
-  restoreItineraryVersion: protectedProcedure
-    .input(z.object({ tripId: z.string().min(1), version: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      const toDelete = await ctx.db.query.itineraries.findMany({
-        where: and(
-          eq(itineraries.tripId, input.tripId),
-          gt(itineraries.version, input.version),
-        ),
-      });
-
-      await ctx.db.delete(itineraries).where(
-        inArray(
-          itineraries.id,
-          toDelete.map((itinerary) => itinerary.id),
-        ),
-      );
-    }),
-
   getRecentTrips: protectedProcedure.query(async ({ ctx }) => {
     const recentTrips = await ctx.db.query.trips.findMany({
       where: eq(trips.userId, ctx.session.user.id),
@@ -295,4 +251,35 @@ export const tripRouter = createTRPCRouter({
       createdAt: trip.createdAt,
     }));
   }),
+
+  getSharePhrase: protectedProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const trip = await ctx.db.query.trips.findFirst({
+        where: and(eq(trips.id, input.tripId)),
+      });
+
+      return trip?.share_phrase;
+    }),
+
+  getTripData: publicProcedure
+    .input(z.object({ tripId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const trip = await ctx.db.query.trips.findFirst({
+        where: eq(trips.id, input.tripId),
+      });
+
+      const itineraryResults = await ctx.db.query.itineraries.findMany({
+        where: eq(itineraries.tripId, input.tripId),
+      });
+
+      return {
+        messages: trip!.messages,
+        itineraries: itineraryResults.map((itinerary) => ({
+          csv: itinerary.csv,
+          lastUpdated: itinerary.last_updated,
+          version: itinerary.version,
+        })),
+      };
+    }),
 });

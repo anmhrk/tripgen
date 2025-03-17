@@ -5,7 +5,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { useIsMobile } from "~/hooks/useIsMobile";
-import type { MessageWithUserInfo } from "~/lib/types";
+import type { MessageWithUserInfo, TripState } from "~/lib/types";
 
 import { motion, AnimatePresence } from "motion/react";
 import { Chat } from "./chat/chat";
@@ -31,37 +31,46 @@ export function LayoutHelper({
   isOwner,
   firstMessage,
   name,
-  allDetailsCollected: initialAllDetailsCollectedFlag,
-  itineraryExists: initialItineraryExistsFlag,
+  allDetailsCollected,
+  itineraryExists,
 }: LayoutHelperProps) {
   const isMobile = useIsMobile();
   const params = useParams<{ id: string }>();
-  const [allDetailsCollected, setAllDetailsCollected] = useState(
-    initialAllDetailsCollectedFlag,
-  );
-  const [itineraryExists, setItineraryExists] = useState(
-    initialItineraryExistsFlag,
-  );
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   const [panelGroupKey, setPanelGroupKey] = useState(0);
-  const [creatingFirstItinerary, setCreatingFirstItinerary] = useState(false);
+  const [tripState, setTripState] = useState<TripState>(
+    getInitialTripState(allDetailsCollected, itineraryExists),
+  );
+  const showItinerary =
+    tripState === "ITINERARY_CREATED" || tripState === "CREATING_ITINERARY";
+
+  function getInitialTripState(
+    allDetailsCollected: boolean,
+    itineraryExists: boolean,
+  ): TripState {
+    if (allDetailsCollected) {
+      return itineraryExists ? "ITINERARY_CREATED" : "DETAILS_COLLECTED";
+    }
+    return "COLLECTING_DETAILS";
+  }
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const prevMessages = api.trips.getTripMessages.useQuery(
+  const tripData = api.trips.getTripData.useQuery(
     {
       tripId: params.id,
     },
     {
       refetchOnMount: true,
-      staleTime: 1000 * 60 * 5,
       refetchOnWindowFocus: false,
     },
   );
+
+  const dataLoading = tripData.isLoading;
 
   const {
     messages,
@@ -74,7 +83,7 @@ export function LayoutHelper({
     data,
     error,
   } = useChat({
-    initialMessages: prevMessages.data ?? [],
+    initialMessages: tripData.data?.messages ?? [],
     body: {
       tripId: params.id,
     },
@@ -85,7 +94,7 @@ export function LayoutHelper({
           "All right, thanks for providing all the information. Let's get started building your perfect itinerary!",
         )
       ) {
-        setAllDetailsCollected(true);
+        setTripState("DETAILS_COLLECTED");
       }
     },
   });
@@ -104,12 +113,6 @@ export function LayoutHelper({
     handleSubmit();
   };
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error.message);
-    }
-  }, [error]);
-
   const handleShowChat = () => {
     setIsChatCollapsed(false);
     // Doing this because the panel resize handle action became inverted after collapsing and uncollapsing the chat
@@ -119,17 +122,9 @@ export function LayoutHelper({
   useEffect(() => {
     if (!mounted) return;
 
-    const isProcessingSend = status === "submitted" || status === "streaming";
-
-    if (messages.length === 0) {
-      // Case 1: Created from form with all details collected, create first itinerary
-      if (
-        firstMessage &&
-        allDetailsCollected &&
-        !itineraryExists &&
-        !creatingFirstItinerary
-      ) {
-        setCreatingFirstItinerary(true);
+    if (tripState === "DETAILS_COLLECTED" && !tripData.isLoading) {
+      setTripState("CREATING_ITINERARY");
+      if (messages.length === 0) {
         void append({
           id: crypto.randomUUID(),
           role: "user",
@@ -137,41 +132,43 @@ export function LayoutHelper({
           profileImage: session?.user.image,
           name: session?.user.name,
         } as MessageWithUserInfo);
-      }
-      // Case 2: Created from prompt, need to collect details
-      else if (!allDetailsCollected && !itineraryExists) {
+      } else {
         void append({
           id: crypto.randomUUID(),
           role: "user",
-          content: firstMessage,
-        });
+          content: "Please create an itinerary for my trip",
+          profileImage: session?.user.image,
+          name: session?.user.name,
+        } as MessageWithUserInfo);
       }
-    }
-    // Case 3: Created from prompt, all details collected, create first itinerary
-    else if (
-      allDetailsCollected &&
-      !itineraryExists &&
-      !creatingFirstItinerary &&
-      !isProcessingSend
+    } else if (
+      tripState === "COLLECTING_DETAILS" &&
+      messages.length === 0 &&
+      !tripData.isLoading
     ) {
-      setCreatingFirstItinerary(true);
       void append({
         id: crypto.randomUUID(),
         role: "user",
-        content: "Please create an itinerary for my trip",
-      });
+        content: firstMessage,
+        profileImage: session?.user.image,
+        name: session?.user.name,
+      } as MessageWithUserInfo);
     }
   }, [
-    mounted,
-    messages,
-    allDetailsCollected,
-    itineraryExists,
-    creatingFirstItinerary,
-    firstMessage,
+    tripState,
     append,
-    status,
+    firstMessage,
     session,
+    messages.length,
+    mounted,
+    tripData.isLoading,
   ]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Error: " + error.message);
+    }
+  }, [error]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -185,7 +182,7 @@ export function LayoutHelper({
               sizes?.[0] &&
               sizes[0] < 30 &&
               !isChatCollapsed &&
-              allDetailsCollected &&
+              tripState === "DETAILS_COLLECTED" &&
               !isMobile
             ) {
               setIsChatCollapsed(true);
@@ -218,19 +215,19 @@ export function LayoutHelper({
                 session={session}
                 isShared={isShared}
                 isOwner={isOwner}
-                allDetailsCollected={allDetailsCollected}
                 setIsMobileSheetOpen={setIsMobileSheetOpen}
                 messages={messages as MessageWithUserInfo[]}
                 input={input}
                 handleInputChange={handleInputChange}
                 handleChatSubmit={handleChatSubmit}
-                isLoading={status === "submitted" || status === "streaming"}
-                prevMessagesLoading={prevMessages.isLoading}
+                isStreaming={status === "submitted" || status === "streaming"}
+                dataLoading={dataLoading}
+                showItinerary={showItinerary}
               />
             </Panel>
           )}
 
-          {allDetailsCollected && !isMobile && (
+          {showItinerary && !isMobile && (
             <>
               {!isChatCollapsed && (
                 <PanelResizeHandle className="flex w-1.5 cursor-col-resize items-center justify-center bg-zinc-200 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600">
@@ -270,10 +267,10 @@ export function LayoutHelper({
                       isOwner={isOwner}
                       session={session}
                       data={data}
-                      creatingFirstItinerary={creatingFirstItinerary}
-                      setCreatingFirstItinerary={setCreatingFirstItinerary}
-                      itineraryExists={itineraryExists}
-                      setItineraryExists={setItineraryExists}
+                      itineraries={tripData.data?.itineraries}
+                      dataLoading={dataLoading}
+                      tripState={tripState}
+                      setTripState={setTripState}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -283,7 +280,7 @@ export function LayoutHelper({
         </PanelGroup>
       )}
 
-      {allDetailsCollected && isMobile && (
+      {showItinerary && isMobile && (
         <MobileSheet
           name={name}
           isOwner={isOwner}
@@ -291,10 +288,10 @@ export function LayoutHelper({
           setOpen={setIsMobileSheetOpen}
           session={session}
           data={data}
-          creatingFirstItinerary={creatingFirstItinerary}
-          setCreatingFirstItinerary={setCreatingFirstItinerary}
-          itineraryExists={itineraryExists}
-          setItineraryExists={setItineraryExists}
+          itineraries={tripData.data?.itineraries}
+          dataLoading={dataLoading}
+          tripState={tripState}
+          setTripState={setTripState}
         />
       )}
     </div>

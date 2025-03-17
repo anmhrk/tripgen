@@ -7,6 +7,7 @@ import { parse, unparse } from "papaparse";
 import type { Session } from "next-auth";
 import debounce from "lodash.debounce";
 import type { JSONValue } from "ai";
+import { Itinerary, TripState } from "~/lib/types";
 
 import { DataGrid, textEditor } from "react-data-grid";
 import { cn } from "~/lib/utils";
@@ -20,10 +21,10 @@ interface SheetProps {
   isOwner: boolean;
   session: Session | null;
   data: JSONValue[] | undefined;
-  creatingFirstItinerary: boolean;
-  setCreatingFirstItinerary: (creatingFirstItinerary: boolean) => void;
-  itineraryExists: boolean;
-  setItineraryExists: (itineraryExists: boolean) => void;
+  itineraries: Itinerary[] | undefined;
+  dataLoading: boolean;
+  tripState: TripState;
+  setTripState: (tripState: TripState) => void;
 }
 
 const MIN_ROWS = 100;
@@ -35,10 +36,10 @@ export function Sheet({
   isOwner,
   session,
   data,
-  creatingFirstItinerary,
-  setCreatingFirstItinerary,
-  itineraryExists,
-  setItineraryExists,
+  itineraries,
+  dataLoading,
+  tripState,
+  setTripState,
 }: SheetProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
@@ -62,12 +63,8 @@ export function Sheet({
     }
   }, [localStorageKey]);
 
-  const itineraries = api.trips.getItineraries.useQuery({
-    tripId: params.id,
-  });
-
-  const latestItinerary = itineraries.data?.find(
-    (itinerary) => itinerary.version === itineraries.data?.length,
+  const latestItinerary = itineraries?.find(
+    (itinerary) => itinerary.version === itineraries.length,
   );
 
   const [lastSaved, setLastSaved] = useState(latestItinerary?.lastUpdated);
@@ -87,7 +84,7 @@ export function Sheet({
   }, [latestItinerary]);
 
   const handlePrevVersion = () => {
-    const prevVersion = itineraries.data?.find(
+    const prevVersion = itineraries?.find(
       (itinerary) => itinerary.version === currentVersion! - 1,
     );
     if (prevVersion) {
@@ -97,7 +94,7 @@ export function Sheet({
   };
 
   const handleNextVersion = () => {
-    const nextVersion = itineraries.data?.find(
+    const nextVersion = itineraries?.find(
       (itinerary) => itinerary.version === currentVersion! + 1,
     );
     if (nextVersion) {
@@ -246,13 +243,10 @@ export function Sheet({
         setLastSaved(new Date());
         setVersion(csvData.version);
         setCurrentVersion(csvData.version);
-        setCreatingFirstItinerary(false);
-        if (!itineraryExists) {
-          setItineraryExists(true);
-        }
+        setTripState("ITINERARY_CREATED");
       }
     }
-  }, [data, setCreatingFirstItinerary, itineraryExists, setItineraryExists]);
+  }, [data, setTripState]);
 
   const handleColumnResize = useCallback(
     (column: { key: string }, width: number) => {
@@ -278,7 +272,7 @@ export function Sheet({
             isOwner={isOwner}
             lastSaved={lastSaved}
             saving={saving}
-            isDataLoading={itineraries.isLoading || creatingFirstItinerary}
+            isDataLoading={dataLoading || tripState === "CREATING_ITINERARY"}
             csvContent={content ?? ""}
             version={version ?? 1}
             currentVersion={currentVersion ?? 1}
@@ -286,7 +280,7 @@ export function Sheet({
             handleNextVersion={handleNextVersion}
           />
           <div className="relative flex-1 overflow-auto">
-            {itineraries.isLoading ? (
+            {dataLoading ? (
               <div className="flex h-full w-full items-center justify-center">
                 <Loader2 className="size-8 animate-spin" />
               </div>

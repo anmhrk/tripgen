@@ -20,7 +20,7 @@ interface ChatNavProps {
   isShared: boolean;
   session: Session | null;
   isOwner: boolean;
-  allDetailsCollected: boolean;
+  showItinerary: boolean;
   setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
 }
 
@@ -29,8 +29,8 @@ export function ChatNav({
   isShared,
   session,
   isOwner,
-  allDetailsCollected,
   setIsMobileSheetOpen,
+  showItinerary,
 }: ChatNavProps) {
   const isMobile = useIsMobile();
 
@@ -43,16 +43,16 @@ export function ChatNav({
         </Label>
       </Link>
 
-      {!allDetailsCollected && <p className="mr-11 font-medium">{name}</p>}
+      {!showItinerary && <p className="mr-11 font-medium">{name}</p>}
       {isShared ? (
         <>
           {session ? (
             <div className="flex items-center">
-              {isMobile && allDetailsCollected && (
+              {isMobile && showItinerary && (
                 <OpenSheetButton setIsMobileSheetOpen={setIsMobileSheetOpen} />
               )}
               <Settings
-                allDetailsCollected={allDetailsCollected}
+                showItinerary={showItinerary}
                 session={session}
                 isOwner={isOwner}
               />
@@ -68,11 +68,11 @@ export function ChatNav({
         </>
       ) : (
         <div className="flex items-center">
-          {isMobile && allDetailsCollected && (
+          {isMobile && showItinerary && (
             <OpenSheetButton setIsMobileSheetOpen={setIsMobileSheetOpen} />
           )}
           <Settings
-            allDetailsCollected={allDetailsCollected}
+            showItinerary={showItinerary}
             session={session}
             isOwner={isOwner}
           />

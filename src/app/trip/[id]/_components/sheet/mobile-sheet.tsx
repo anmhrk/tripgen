@@ -2,7 +2,7 @@ import { Drawer } from "vaul";
 import { Sheet } from "./sheet";
 import type { Session } from "next-auth";
 import type { JSONValue } from "ai";
-
+import type { Itinerary, TripState } from "~/lib/types";
 interface MobileSheetProps {
   name: string;
   isOwner: boolean;
@@ -10,10 +10,10 @@ interface MobileSheetProps {
   setOpen: (open: boolean) => void;
   session: Session | null;
   data: JSONValue[] | undefined;
-  creatingFirstItinerary: boolean;
-  setCreatingFirstItinerary: (creatingFirstItinerary: boolean) => void;
-  itineraryExists: boolean;
-  setItineraryExists: (itineraryExists: boolean) => void;
+  itineraries: Itinerary[] | undefined;
+  dataLoading: boolean;
+  tripState: TripState;
+  setTripState: (tripState: TripState) => void;
 }
 
 export function MobileSheet({
@@ -23,10 +23,10 @@ export function MobileSheet({
   setOpen,
   session,
   data,
-  creatingFirstItinerary,
-  setCreatingFirstItinerary,
-  itineraryExists,
-  setItineraryExists,
+  itineraries,
+  dataLoading,
+  tripState,
+  setTripState,
 }: MobileSheetProps) {
   return (
     <Drawer.Root open={open} onOpenChange={setOpen}>
@@ -40,10 +40,10 @@ export function MobileSheet({
             isOwner={isOwner}
             session={session}
             data={data}
-            creatingFirstItinerary={creatingFirstItinerary}
-            setCreatingFirstItinerary={setCreatingFirstItinerary}
-            itineraryExists={itineraryExists}
-            setItineraryExists={setItineraryExists}
+            itineraries={itineraries}
+            dataLoading={dataLoading}
+            tripState={tripState}
+            setTripState={setTripState}
           />
         </Drawer.Content>
       </Drawer.Portal>

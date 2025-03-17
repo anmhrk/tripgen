@@ -41,3 +41,15 @@ export type MessageWithUserInfo = Message & {
   profileImage: string | null;
   name: string | null;
 };
+
+export type Itinerary = {
+  csv: string;
+  lastUpdated: Date;
+  version: number;
+};
+
+export type TripState =
+  | "COLLECTING_DETAILS"
+  | "DETAILS_COLLECTED"
+  | "CREATING_ITINERARY"
+  | "ITINERARY_CREATED";

@@ -8,7 +8,7 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "~/components/ui/prompt-input";
-import { ArrowUp, Loader2, Square } from "lucide-react";
+import { ArrowUp, Square, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
@@ -19,14 +19,14 @@ interface ChatProps {
   session: Session | null;
   isShared: boolean;
   isOwner: boolean;
-  allDetailsCollected: boolean;
   setIsMobileSheetOpen: (isMobileSheetOpen: boolean) => void;
   messages: MessageWithUserInfo[];
   input: string;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleChatSubmit: () => void;
-  isLoading: boolean;
-  prevMessagesLoading: boolean;
+  isStreaming: boolean;
+  dataLoading: boolean;
+  showItinerary: boolean;
 }
 
 export function Chat({
@@ -34,32 +34,32 @@ export function Chat({
   session,
   isShared,
   isOwner,
-  allDetailsCollected,
   setIsMobileSheetOpen,
   messages,
   input,
   handleInputChange,
   handleChatSubmit,
-  isLoading,
-  prevMessagesLoading,
+  isStreaming,
+  dataLoading,
+  showItinerary,
 }: ChatProps) {
   return (
     <div
       className={cn(
         "flex h-full w-full flex-shrink-0 flex-col p-1.5",
-        !allDetailsCollected && "mx-auto max-w-4xl",
+        !showItinerary && "mx-auto max-w-4xl",
       )}
     >
       <ChatNav
-        allDetailsCollected={allDetailsCollected}
         name={name}
         isShared={isShared}
         session={session}
         isOwner={isOwner}
         setIsMobileSheetOpen={setIsMobileSheetOpen}
+        showItinerary={showItinerary}
       />
       <div className="flex-1 overflow-y-auto">
-        {prevMessagesLoading ? (
+        {dataLoading ? (
           <div className="flex h-full w-full items-center justify-center">
             <Loader2 className="size-8 animate-spin" />
           </div>
@@ -67,7 +67,7 @@ export function Chat({
           <Messages
             messages={messages}
             session={session}
-            isLoading={isLoading}
+            isStreaming={isStreaming}
           />
         )}
       </div>
@@ -80,7 +80,7 @@ export function Chat({
             } as React.ChangeEvent<HTMLTextAreaElement>)
           }
           onSubmit={handleChatSubmit}
-          isLoading={isLoading}
+          isLoading={isStreaming}
           className="w-full bg-zinc-100 dark:bg-zinc-900"
         >
           <PromptInputTextarea
@@ -90,17 +90,17 @@ export function Chat({
           />
           <PromptInputActions className="justify-end pt-2">
             <PromptInputAction
-              tooltip={isLoading ? "Stop Stream" : "Send Message"}
+              tooltip={isStreaming ? "Stop Stream" : "Send Message"}
               className="rounded-lg px-2 py-1.5 text-sm font-medium"
             >
               <Button
                 variant="default"
                 size="icon"
                 className="h-8 w-8 rounded-full"
-                disabled={!input && !isLoading}
+                disabled={!input && !isStreaming}
                 onClick={handleChatSubmit}
               >
-                {isLoading ? (
+                {isStreaming ? (
                   <Square className="size-5 fill-current" />
                 ) : (
                   <ArrowUp className="size-5" />

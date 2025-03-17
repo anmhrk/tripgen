@@ -8,11 +8,11 @@ import MessageItem from "./message-item";
 export function Messages({
   messages,
   session,
-  isLoading,
+  isStreaming,
 }: {
   messages: MessageWithUserInfo[];
   session: Session | null;
-  isLoading: boolean;
+  isStreaming: boolean;
 }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +29,7 @@ export function Messages({
           <MessageItem key={idx} message={msg} session={session} />
         ))}
 
-        {isLoading &&
+        {isStreaming &&
           messages.length > 0 &&
           messages[messages.length - 1]?.role === "user" && (
             <div className="flex w-full justify-start">

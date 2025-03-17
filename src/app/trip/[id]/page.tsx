@@ -9,7 +9,7 @@ import { LayoutHelper } from "./_components/layout-helper";
 
 const getCachedTrip = cache(async (id: string, share?: string) => {
   try {
-    return await api.trips.getTripDataOnLoad({
+    return await api.trips.validateTrip({
       tripId: id,
       sharePhrase: share,
     });

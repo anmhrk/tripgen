@@ -139,5 +139,7 @@ export const itineraries = pgTable("itinerary", {
   last_updated: timestamp("last_updated", {
     mode: "date",
     withTimezone: true,
-  }).default(sql`CURRENT_TIMESTAMP`),
+  })
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
