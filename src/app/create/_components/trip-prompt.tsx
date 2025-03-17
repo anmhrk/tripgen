@@ -10,7 +10,7 @@ import {
   PromptInputTextarea,
 } from "~/components/ui/prompt-input";
 import { Button } from "~/components/ui/button";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export function TripPrompt() {
@@ -49,9 +49,18 @@ export function TripPrompt() {
     >
       <PromptInputTextarea
         placeholder="I want to go to London for 1 week in April..."
-        className="min-h-[240px] !text-[15px]"
+        className="max-h-[180px] min-h-[180px] !text-[15px]"
       />
-      <PromptInputActions className="justify-end pt-2">
+      <PromptInputActions className="justify-between pt-2">
+        <Button
+          variant="outline"
+          className="rounded-lg"
+          onClick={() => router.push("/create/advanced")}
+          disabled={isLoading}
+        >
+          <Sparkles className="size-4" />
+          Advanced Mode
+        </Button>
         <PromptInputAction
           tooltip="Create Trip"
           className="rounded-lg px-2 py-1.5 text-sm font-medium"

@@ -9,7 +9,7 @@ import { generateObject } from "ai";
 import { TRPCError } from "@trpc/server";
 import { trips, itineraries } from "~/server/db/schema";
 import { formSchema } from "~/lib/types";
-import { eq, and, sql, gt, inArray } from "drizzle-orm";
+import { eq, and, sql, gt, inArray, desc } from "drizzle-orm";
 
 export const tripRouter = createTRPCRouter({
   createTripFromPrompt: protectedProcedure
@@ -282,4 +282,17 @@ export const tripRouter = createTRPCRouter({
         ),
       );
     }),
+
+  getRecentTrips: protectedProcedure.query(async ({ ctx }) => {
+    const recentTrips = await ctx.db.query.trips.findMany({
+      where: eq(trips.userId, ctx.session.user.id),
+      orderBy: desc(trips.createdAt),
+    });
+
+    return recentTrips.map((trip) => ({
+      id: trip.id,
+      name: trip.name,
+      createdAt: trip.createdAt,
+    }));
+  }),
 });

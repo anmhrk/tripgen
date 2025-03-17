@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import type { MessageWithUserInfo } from "~/lib/types";
 import type { Session } from "next-auth";
 import Image from "next/image";
@@ -12,12 +12,12 @@ import {
 } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
 
-interface ChatMessageProps {
+interface MessageItemProps {
   message: MessageWithUserInfo;
   session: Session | null;
 }
 
-function ChatMessage({ message, session }: ChatMessageProps) {
+function MessageItem({ message, session }: MessageItemProps) {
   if (message.role === "assistant") {
     return (
       <div className={cn("flex w-full justify-start")}>
@@ -109,7 +109,7 @@ function ChatMessage({ message, session }: ChatMessageProps) {
   return null;
 }
 
-export default memo(ChatMessage, (prevProps, nextProps) => {
+export default memo(MessageItem, (prevProps, nextProps) => {
   return (
     prevProps.message === nextProps.message &&
     prevProps.session === nextProps.session

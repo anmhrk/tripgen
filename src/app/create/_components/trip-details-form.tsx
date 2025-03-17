@@ -29,7 +29,7 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { Calendar } from "~/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ArrowLeft } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -76,128 +76,28 @@ export function TripDetailsForm() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="tripName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Trip Name</FormLabel>
-              <FormControl>
-                <Input
-                  className="!text-sm"
-                  placeholder="Summer Vacation 2025"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <>
+      <Button
+        variant="ghost"
+        className="mb-5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+        onClick={() => router.push("/create")}
+      >
+        <ArrowLeft className="size-4" />
+        Back
+      </Button>
 
-        <div className="grid gap-8 md:grid-cols-2">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="startDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Start Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "bg-transparent pl-3 text-left font-normal hover:bg-transparent",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>End Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "bg-transparent pl-3 text-left font-normal hover:bg-transparent",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => {
-                        const startDate = form.getValues("startDate");
-                        return startDate
-                          ? date <
-                              new Date(
-                                startDate.getTime() + 24 * 60 * 60 * 1000,
-                              )
-                          : date < new Date();
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="startLocation"
+            name="tripName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Start Location</FormLabel>
+                <FormLabel>Trip Name</FormLabel>
                 <FormControl>
                   <Input
-                    type="text"
                     className="!text-sm"
-                    placeholder="New York City"
+                    placeholder="Summer Vacation 2025"
                     {...field}
                   />
                 </FormControl>
@@ -206,50 +106,203 @@ export function TripDetailsForm() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="destination"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Destination(s)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    className="!text-sm"
-                    placeholder="London, Edinburgh, Paris"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Start Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "bg-transparent pl-3 text-left font-normal hover:bg-transparent",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="grid gap-8 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="travelStyle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Travel Style</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>End Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "bg-transparent pl-3 text-left font-normal hover:bg-transparent",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => {
+                          const startDate = form.getValues("startDate");
+                          return startDate
+                            ? date <
+                                new Date(
+                                  startDate.getTime() + 24 * 60 * 60 * 1000,
+                                )
+                            : date < new Date();
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="startLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Location</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your travel style" />
-                    </SelectTrigger>
+                    <Input
+                      type="text"
+                      className="!text-sm"
+                      placeholder="New York City"
+                      {...field}
+                    />
                   </FormControl>
-                  <SelectContent>
-                    {travelStyles.map((style) => (
-                      <SelectItem key={style} value={style}>
-                        {style}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="destination"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Destination(s)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      className="!text-sm"
+                      placeholder="London, Edinburgh, Paris"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="travelStyle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Travel Style</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your travel style" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {travelStyles.map((style) => (
+                        <SelectItem key={style} value={style}>
+                          {style}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="numTravelers"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Travelers</FormLabel>
+                  <FormControl>
+                    <Input
+                      className="!text-sm"
+                      type="number"
+                      min="1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="preferredActivities"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preferred Activities</FormLabel>
+                <FormControl>
+                  <Textarea
+                    className="resize-none !text-sm"
+                    rows={3}
+                    placeholder="E.g., sightseeing, hiking, food tours, museums..."
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Optional: List activities, attractions, or experiences
+                  you&apos;re interested in.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -257,77 +310,35 @@ export function TripDetailsForm() {
 
           <FormField
             control={form.control}
-            name="numTravelers"
+            name="specialRequirements"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Travelers</FormLabel>
+                <FormLabel>Special Requirements</FormLabel>
                 <FormControl>
-                  <Input
-                    className="!text-sm"
-                    type="number"
-                    min="1"
+                  <Textarea
+                    className="resize-none !text-sm"
+                    rows={3}
+                    placeholder="Anything else you would like the AI to know about your trip?"
                     {...field}
                   />
                 </FormControl>
+                <FormDescription>
+                  Optional: Add any dietary restrictions, accessibility needs,
+                  or other special requirements.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="preferredActivities"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Preferred Activities</FormLabel>
-              <FormControl>
-                <Textarea
-                  className="resize-none !text-sm"
-                  rows={3}
-                  placeholder="E.g., sightseeing, hiking, food tours, museums..."
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Optional: List activities, attractions, or experiences
-                you&apos;re interested in.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="specialRequirements"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Special Requirements</FormLabel>
-              <FormControl>
-                <Textarea
-                  className="resize-none !text-sm"
-                  rows={3}
-                  placeholder="Anything else you would like the AI to know about your trip?"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Optional: Add any dietary restrictions, accessibility needs, or
-                other special requirements.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button
-          type="submit"
-          className="h-11 w-full rounded-full bg-pink-500 font-semibold text-white hover:bg-pink-600"
-        >
-          Create Trip
-        </Button>
-      </form>
-    </Form>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-full bg-pink-500 font-semibold text-white hover:bg-pink-600"
+          >
+            Create Trip
+          </Button>
+        </form>
+      </Form>
+    </>
   );
 }

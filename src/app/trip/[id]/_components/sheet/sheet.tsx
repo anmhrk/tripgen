@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { VersionBanner } from "./version-banner";
 
-interface SheetEditorProps {
+interface SheetProps {
   name: string;
   isOwner: boolean;
   session: Session | null;
@@ -30,7 +30,7 @@ const MIN_ROWS = 100;
 const MIN_COLS = 26;
 const DEBOUNCE_MS = 1000;
 
-export function SheetEditor({
+export function Sheet({
   name,
   isOwner,
   session,
@@ -39,7 +39,7 @@ export function SheetEditor({
   setCreatingFirstItinerary,
   itineraryExists,
   setItineraryExists,
-}: SheetEditorProps) {
+}: SheetProps) {
   const { resolvedTheme } = useTheme();
   const params = useParams<{ id: string }>();
   const [mounted, setMounted] = useState(false);

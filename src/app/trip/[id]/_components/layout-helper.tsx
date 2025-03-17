@@ -8,9 +8,9 @@ import { useIsMobile } from "~/hooks/useIsMobile";
 import type { MessageWithUserInfo } from "~/lib/types";
 
 import { motion, AnimatePresence } from "motion/react";
-import { Chat } from "./chat";
-import { SheetEditor } from "./sheet-editor";
-import { MobileSheet } from "./mobile-sheet";
+import { Chat } from "./chat/chat";
+import { Sheet } from "./sheet/sheet";
+import { MobileSheet } from "./sheet/mobile-sheet";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -265,7 +265,7 @@ export function LayoutHelper({
                       },
                     }}
                   >
-                    <SheetEditor
+                    <Sheet
                       name={name}
                       isOwner={isOwner}
                       session={session}

@@ -3,7 +3,7 @@ import type { Session } from "next-auth";
 import type { MessageWithUserInfo } from "~/lib/types";
 
 import { Bot, Loader2 } from "lucide-react";
-import ChatMessage from "./chat-message";
+import MessageItem from "./message-item";
 
 export function Messages({
   messages,
@@ -26,7 +26,7 @@ export function Messages({
     <div className="relative h-full w-full overflow-y-auto px-2 py-4">
       <div className="flex flex-col space-y-4 pb-8 pr-1">
         {messages.map((msg, idx) => (
-          <ChatMessage key={idx} message={msg} session={session} />
+          <MessageItem key={idx} message={msg} session={session} />
         ))}
 
         {isLoading &&

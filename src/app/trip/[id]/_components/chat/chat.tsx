@@ -13,6 +13,7 @@ import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
 import { cn } from "~/lib/utils";
+
 interface ChatProps {
   name: string;
   session: Session | null;

@@ -1,8 +1,9 @@
 import { useParams } from "next/navigation";
-import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
-import { toast } from "sonner";
 import type { Session } from "next-auth";
+
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 
 interface VersionBannerProps {
   session: Session | null;

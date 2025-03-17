@@ -2,7 +2,6 @@ import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 
 import { Header } from "~/components/header";
-import { CreateHeader } from "./_components/create-header";
 
 export default async function CreateTripLayout({
   children,
@@ -19,7 +18,10 @@ export default async function CreateTripLayout({
     <main>
       <Header />
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <CreateHeader />
+        <h1 className="mb-12 text-center text-4xl font-bold text-gray-900 dark:text-zinc-300 sm:text-5xl">
+          Where will your next adventure be?{" "}
+          <span className="inline-block">🗺️</span>
+        </h1>
         {children}
       </div>
     </main>
