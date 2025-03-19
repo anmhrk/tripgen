@@ -1,29 +1,42 @@
-# Create T3 App
+# TripGen
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+an app that allows users to create detailed and personalized itineraries for their trips using AI. easily iterate and get suggestions by chatting with the AI. itineraries are created in a spreadsheet and can be shared with others.
 
-## What's next? How do I make an app with this?
+## tech stack
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- nextjs 15 app router
+- trpc/react-query
+- shadcn/ui + tailwindcss
+- nextauth
+- vercel ai sdk + openai api for tools and llm
+- neon postgres + drizzle orm
+- react-data-grid, papaparse for handling csv and spreadsheets
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## how to run locally
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+1. clone the repo
 
-## Learn More
+```bash
+git clone https://github.com/anmhrk/tripgen.git
+cd tripgen
+```
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+2. copy .env.example file to .env and set the env variables
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+```bash
+cp .env.example .env
+```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+3. install dependencies
 
-## How do I deploy this?
+```bash
+bun install
+```
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+4. start development server
+
+```bash
+bun dev
+```
+
+5. go to http://localhost:3000 and see the app live in your browser

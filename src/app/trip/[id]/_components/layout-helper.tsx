@@ -70,8 +70,6 @@ export function LayoutHelper({
     },
   );
 
-  const dataLoading = tripData.isLoading;
-
   const {
     messages,
     input,
@@ -202,10 +200,10 @@ export function LayoutHelper({
             </div>
           ) : (
             <Panel
-              defaultSize={allDetailsCollected && !isMobile ? 30 : 100}
+              defaultSize={showItinerary && !isMobile ? 30 : 100}
               minSize={10}
               onResize={(size) => {
-                if (size < 30 && allDetailsCollected && !isMobile) {
+                if (size < 30 && showItinerary && !isMobile) {
                   setIsChatCollapsed(true);
                 }
               }}
@@ -221,7 +219,7 @@ export function LayoutHelper({
                 handleInputChange={handleInputChange}
                 handleChatSubmit={handleChatSubmit}
                 isStreaming={status === "submitted" || status === "streaming"}
-                dataLoading={dataLoading}
+                dataLoading={tripData.isLoading}
                 showItinerary={showItinerary}
               />
             </Panel>
@@ -268,7 +266,7 @@ export function LayoutHelper({
                       session={session}
                       data={data}
                       itineraries={tripData.data?.itineraries}
-                      dataLoading={dataLoading}
+                      dataLoading={tripData.isLoading}
                       tripState={tripState}
                       setTripState={setTripState}
                     />
@@ -289,7 +287,7 @@ export function LayoutHelper({
           session={session}
           data={data}
           itineraries={tripData.data?.itineraries}
-          dataLoading={dataLoading}
+          dataLoading={tripData.isLoading}
           tripState={tripState}
           setTripState={setTripState}
         />
