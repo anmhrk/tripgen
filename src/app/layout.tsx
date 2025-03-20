@@ -8,6 +8,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { ThemeProvider } from "~/components/theme-provider";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "TripGen - AI trip itinerary planner",
@@ -25,19 +26,21 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen overscroll-none">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TooltipProvider delayDuration={100} skipDelayDuration={0}>
-            <TRPCReactProvider>
-              {children}
-              <Toaster position="top-center" />
-            </TRPCReactProvider>
-          </TooltipProvider>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TooltipProvider delayDuration={100} skipDelayDuration={0}>
+              <TRPCReactProvider>
+                {children}
+                <Toaster position="top-center" />
+              </TRPCReactProvider>
+            </TooltipProvider>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

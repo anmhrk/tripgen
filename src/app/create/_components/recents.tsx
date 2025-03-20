@@ -5,17 +5,23 @@ import { formatDistance } from "date-fns";
 import { useEffect, useState } from "react";
 import type { RecentTrip } from "~/lib/types";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import { Button } from "~/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function Recents() {
   const [mergedTrips, setMergedTrips] = useState<RecentTrip[]>([]);
   const [loading, setLoading] = useState(false);
+  const [lastIdx, setLastIdx] = useState(5);
   const recentTrips = api.trips.getRecentTrips.useQuery();
+  const session = useSession();
 
   useEffect(() => {
     if (typeof window !== "undefined" && recentTrips.data) {
       setLoading(true);
       const sharedTrips = JSON.parse(
-        localStorage.getItem("sharedTripsForUser") ?? "[]",
+        localStorage.getItem(`sharedTripsForUser-${session.data?.user.id}`) ??
+          "[]",
       ) as Array<{ id: string; name: string; createdAt: Date }>;
 
       const sharedTripsWithFlag = sharedTrips.map((trip) => ({
@@ -24,10 +30,15 @@ export function Recents() {
       }));
 
       const mergedTrips = [...recentTrips.data, ...sharedTripsWithFlag];
+      mergedTrips.sort((a, b) => {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
       setMergedTrips(mergedTrips);
       setLoading(false);
     }
-  }, [recentTrips.data]);
+  }, [recentTrips.data, session]);
 
   return (
     <div className="mt-8 flex flex-col gap-4">
@@ -39,16 +50,39 @@ export function Recents() {
         </div>
       )}
 
-      {/* Pagination? */}
       {mergedTrips.length !== 0 && !recentTrips.isLoading && !loading && (
         <>
-          <h2 className="text-xl font-semibold">Your Recent Trips</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Your Recent Trips</h2>
+            {5 < mergedTrips.length && (
+              <div className="flex items-center gap-1">
+                {lastIdx > 5 && (
+                  <Button
+                    onClick={() => setLastIdx(lastIdx - 5)}
+                    className="p-0 px-1"
+                    variant="ghost"
+                  >
+                    <ChevronLeft className="!h-6 !w-6" />
+                  </Button>
+                )}
+                {lastIdx < mergedTrips.length && (
+                  <Button
+                    onClick={() => setLastIdx(lastIdx + 5)}
+                    className="p-0 px-1"
+                    variant="ghost"
+                  >
+                    <ChevronRight className="!h-6 !w-6" />
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
           <div className="flex flex-col gap-2">
-            {mergedTrips.map((trip) => (
+            {mergedTrips.slice(lastIdx - 5, lastIdx).map((trip, idx) => (
               <Link
-                key={trip.id}
+                key={idx}
                 href={`/trip/${trip.id}`}
-                className="flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800"
+                className="flex items-center justify-between rounded-lg p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800"
               >
                 <div className="flex items-center gap-2">
                   <div className="font-medium">{trip.name}</div>

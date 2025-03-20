@@ -45,14 +45,14 @@ export function ChatNav({
       const tripName = document.title.split(" | ")[0];
 
       const sharedTrips = JSON.parse(
-        localStorage.getItem("sharedTripsForUser") ?? "[]",
+        localStorage.getItem(`sharedTripsForUser-${session.user.id}`) ?? "[]",
       ) as Array<{ id: string; name: string; createdAt: Date }>;
 
       if (
         !sharedTrips.some((trip) => trip.id === params.id + "?share=" + share)
       ) {
         localStorage.setItem(
-          "sharedTripsForUser",
+          `sharedTripsForUser-${session.user.id}`,
           JSON.stringify([
             ...sharedTrips,
             {
