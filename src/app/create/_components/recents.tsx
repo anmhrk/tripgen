@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatDistance } from "date-fns";
 import { useEffect, useState } from "react";
 import type { RecentTrip } from "~/lib/types";
+
 import { Skeleton } from "~/components/ui/skeleton";
 import { useSession } from "next-auth/react";
 import { Button } from "~/components/ui/button";
@@ -92,10 +93,15 @@ export function Recents() {
                 </div>
                 {trip.createdAt && (
                   <div className="text-sm text-gray-500">
-                    Created{" "}
-                    {formatDistance(new Date(trip.createdAt), new Date(), {
-                      addSuffix: true,
-                    })}
+                    {trip.isShared
+                      ? "Joined"
+                      : `Created ${formatDistance(
+                          new Date(trip.createdAt),
+                          new Date(),
+                          {
+                            addSuffix: true,
+                          },
+                        )}`}
                   </div>
                 )}
               </Link>

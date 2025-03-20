@@ -4,13 +4,14 @@ import type { MessageWithUserInfo } from "~/lib/types";
 import type { Session } from "next-auth";
 import Image from "next/image";
 
-import { Bot, Loader2 } from "lucide-react";
+import { Bot } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { cn } from "~/lib/utils";
+import Markdown from "react-markdown";
 
 interface MessageItemProps {
   message: MessageWithUserInfo;
@@ -25,48 +26,48 @@ function MessageItem({ message, session }: MessageItemProps) {
           <Bot className="h-5 w-5 text-primary" />
         </div>
         <div className="flex max-w-[80%] flex-col px-3 text-foreground">
-          {message.parts && message.parts.length > 0
-            ? message.parts.map((part, idx) => {
-                if (part.type === "text") {
-                  return <div key={idx}>{part.text}</div>;
-                } else if (part.type === "tool-invocation") {
-                  const toolInvocation = part.toolInvocation;
-                  const visibleStates = ["call", "partial-call", "running"];
-                  const visibleTools = [
-                    "webSearch",
-                    "generateOrUpdateItinerary",
-                  ];
+          {message.parts && message.parts.length > 0 ? (
+            message.parts.map((part, idx) => {
+              if (part.type === "text") {
+                return <Markdown key={idx}>{part.text}</Markdown>;
+              } else if (part.type === "tool-invocation") {
+                const toolInvocation = part.toolInvocation;
+                const visibleStates = ["call", "partial-call", "running"];
+                const visibleTools = ["webSearch", "generateOrUpdateItinerary"];
 
-                  if (
-                    visibleTools.includes(toolInvocation.toolName) &&
-                    (!toolInvocation.state ||
-                      visibleStates.includes(toolInvocation.state))
-                  ) {
-                    let messageText = "";
-                    switch (toolInvocation.toolName) {
-                      case "webSearch":
-                        messageText = "Performing web search";
-                        break;
+                if (
+                  visibleTools.includes(toolInvocation.toolName) &&
+                  (!toolInvocation.state ||
+                    visibleStates.includes(toolInvocation.state))
+                ) {
+                  let messageText = "";
+                  switch (toolInvocation.toolName) {
+                    case "webSearch":
+                      messageText = "Performing web search";
+                      break;
 
-                      case "generateOrUpdateItinerary":
-                        messageText = "Working on the itinerary";
-                        break;
-                    }
-
-                    return (
-                      <div
-                        key={idx}
-                        className="mt-2 flex h-10 items-center justify-center gap-2 rounded-lg bg-primary/10 text-sm text-muted-foreground"
-                      >
-                        {messageText}
-                        <Loader2 className="size-4 animate-spin" />
-                      </div>
-                    );
+                    case "generateOrUpdateItinerary":
+                      messageText = "Working on the itinerary";
+                      break;
                   }
+
+                  return (
+                    <div
+                      key={idx}
+                      className="relative mt-2 inline-block overflow-hidden"
+                    >
+                      <span className="text-sm text-muted-foreground">
+                        {messageText}...
+                      </span>
+                    </div>
+                  );
                 }
-                return null;
-              })
-            : message.content}
+              }
+              return null;
+            })
+          ) : (
+            <Markdown>{message.content}</Markdown>
+          )}
         </div>
       </div>
     );

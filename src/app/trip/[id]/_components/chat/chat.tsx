@@ -8,7 +8,7 @@ import {
   PromptInputActions,
   PromptInputAction,
 } from "~/components/ui/prompt-input";
-import { ArrowUp, Square, Loader2 } from "lucide-react";
+import { ArrowUp, Square, Loader2, Globe } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Messages } from "./messages";
 import { ChatNav } from "./chat-nav";
@@ -27,6 +27,8 @@ interface ChatProps {
   isStreaming: boolean;
   dataLoading: boolean;
   showItinerary: boolean;
+  webSearchEnabled: boolean;
+  setWebSearchEnabled: (webSearchEnabled: boolean) => void;
 }
 
 export function Chat({
@@ -42,6 +44,8 @@ export function Chat({
   isStreaming,
   dataLoading,
   showItinerary,
+  webSearchEnabled,
+  setWebSearchEnabled,
 }: ChatProps) {
   return (
     <div
@@ -88,7 +92,28 @@ export function Chat({
             placeholder="Send a message..."
             className="max-h-[200px] min-h-[80px] !text-[15px]"
           />
-          <PromptInputActions className="justify-end pt-2">
+          <PromptInputActions className="justify-between pt-2">
+            <PromptInputAction
+              tooltip={
+                webSearchEnabled ? "Disable Web Search" : "Enable Web Search"
+              }
+              side="right"
+              className="rounded-lg px-2 py-1.5 text-sm font-medium"
+            >
+              <Button
+                variant="outline"
+                className={cn(
+                  "h-fit w-fit rounded-xl px-2 py-1.5 text-sm font-medium",
+                  webSearchEnabled
+                    ? "bg-pink-500 text-white hover:bg-pink-500 hover:text-white dark:bg-pink-600 dark:hover:bg-pink-600"
+                    : "bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-800",
+                )}
+                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+              >
+                <Globe className="size-6" />
+                Search
+              </Button>
+            </PromptInputAction>
             <PromptInputAction
               tooltip={isStreaming ? "Stop Stream" : "Send Message"}
               className="rounded-lg px-2 py-1.5 text-sm font-medium"

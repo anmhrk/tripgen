@@ -10,7 +10,7 @@ an app that allows users to create detailed and personalized itineraries for the
 - [nextauth](https://authjs.dev/)
 - [vercel ai sdk](https://sdk.vercel.ai/) + [openai api](https://platform.openai.com/docs/overview) for tools and llm
 - [tavily api](https://tavily.com) for websearch
-- [neon postgres](https://neon.tech/) + [drizzle orm](https://drizzle.dev/)
+- [neon postgres](https://neon.tech/) + [drizzle orm](https://orm.drizzle.team/)
 - [react-data-grid](https://github.com/adazzle/react-data-grid) + [papaparse](https://www.papaparse.com/) for handling csv and spreadsheets
 
 ## how to run locally

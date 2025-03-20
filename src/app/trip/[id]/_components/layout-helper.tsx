@@ -40,6 +40,7 @@ export function LayoutHelper({
   const [mounted, setMounted] = useState(false);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   const [panelGroupKey, setPanelGroupKey] = useState(0);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [tripState, setTripState] = useState<TripState>(
     getInitialTripState(allDetailsCollected, itineraryExists),
   );
@@ -84,6 +85,7 @@ export function LayoutHelper({
     initialMessages: tripData.data?.messages ?? [],
     body: {
       tripId: params.id,
+      webSearchEnabled,
     },
     experimental_throttle: 50,
     onFinish: (response) => {
@@ -109,6 +111,7 @@ export function LayoutHelper({
     }
 
     handleSubmit();
+    setWebSearchEnabled(false);
   };
 
   const handleShowChat = () => {
@@ -221,6 +224,8 @@ export function LayoutHelper({
                 isStreaming={status === "submitted" || status === "streaming"}
                 dataLoading={tripData.isLoading}
                 showItinerary={showItinerary}
+                webSearchEnabled={webSearchEnabled}
+                setWebSearchEnabled={setWebSearchEnabled}
               />
             </Panel>
           )}

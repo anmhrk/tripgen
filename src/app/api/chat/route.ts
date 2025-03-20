@@ -18,8 +18,6 @@ import { gatherTripDataPrompt, generalChatPrompt } from "~/lib/prompts";
 import { auth } from "~/server/auth";
 import type { MessageWithUserInfo } from "~/lib/types";
 
-// export const runtime = "edge";
-
 export async function POST(req: NextRequest) {
   const session = await auth();
 
@@ -27,9 +25,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { messages, tripId } = (await req.json()) as {
+  const { messages, tripId, webSearchEnabled } = (await req.json()) as {
     messages: MessageWithUserInfo[];
     tripId: string;
+    webSearchEnabled: boolean;
   };
 
   const trip = await db.query.trips.findFirst({
@@ -146,9 +145,9 @@ export async function POST(req: NextRequest) {
           parameters: z.object({
             query: z
               .array(z.string())
-              .max(3)
+              .max(5)
               .describe(
-                "Array of search queries to look up on the web. Max 3 at a time.",
+                "Array of search queries to look up on the web. Max 5 at a time.",
               ),
           }),
           execute: async ({ query }) => {
@@ -157,7 +156,7 @@ export async function POST(req: NextRequest) {
             const searchResults = await Promise.all(
               query.map((query) =>
                 tvly.search(query, {
-                  max_results: 3,
+                  max_results: 5,
                 }),
               ),
             );
@@ -197,7 +196,12 @@ export async function POST(req: NextRequest) {
         model: openai("gpt-4o"),
         messages: convertToCoreMessages(messages),
         system: useGeneralChat
-          ? generalChatPrompt(trip.name, userData, latestItineraryCsv ?? "")
+          ? generalChatPrompt(
+              trip.name,
+              userData,
+              latestItineraryCsv ?? "",
+              webSearchEnabled,
+            )
           : gatherTripDataPrompt,
         tools: useGeneralChat ? generalChatTools : gatherTripDataTools,
         onFinish: async (completion) => {

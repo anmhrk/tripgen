@@ -54,7 +54,7 @@ export function TripPrompt() {
       <PromptInputActions className="justify-between pt-2">
         <Button
           variant="outline"
-          className="rounded-lg"
+          className="h-fit w-fit rounded-xl bg-neutral-200 px-2 py-1.5 text-sm font-medium hover:bg-neutral-300 dark:bg-neutral-800 dark:hover:bg-neutral-700"
           onClick={() => router.push("/create/advanced")}
           disabled={isLoading}
         >

@@ -312,7 +312,10 @@ export function Sheet({
               <VersionBanner
                 session={session}
                 version={currentVersion}
-                goToLatestVersion={() => setCurrentVersion(version)}
+                goToLatestVersion={() => {
+                  setContent(latestItinerary?.csv);
+                  setCurrentVersion(latestItinerary?.version);
+                }}
                 setVersion={setVersion}
                 setCurrentVersion={setCurrentVersion}
               />
