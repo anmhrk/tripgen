@@ -8,8 +8,7 @@ export const gatherTripDataPrompt = `\n
     1. Begin by using the checkMissingFields tool to identify what information needs to be collected from the user.
     2. Then ask ONE question at a time using the askQuestion tool. Even if the checkMissingFields tool returns multiple missing fields, ask ONE question at a time.
     3. After each user response, acknowledge their input in a friendly, conversational tone. Then use the updateTripData tool to record their answers into the database immediately
-    4. Verify updated information before proceeding to your next question. 
-    5. Repeat this process until all fields are complete.
+    4. Repeat this process until all fields are complete.
 
     - When asking travel dates, make sure to ask for the start and end dates together. 
       Then update both dates in the database together using the updateTripData tool.

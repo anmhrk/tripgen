@@ -53,3 +53,10 @@ export type TripState =
   | "DETAILS_COLLECTED"
   | "CREATING_ITINERARY"
   | "ITINERARY_CREATED";
+
+export type RecentTrip = {
+  id: string;
+  name: string;
+  createdAt: Date;
+  isShared?: boolean;
+};

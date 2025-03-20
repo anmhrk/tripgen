@@ -3,6 +3,9 @@ import Link from "next/link";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
@@ -33,6 +36,35 @@ export function ChatNav({
   showItinerary,
 }: ChatNavProps) {
   const isMobile = useIsMobile();
+  const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const share = searchParams.get("share");
+
+  useEffect(() => {
+    if (!isOwner && share && session) {
+      const tripName = document.title.split(" | ")[0];
+
+      const sharedTrips = JSON.parse(
+        localStorage.getItem("sharedTripsForUser") ?? "[]",
+      ) as Array<{ id: string; name: string; createdAt: Date }>;
+
+      if (
+        !sharedTrips.some((trip) => trip.id === params.id + "?share=" + share)
+      ) {
+        localStorage.setItem(
+          "sharedTripsForUser",
+          JSON.stringify([
+            ...sharedTrips,
+            {
+              id: params.id + "?share=" + share,
+              name: tripName,
+              createdAt: new Date(),
+            },
+          ]),
+        );
+      }
+    }
+  }, [share, session, isOwner, params.id]);
 
   return (
     <header className="flex w-full items-center justify-between text-zinc-800 dark:text-zinc-300">
