@@ -92,28 +92,35 @@ export function Chat({
             placeholder="Send a message..."
             className="max-h-[200px] min-h-[80px] !text-[15px]"
           />
-          <PromptInputActions className="justify-between pt-2">
-            <PromptInputAction
-              tooltip={
-                webSearchEnabled ? "Disable Web Search" : "Enable Web Search"
-              }
-              side="right"
-              className="rounded-lg px-2 py-1.5 text-sm font-medium"
-            >
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-fit w-fit rounded-xl px-2 py-1.5 text-sm font-medium",
-                  webSearchEnabled
-                    ? "bg-pink-500 text-white hover:bg-pink-500 hover:text-white dark:bg-pink-600 dark:hover:bg-pink-600"
-                    : "bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-800",
-                )}
-                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+          <PromptInputActions
+            className={cn(
+              "justify-end pt-2",
+              showItinerary && "justify-between",
+            )}
+          >
+            {showItinerary && (
+              <PromptInputAction
+                tooltip={
+                  webSearchEnabled ? "Disable Web Search" : "Enable Web Search"
+                }
+                side="right"
+                className="rounded-lg px-2 py-1.5 text-sm font-medium"
               >
-                <Globe className="size-6" />
-                Search
-              </Button>
-            </PromptInputAction>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-fit w-fit rounded-xl px-2 py-1.5 text-sm font-medium",
+                    webSearchEnabled
+                      ? "bg-pink-500 text-white hover:bg-pink-500 hover:text-white dark:bg-pink-600 dark:hover:bg-pink-600"
+                      : "bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-800",
+                  )}
+                  onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                >
+                  <Globe className="size-6" />
+                  Search
+                </Button>
+              </PromptInputAction>
+            )}
             <PromptInputAction
               tooltip={isStreaming ? "Stop Stream" : "Send Message"}
               className="rounded-lg px-2 py-1.5 text-sm font-medium"

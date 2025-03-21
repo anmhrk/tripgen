@@ -12,6 +12,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { ArrowUp, Square, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { TRPCClientError } from "@trpc/client";
 
 export function TripPrompt() {
   const [input, setInput] = useState("");
@@ -23,7 +24,11 @@ export function TripPrompt() {
       router.push(`/trip/${data.tripId}`);
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
     onSettled: () => {
       setIsLoading(false);

@@ -8,6 +8,7 @@ import type { Session } from "next-auth";
 import debounce from "lodash.debounce";
 import type { JSONValue } from "ai";
 import { Itinerary, TripState } from "~/lib/types";
+import { TRPCClientError } from "@trpc/client";
 
 import { DataGrid, textEditor } from "react-data-grid";
 import { cn } from "~/lib/utils";
@@ -110,7 +111,11 @@ export function Sheet({
       setContent(newCsv);
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
     onSettled: () => {
       setSaving(false);

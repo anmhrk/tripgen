@@ -1,6 +1,7 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import type { Session } from "next-auth";
+import { TRPCClientError } from "@trpc/client";
 
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -27,7 +28,11 @@ export function VersionBanner({
       setCurrentVersion(version!);
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
   });
 

@@ -2,6 +2,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import { formatDistance } from "date-fns";
+import { TRPCClientError } from "@trpc/client";
 
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight, Copy, PenLine } from "lucide-react";
@@ -61,7 +62,11 @@ export function SheetNav({
     },
     onError: (error) => {
       setTripNameInput(name);
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
     onSettled: () => {
       setIsEditing(false);

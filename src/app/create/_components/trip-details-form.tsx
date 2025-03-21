@@ -7,6 +7,7 @@ import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { formSchema } from "~/lib/types";
+import { TRPCClientError } from "@trpc/client";
 
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
@@ -52,7 +53,11 @@ export function TripDetailsForm() {
       router.push(`/trip/${data.tripId}`);
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
   });
 

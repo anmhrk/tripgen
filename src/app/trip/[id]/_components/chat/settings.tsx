@@ -3,6 +3,7 @@ import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { api } from "~/trpc/react";
 import { useParams, useRouter } from "next/navigation";
+import { TRPCClientError } from "@trpc/client";
 
 import {
   DropdownMenu,
@@ -42,7 +43,11 @@ export function Settings({ session, isOwner, showItinerary }: SettingsProps) {
       router.push("/");
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
   });
 

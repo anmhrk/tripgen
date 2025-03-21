@@ -4,12 +4,13 @@ an app that allows users to create detailed and personalized itineraries for the
 
 ## tech stack
 
-- [nextjs 15 app router](https://nextjs.org)
+- [nextjs 15 w/ app router](https://nextjs.org)
 - [trpc](https://trpc.io)
+- [tanstack query](https://tanstack.com/query/latest/docs/framework/react/overview)
 - [shadcn/ui](https://ui.shadcn.com/) + [tailwindcss](https://tailwindcss.com/)
 - [nextauth](https://authjs.dev/)
 - [vercel ai sdk](https://sdk.vercel.ai/) + [openai api](https://platform.openai.com/docs/overview) for tools and llm
-- [tavily api](https://tavily.com) for websearch
+- [tavily api](https://tavily.com) for web search
 - [neon postgres](https://neon.tech/) + [drizzle orm](https://orm.drizzle.team/)
 - [react-data-grid](https://github.com/adazzle/react-data-grid) + [papaparse](https://www.papaparse.com/) for handling csv and spreadsheets
 

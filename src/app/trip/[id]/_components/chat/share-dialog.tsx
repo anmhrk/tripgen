@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { env } from "~/env";
+import { TRPCClientError } from "@trpc/client";
 
 import {
   DialogTitle,
@@ -55,7 +56,11 @@ export function ShareDialog() {
       }, 4000);
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
   });
 
@@ -68,7 +73,11 @@ export function ShareDialog() {
       await getSharePhrase.refetch();
     },
     onError: (error) => {
-      toast.error(error.message);
+      if (error instanceof TRPCClientError) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
     },
   });
 

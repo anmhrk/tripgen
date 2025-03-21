@@ -74,7 +74,6 @@ export const tripRouter = createTRPCRouter({
           startDate: input.startDate,
           endDate: input.endDate,
           numTravelers: input.numTravelers,
-
           startLocation: input.startLocation,
           destination: input.destination,
           travelStyle: input.travelStyle,
@@ -119,6 +118,17 @@ export const tripRouter = createTRPCRouter({
   deleteTrip: protectedProcedure
     .input(z.object({ tripId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      const itinerary = await ctx.db.query.itineraries.findMany({
+        where: eq(itineraries.tripId, input.tripId),
+      });
+
+      await ctx.db.delete(itineraries).where(
+        inArray(
+          itineraries.id,
+          itinerary.map((itinerary) => itinerary.id),
+        ),
+      );
+
       await ctx.db.delete(trips).where(eq(trips.id, input.tripId));
     }),
 
