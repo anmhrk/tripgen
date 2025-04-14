@@ -9,7 +9,8 @@ an app that allows users to create detailed and personalized itineraries for the
 - [tanstack query](https://tanstack.com/query/latest/docs/framework/react/overview)
 - [shadcn/ui](https://ui.shadcn.com/) + [tailwindcss](https://tailwindcss.com/)
 - [nextauth](https://authjs.dev/)
-- [vercel ai sdk](https://sdk.vercel.ai/) + [openai api](https://platform.openai.com/docs/overview) for tools and llm
+- [vercel ai sdk](https://sdk.vercel.ai/)
+- [openai](https://openai.com/) for llms (gpt 4.1)
 - [tavily api](https://tavily.com) for web search
 - [neon postgres](https://neon.tech/) + [drizzle orm](https://orm.drizzle.team/)
 - [react-data-grid](https://github.com/adazzle/react-data-grid) + [papaparse](https://www.papaparse.com/) for handling csv and spreadsheets

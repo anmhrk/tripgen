@@ -17,7 +17,7 @@ export const tripRouter = createTRPCRouter({
     .input(z.object({ prompt: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const response = await generateObject({
-        model: openai("gpt-4o"),
+        model: openai("gpt-4.1-nano"),
         schema: z.object({
           valid: z.boolean(),
           name: z.string().optional(),

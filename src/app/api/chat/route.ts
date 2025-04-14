@@ -193,7 +193,7 @@ export async function POST(req: NextRequest) {
       };
 
       const result = streamText({
-        model: openai("gpt-4o"),
+        model: openai("gpt-4.1"),
         messages: convertToCoreMessages(messages),
         system: useGeneralChat
           ? generalChatPrompt(
