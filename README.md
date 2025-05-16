@@ -1,45 +1,68 @@
-# TripGen
+# tripgen
 
-an app that allows users to create detailed and personalized itineraries for their trips using AI. easily iterate and get suggestions by chatting with the AI. itineraries are created as a spreadsheet and trips can be shared with others.
+This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Hono, ORPC, and more.
 
-## tech stack
+## Features
 
-- [nextjs 15 w/ app router](https://nextjs.org)
-- [trpc](https://trpc.io)
-- [tanstack query](https://tanstack.com/query/latest/docs/framework/react/overview)
-- [shadcn/ui](https://ui.shadcn.com/) + [tailwindcss](https://tailwindcss.com/)
-- [nextauth](https://authjs.dev/)
-- [vercel ai sdk](https://sdk.vercel.ai/)
-- [openai](https://openai.com/) for llms (gpt 4.1)
-- [tavily api](https://tavily.com) for web search
-- [neon postgres](https://neon.tech/) + [drizzle orm](https://orm.drizzle.team/)
-- [react-data-grid](https://github.com/adazzle/react-data-grid) + [papaparse](https://www.papaparse.com/) for handling csv and spreadsheets
+- **TypeScript** - For type safety and improved developer experience
+- **TanStack Router** - File-based routing with full type safety
+- **TailwindCSS** - Utility-first CSS for rapid UI development
+- **shadcn/ui** - Reusable UI components
+- **Hono** - Lightweight, performant server framework
+- **oRPC** - End-to-end type-safe APIs with OpenAPI integration
+- **Bun** - Runtime environment
+- **Drizzle** - TypeScript-first ORM
+- **PostgreSQL** - Database engine
+- **Authentication** - Email & password authentication with Better Auth
+- **Turborepo** - Optimized monorepo build system
 
-## how to run locally
+## Getting Started
 
-1. clone the repo
+First, install the dependencies:
 
-```
-git clone https://github.com/anmhrk/tripgen.git
-cd tripgen
-```
-
-2. copy .env.example file to .env and set the env variables
-
-```
-cp .env.example .env
-```
-
-3. install dependencies
-
-```
+```bash
 bun install
 ```
+## Database Setup
 
-4. start development server
+This project uses PostgreSQL with Drizzle ORM.
 
+1. Make sure you have a PostgreSQL database set up.
+2. Update your `apps/server/.env` file with your PostgreSQL connection details.
+
+3. Apply the schema to your database:
+```bash
+bun db:push
 ```
+
+
+Then, run the development server:
+
+```bash
 bun dev
 ```
 
-5. navigate to http://localhost:3000 in your browser and see the app live
+Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
+
+The API is running at [http://localhost:3000](http://localhost:3000).
+
+
+
+## Project Structure
+
+```
+tripgen/
+├── apps/
+│   ├── web/         # Frontend application (React + TanStack Router)
+│   └── server/      # Backend API (Hono, ORPC)
+```
+
+## Available Scripts
+
+- `bun dev`: Start all applications in development mode
+- `bun build`: Build all applications
+- `bun dev:web`: Start only the web application
+- `bun dev:server`: Start only the server
+- `bun check-types`: Check TypeScript types across all apps
+- `bun db:push`: Push schema changes to database
+- `bun db:studio`: Open database studio UI
