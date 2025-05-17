@@ -1,3 +1,4 @@
+import Header from "@/components/header";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
@@ -5,5 +6,9 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  return <div>Home</div>;
+  return (
+    <div className="flex flex-col items-center h-screen max-w-4xl mx-auto w-full px-4">
+      <Header />
+    </div>
+  );
 }
