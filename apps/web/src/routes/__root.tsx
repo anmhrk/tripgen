@@ -29,11 +29,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   head: () => ({
     meta: [
       {
-        title: "My App",
+        title: "TripGen - AI Powered Trip Planner",
       },
       {
         name: "description",
-        content: "My App is a web application",
+        content: "Plan your perfect trip with AI powered itineraries",
       },
     ],
     links: [
@@ -50,14 +50,16 @@ function RootComponent() {
     select: (s) => s.isLoading,
   });
 
-  const [client] = useState<RouterClient<typeof appRouter>>(() => createORPCClient(link));
+  const [client] = useState<RouterClient<typeof appRouter>>(() =>
+    createORPCClient(link)
+  );
   const [orpcUtils] = useState(() => createORPCReactQueryUtils(client));
 
   return (
     <>
       <HeadContent />
       <ORPCContext.Provider value={orpcUtils}>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
           <div className="grid grid-rows-[auto_1fr] h-svh">
             <Header />
             {isFetching ? <Loader /> : <Outlet />}
