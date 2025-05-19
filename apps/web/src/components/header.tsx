@@ -36,6 +36,7 @@ export default function Header() {
             onClick={() => {
               authClient.signIn.social({
                 provider: "google",
+                callbackURL: import.meta.env.VITE_APP_URL,
               });
             }}
           >
