@@ -8,14 +8,13 @@ export default function Header() {
   const { data: session, isPending } = authClient.useSession();
 
   return (
-    <div className="flex flex-row items-center justify-between px-6 py-1.5 mt-6 rounded-full bg-gray-950 w-full text-white dark:bg-gray-50 dark:text-black border border-gray-900/10 dark:border-gray-200/30 shadow-md transition-all">
+    <div className="flex flex-row items-center justify-between px-6 py-1.5 mt-6 rounded-sm w-full bg-purple-200 text-black dark:bg-[#3f324a] dark:text-white shadow-md transition-all">
       <div className="flex flex-row items-center gap-2">
-        <div className="flex flex-row items-center bg-gradient-to-tr from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 rounded-full p-2 border border-gray-200 dark:border-gray-800 shadow-sm">
-          <Plane className="w-6 h-6 text-black dark:text-white" />
+        <div className="flex flex-row items-center dark:bg-purple-200 bg-purple-100 border border-purple-200 dark:border-purple-900 rounded-full p-2 shadow-sm">
+          <Plane className="w-6 h-6 text-black" />
         </div>
-        <span className="text-2xl font-semibold tracking-tight">TripGen</span>
+        <span className="text-2xl font-semibold">TripGen</span>
       </div>
-
       <div className="flex flex-row items-center gap-2">
         <ThemeToggle />
         {isPending ? (
@@ -24,7 +23,7 @@ export default function Header() {
           <img
             src={session.user.image || ""}
             alt="User"
-            className="w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-blue-500 transition duration-200 shadow-sm hover:scale-105"
+            className="w-8 h-8 rounded-full cursor-pointer transition duration-200 shadow-sm hover:scale-105"
             onClick={() => {
               authClient.signOut();
             }}

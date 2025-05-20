@@ -1,38 +1,54 @@
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { authClient } from "@/lib/auth-client";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowUp } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 const PROMPT_SUGGESTIONS = [
-  "Plan a romantic weekend getaway in Paris 🗼",
+  "Plan a romantic weekend getaway in Paris ❤️",
   "Find hidden gems in Southeast Asia for backpackers 🎒",
   "Create a road trip through the US 🚗",
 ];
 
 function HomeComponent() {
+  const { data: session } = authClient.useSession();
   const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = () => {
-    console.log(prompt); // for now
+  const handleSubmit = async () => {
+    try {
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   };
+
+  useEffect(() => {
+    if (promptRef.current) {
+      promptRef.current.focus();
+    }
+  }, []);
 
   return (
     <div className="flex flex-col items-center h-screen max-w-4xl mx-auto w-full px-4">
       <Header />
       <div className="flex flex-col items-center w-full mt-16 gap-6 max-w-3xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">
-          Where will your next adventure take you?{" "}
-          <span className="inline-block">🌍✈️🗺️</span>
+        <h1 className="text-3xl md:text-4xl font-semibold text-center mb-2">
+          Where will you go next, {session?.user.name?.split(" ")[0]}?{" "}
         </h1>
         <div className="relative w-full flex items-center justify-center">
           <Textarea
-            className="w-full min-h-[150px] max-h-[250px] rounded-2xl shadow-md resize-none pr-12 text-lg bg-white/90 dark:bg-gray-900/80 border-gray-300 dark:border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:border-blue-500 dark:focus:ring-blue-900 transition"
+            ref={promptRef}
+            className="w-full min-h-[150px] p-3 max-h-[250px] rounded-2xl shadow-md resize-none pr-12 !text-md transition"
             placeholder="Describe your dream trip..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -44,7 +60,7 @@ function HomeComponent() {
           />
           <Button
             size="icon"
-            className="absolute bottom-3 right-3 bg-purple-400 hover:bg-purple-500 rounded-full shadow-md p-2 transition disabled:opacity-50 disabled:pointer-events-none"
+            className="absolute bottom-3 right-3 rounded-full shadow-md p-2 cursor-pointer transition disabled:opacity-50 disabled:pointer-events-none"
             onClick={handleSubmit}
             aria-label="Send"
             disabled={!prompt.trim()}
@@ -57,26 +73,24 @@ function HomeComponent() {
             <Button
               variant="outline"
               key={suggestion}
-              className="cursor-pointer rounded-full text-sm font-medium"
+              className="cursor-pointer rounded-full text-sm font-medium transition"
               onClick={() => setPrompt(suggestion)}
             >
               {suggestion}
             </Button>
           ))}
         </div>
-        <div className="mt-10 text-center text-gray-500 text-sm">
-          <span className="text-gray-500">
-            Fully open source on{" "}
-            <a
-              href="https://github.com/anmhrk/tripgen"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-black dark:hover:text-white transition"
-            >
-              GitHub
-            </a>
-            .
-          </span>
+        <div className="mt-10 text-center text-gray-500 dark:text-gray-400 text-sm">
+          Fully open source on{" "}
+          <a
+            href="https://github.com/anmhrk/tripgen"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-purple-500 dark:hover:text-purple-400 transition"
+          >
+            GitHub
+          </a>
+          .
         </div>
       </div>
     </div>
