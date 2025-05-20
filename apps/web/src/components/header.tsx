@@ -20,6 +20,7 @@ export default function Header() {
         {isPending ? (
           <Skeleton className="h-9 w-20 rounded-full" />
         ) : session ? (
+          // TODO: Add user dropdown
           <img
             src={session.user.image || ""}
             alt="User"
@@ -31,7 +32,7 @@ export default function Header() {
         ) : (
           <Button
             variant="outline"
-            className="flex flex-row items-center text-black dark:bg-black dark:text-white rounded-full font-semibold cursor-pointer border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 transition duration-200 shadow-sm hover:scale-105"
+            className="flex flex-row items-center rounded-full dark:bg-primary/20 dark:hover:bg-primary/30 font-semibold cursor-pointer transition duration-200 shadow-sm"
             onClick={() => {
               authClient.signIn.social({
                 provider: "google",

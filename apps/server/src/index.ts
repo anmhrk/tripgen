@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { RPCHandler } from "@orpc/server/fetch";
 import { createContext } from "./lib/context";
-import { appRouter } from "./routers/index";
+import { appRouter } from "./routers";
 import { auth } from "./lib/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";

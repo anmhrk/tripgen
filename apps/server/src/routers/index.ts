@@ -1,14 +1,16 @@
-import { protectedProcedure, publicProcedure } from "../lib/orpc";
+import { protectedProcedure } from "../lib/orpc";
+import { z } from "zod";
 
 export const appRouter = {
-  healthCheck: publicProcedure.handler(() => {
-    return "OK";
-  }),
-  privateData: protectedProcedure.handler(({ context }) => {
-    return {
-      message: "This is private",
-      user: context.session?.user,
-    };
-  }),
+  createNewTrip: protectedProcedure
+    .input(
+      z.object({
+        prompt: z.string(),
+      })
+    )
+    .handler(async ({ input, context }) => {
+      const { prompt } = input;
+      const { session } = context;
+    }),
 };
 export type AppRouter = typeof appRouter;

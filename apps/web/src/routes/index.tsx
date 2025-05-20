@@ -1,3 +1,8 @@
+// todos:
+// make a proper logo in header
+// improve the where will you go next text
+// change the second prompt suggestion
+
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,17 +23,31 @@ const PROMPT_SUGGESTIONS = [
 ];
 
 function HomeComponent() {
-  const { data: session } = authClient.useSession();
+  const session = authClient.useSession();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = async () => {
+    if (!session.data?.user) {
+      toast.error("You must be logged in to generate a trip");
+      return;
+
+      // save prompt to local storage with a 5 min future time stamp
+      // route to auth
+      // if signed in within 5 mins, fetch prompt from local storage and generate trip
+    }
+
     try {
+      setLoading(true);
+
+
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,6 +55,12 @@ function HomeComponent() {
     if (promptRef.current) {
       promptRef.current.focus();
     }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        promptRef.current?.blur();
+      }
+    });
   }, []);
 
   return (
@@ -43,7 +68,7 @@ function HomeComponent() {
       <Header />
       <div className="flex flex-col items-center w-full mt-16 gap-6 max-w-3xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-semibold text-center mb-2">
-          Where will you go next, {session?.user.name?.split(" ")[0]}?{" "}
+          Where will you go next?
         </h1>
         <div className="relative w-full flex items-center justify-center">
           <Textarea
@@ -54,13 +79,14 @@ function HomeComponent() {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
                 handleSubmit();
               }
             }}
           />
           <Button
             size="icon"
-            className="absolute bottom-3 right-3 rounded-full shadow-md p-2 cursor-pointer transition disabled:opacity-50 disabled:pointer-events-none"
+            className="absolute bottom-3 right-3 rounded-full shadow-md cursor-pointer transition disabled:opacity-50 disabled:pointer-events-none"
             onClick={handleSubmit}
             aria-label="Send"
             disabled={!prompt.trim()}
@@ -69,6 +95,7 @@ function HomeComponent() {
           </Button>
         </div>
         <div className="flex flex-row flex-wrap gap-2 justify-center mt-2">
+          {/* TODO: Prompt suggestions only if user has no recent trips or if not authed */}
           {PROMPT_SUGGESTIONS.map((suggestion) => (
             <Button
               variant="outline"
