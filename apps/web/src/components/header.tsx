@@ -8,12 +8,12 @@ export default function Header() {
   const { data: session, isPending } = authClient.useSession();
 
   return (
-    <div className="flex flex-row items-center justify-between px-4 py-2 mt-6 rounded-full bg-gray-950 w-full text-white dark:bg-gray-50 dark:text-black">
+    <div className="flex flex-row items-center justify-between px-6 py-1.5 mt-6 rounded-full bg-gray-950 w-full text-white dark:bg-gray-50 dark:text-black border border-gray-900/10 dark:border-gray-200/30 shadow-md transition-all">
       <div className="flex flex-row items-center gap-2">
-        <div className="flex flex-row items-center bg-white dark:bg-black rounded-full p-2">
+        <div className="flex flex-row items-center bg-gradient-to-tr from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 rounded-full p-2 border border-gray-200 dark:border-gray-800 shadow-sm">
           <Plane className="w-6 h-6 text-black dark:text-white" />
         </div>
-        <span className="text-2xl font-semibold">TripGen</span>
+        <span className="text-2xl font-semibold tracking-tight">TripGen</span>
       </div>
 
       <div className="flex flex-row items-center gap-2">
@@ -24,7 +24,7 @@ export default function Header() {
           <img
             src={session.user.image || ""}
             alt="User"
-            className="w-8 h-8 rounded-full cursor-pointer"
+            className="w-8 h-8 rounded-full cursor-pointer border-2 border-transparent hover:border-blue-500 transition duration-200 shadow-sm hover:scale-105"
             onClick={() => {
               authClient.signOut();
             }}
@@ -32,7 +32,7 @@ export default function Header() {
         ) : (
           <Button
             variant="outline"
-            className="flex flex-row items-center text-black dark:bg-black dark:text-white rounded-full font-semibold cursor-pointer"
+            className="flex flex-row items-center text-black dark:bg-black dark:text-white rounded-full font-semibold cursor-pointer border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 transition duration-200 shadow-sm hover:scale-105"
             onClick={() => {
               authClient.signIn.social({
                 provider: "google",
