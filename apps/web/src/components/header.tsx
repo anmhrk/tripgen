@@ -1,34 +1,39 @@
 import { ThemeToggle } from "./theme-toggle";
-import { Plane } from "lucide-react";
 import { Button } from "./ui/button";
 import { authClient } from "@/lib/auth-client";
 import { Skeleton } from "./ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Link } from "@tanstack/react-router";
+import { Plane } from "lucide-react";
 
 export default function Header() {
-  const { data: session, isPending } = authClient.useSession();
+  const session = authClient.useSession();
 
   return (
-    <div className="flex flex-row items-center justify-between px-6 py-1.5 mt-6 rounded-sm w-full bg-purple-200 text-black dark:bg-[#3f324a] dark:text-white shadow-md transition-all">
-      <div className="flex flex-row items-center gap-2">
-        <div className="flex flex-row items-center dark:bg-purple-200 bg-purple-100 border border-purple-200 dark:border-purple-900 rounded-full p-2 shadow-sm">
-          <Plane className="w-6 h-6 text-black" />
+    <div className="flex flex-row items-center justify-between px-3 py-3 mt-6 w-full border-b border-gray-200 dark:border-gray-700">
+      <Link to="/" className="flex flex-row items-center gap-2">
+        <div className="border-2 border-purple-300 dark:border-purple-400 bg-purple-100/60 dark:bg-purple-900/30 p-1.5 rounded-full">
+          <Plane className="w-6 h-6 text-purple-500 dark:text-purple-300" />
         </div>
-        <span className="text-2xl font-semibold">TripGen</span>
-      </div>
+        <span className="text-2xl font-semibold font-sans">TripGen</span>
+      </Link>
       <div className="flex flex-row items-center gap-2">
         <ThemeToggle />
-        {isPending ? (
+        {session.isPending ? (
           <Skeleton className="h-9 w-20 rounded-full" />
         ) : session ? (
           // TODO: Add user dropdown
-          <img
-            src={session.user.image || ""}
-            alt="User"
-            className="w-8 h-8 rounded-full cursor-pointer transition duration-200 shadow-sm hover:scale-105"
-            onClick={() => {
-              authClient.signOut();
-            }}
-          />
+          <Avatar>
+            <AvatarImage
+              src={session.data?.user.image || ""}
+              onClick={() => {
+                authClient.signOut();
+              }}
+            />
+            <AvatarFallback>
+              {session.data?.user.name?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         ) : (
           <Button
             variant="outline"

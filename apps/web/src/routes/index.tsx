@@ -1,14 +1,9 @@
-// todos:
-// make a proper logo in header
-// improve the where will you go next text
-// change the second prompt suggestion
-
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth-client";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -17,9 +12,9 @@ export const Route = createFileRoute("/")({
 });
 
 const PROMPT_SUGGESTIONS = [
-  "Plan a romantic weekend getaway in Paris ❤️",
-  "Find hidden gems in Southeast Asia for backpackers 🎒",
-  "Create a road trip through the US 🚗",
+  "Plan a romantic weekend getaway in Paris",
+  "Plan an adventure-filled trip to Europe",
+  "Create a family-friendly road trip through the US",
 ];
 
 function HomeComponent() {
@@ -30,18 +25,22 @@ function HomeComponent() {
 
   const handleSubmit = async () => {
     if (!session.data?.user) {
-      toast.error("You must be logged in to generate a trip");
+      window.localStorage.setItem(
+        "tripgen_prompt",
+        JSON.stringify({
+          prompt: prompt,
+          timestamp: Date.now() + 5 * 60 * 1000,
+        })
+      );
+      authClient.signIn.social({
+        provider: "google",
+        callbackURL: import.meta.env.VITE_APP_URL,
+      });
       return;
-
-      // save prompt to local storage with a 5 min future time stamp
-      // route to auth
-      // if signed in within 5 mins, fetch prompt from local storage and generate trip
     }
 
     try {
       setLoading(true);
-
-
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -63,18 +62,32 @@ function HomeComponent() {
     });
   }, []);
 
+  // If not authed and try to submit, save prompt to local storage with a 5 min future time stamp
+  // Recover prompt from local storage if authed within 5 mins
+  useEffect(() => {
+    const savedPrompt = window.localStorage.getItem("tripgen_prompt");
+    if (savedPrompt && session.data?.user) {
+      const { prompt, timestamp } = JSON.parse(savedPrompt);
+      if (timestamp > Date.now() + 5 * 60 * 1000) {
+        setPrompt(prompt);
+      } else {
+        window.localStorage.removeItem("tripgen_prompt");
+      }
+    }
+  }, [session.data?.user]);
+
   return (
     <div className="flex flex-col items-center h-screen max-w-4xl mx-auto w-full px-4">
       <Header />
       <div className="flex flex-col items-center w-full mt-16 gap-6 max-w-3xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-semibold text-center mb-2">
-          Where will you go next?
+          Plan your perfect trip with AI
         </h1>
         <div className="relative w-full flex items-center justify-center">
           <Textarea
             ref={promptRef}
-            className="w-full min-h-[150px] p-3 max-h-[250px] rounded-2xl shadow-md resize-none pr-12 !text-md transition"
-            placeholder="Describe your dream trip..."
+            className="w-full min-h-[150px] p-3 max-h-[250px] rounded-2xl shadow-md resize-none pr-12 !text-[15px] transition"
+            placeholder="Describe your trip here..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
@@ -91,7 +104,11 @@ function HomeComponent() {
             aria-label="Send"
             disabled={!prompt.trim()}
           >
-            <ArrowUp className="!w-5 !h-5" />
+            {loading ? (
+              <Loader2 className="animate-spin !w-5 !h-5" />
+            ) : (
+              <ArrowUp className="!w-5 !h-5" />
+            )}
           </Button>
         </div>
         <div className="flex flex-row flex-wrap gap-2 justify-center mt-2">
@@ -117,7 +134,6 @@ function HomeComponent() {
           >
             GitHub
           </a>
-          .
         </div>
       </div>
     </div>
