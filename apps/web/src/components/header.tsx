@@ -1,14 +1,9 @@
 import { ThemeToggle } from "./theme-toggle";
-import { Button } from "./ui/button";
-import { authClient } from "@/lib/auth-client";
-import { Skeleton } from "./ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Link } from "@tanstack/react-router";
 import { Plane } from "lucide-react";
+import UserButton from "./user-button";
 
 export default function Header() {
-  const session = authClient.useSession();
-
   return (
     <div className="flex flex-row items-center justify-between px-3 py-3 mt-6 w-full border-b border-gray-200 dark:border-gray-700">
       <Link to="/" className="flex flex-row items-center gap-2">
@@ -19,35 +14,7 @@ export default function Header() {
       </Link>
       <div className="flex flex-row items-center gap-2">
         <ThemeToggle />
-        {session.isPending ? (
-          <Skeleton className="h-9 w-20 rounded-full" />
-        ) : session ? (
-          // TODO: Add user dropdown
-          <Avatar>
-            <AvatarImage
-              src={session.data?.user.image || ""}
-              onClick={() => {
-                authClient.signOut();
-              }}
-            />
-            <AvatarFallback>
-              {session.data?.user.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        ) : (
-          <Button
-            variant="outline"
-            className="flex flex-row items-center rounded-full dark:bg-primary/20 dark:hover:bg-primary/30 font-semibold cursor-pointer transition duration-200 shadow-sm"
-            onClick={() => {
-              authClient.signIn.social({
-                provider: "google",
-                callbackURL: import.meta.env.VITE_APP_URL,
-              });
-            }}
-          >
-            Sign In
-          </Button>
-        )}
+        <UserButton />
       </div>
     </div>
   );
