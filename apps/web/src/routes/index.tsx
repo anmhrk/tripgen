@@ -2,7 +2,9 @@ import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth-client";
-import { createFileRoute } from "@tanstack/react-router";
+import { orpc } from "@/utils/orpc";
+import { useMutation } from "@tanstack/react-query";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ArrowUp, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -22,8 +24,23 @@ function HomeComponent() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
 
-  const handleSubmit = async () => {
+  const generateTrip = useMutation(
+    orpc.createNewTrip.mutationOptions({
+      onSuccess: (data) => {
+        router.navigate({ to: "/trip/$tripId", params: { tripId: data } });
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSettled: () => {
+        setLoading(false);
+      },
+    })
+  );
+
+  const handleSubmit = () => {
     if (!session.data?.user) {
       window.localStorage.setItem(
         "tripgen_prompt",
@@ -39,15 +56,8 @@ function HomeComponent() {
       return;
     }
 
-    try {
-      setLoading(true);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    generateTrip.mutate({ prompt });
   };
 
   useEffect(() => {
