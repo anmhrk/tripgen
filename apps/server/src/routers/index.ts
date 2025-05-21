@@ -3,8 +3,9 @@ import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { customAlphabet } from "nanoid";
 import OpenAI from "openai";
-import { trip } from "../db/schema/trip";
+import { trip } from "../db/schema";
 import { ORPCError } from "@orpc/client";
+import { eq } from "drizzle-orm";
 
 const client = new OpenAI();
 
@@ -64,6 +65,23 @@ export const appRouter = {
       });
 
       return tripId;
+    }),
+
+  getTrip: protectedProcedure
+    .input(z.object({ tripId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const { tripId } = input;
+      const { db } = context;
+
+      const existingTrip = await db.query.trip.findFirst({
+        where: eq(trip.id, tripId),
+      });
+
+      if (!existingTrip) {
+        throw new ORPCError("Trip not found");
+      }
+
+      return existingTrip;
     }),
 };
 

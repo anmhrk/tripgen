@@ -21,12 +21,7 @@ export default function UserButton() {
         <DropdownMenu>
           <DropdownMenuTrigger className="cursor-pointer">
             <Avatar>
-              <AvatarImage
-                src={session.data?.user.image || ""}
-                onClick={() => {
-                  authClient.signOut();
-                }}
-              />
+              <AvatarImage src={session.data?.user.image || ""} />
               <AvatarFallback>
                 {session.data?.user.name?.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -57,7 +52,7 @@ export default function UserButton() {
       ) : (
         <Button
           variant="outline"
-          className="flex flex-row items-center rounded-full dark:bg-primary/20 dark:hover:bg-primary/30 font-semibold cursor-pointer transition duration-200 shadow-sm"
+          className="flex flex-row items-center rounded-full font-semibold cursor-pointer transition duration-200 shadow-sm"
           onClick={() => {
             authClient.signIn.social({
               provider: "google",

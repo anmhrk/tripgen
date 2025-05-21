@@ -1,13 +1,22 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { orpc } from "../utils/orpc";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/trip/$tripId")({
   component: RouteComponent,
-  loader: async ({ params }) => {
-    console.log(params);
-  },
 });
 
 function RouteComponent() {
   const { tripId } = useParams({ from: "/trip/$tripId" });
-  return <div>Hello {tripId}</div>;
+  const trip = useQuery(orpc.getTrip.queryOptions({ input: { tripId } }));
+
+  if (trip.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (trip.isError) {
+    return <div>Error: {trip.error.message}</div>;
+  }
+
+  return <div>Hello {trip.data?.title}</div>;
 }

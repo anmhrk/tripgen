@@ -87,7 +87,7 @@ function HomeComponent() {
   }, [session.data?.user]);
 
   return (
-    <div className="flex flex-col items-center h-screen max-w-4xl mx-auto w-full px-4">
+    <div className="flex flex-col items-center min-h-screen max-w-4xl mx-auto w-full px-4">
       <Header />
       <div className="flex flex-col items-center w-full mt-16 gap-6 max-w-3xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-semibold text-center mb-2">
@@ -140,7 +140,7 @@ function HomeComponent() {
             href="https://github.com/anmhrk/tripgen"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-purple-500 dark:hover:text-purple-400 transition"
+            className="underline hover:text-primary transition"
           >
             GitHub
           </a>
