@@ -1,4 +1,3 @@
-import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
@@ -11,11 +10,11 @@ import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
 
 export default function UserButton() {
-  const session = authClient.useSession();
+  //   const session = authClient.useSession();
 
   return (
     <>
-      {session.isPending ? (
+      {/* {session.isPending ? (
         <Skeleton className="w-8 h-8 rounded-full" />
       ) : session.data?.user ? (
         <DropdownMenu>
@@ -38,31 +37,26 @@ export default function UserButton() {
                 </p>
               </div>
             </div>
-            <DropdownMenuItem
-              onClick={() => {
-                authClient.signOut();
-              }}
-              className="font-medium text-muted-foreground transition-none"
-            >
+            <DropdownMenuItem className="font-medium text-muted-foreground transition-none">
               <LogOut className="mr-2 !h-5 !w-5" />
               <span>Sign Out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : (
-        <Button
-          variant="outline"
-          className="flex flex-row items-center rounded-full font-semibold cursor-pointer transition duration-200 shadow-sm"
-          onClick={() => {
-            authClient.signIn.social({
-              provider: "google",
-              callbackURL: import.meta.env.VITE_APP_URL,
-            });
-          }}
-        >
-          Sign In
-        </Button>
-      )}
+      ) : ( */}
+      <Button
+        variant="outline"
+        className="flex flex-row items-center rounded-full font-semibold cursor-pointer transition duration-200 shadow-sm"
+        onClick={() => {
+          // authClient.signIn.social({
+          //   provider: "google",
+          //   callbackURL: import.meta.env.VITE_APP_URL,
+          // });
+        }}
+      >
+        Sign In
+      </Button>
+      {/* )} */}
     </>
   );
 }

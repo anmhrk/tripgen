@@ -1,6 +1,6 @@
 # tripgen
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Hono, ORPC, and more.
+This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Convex, and more.
 
 ## Features
 
@@ -8,12 +8,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **TanStack Router** - File-based routing with full type safety
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **shadcn/ui** - Reusable UI components
-- **Hono** - Lightweight, performant server framework
-- **oRPC** - End-to-end type-safe APIs with OpenAPI integration
-- **Bun** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Email & password authentication with Better Auth
+- **Convex** - Reactive backend-as-a-service platform
 - **Turborepo** - Optimized monorepo build system
 
 ## Getting Started
@@ -23,18 +18,16 @@ First, install the dependencies:
 ```bash
 bun install
 ```
-## Database Setup
 
-This project uses PostgreSQL with Drizzle ORM.
+## Convex Setup
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
+This project uses Convex as a backend. You'll need to set up Convex before running the app:
 
-3. Apply the schema to your database:
 ```bash
-bun db:push
+bun dev:setup
 ```
 
+Follow the prompts to create a new Convex project and connect it to your application.
 
 Then, run the development server:
 
@@ -44,7 +37,7 @@ bun dev
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
 
-The API is running at [http://localhost:3000](http://localhost:3000).
+Your app will connect to the Convex cloud backend automatically.
 
 
 
@@ -54,7 +47,9 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 tripgen/
 ├── apps/
 │   ├── web/         # Frontend application (React + TanStack Router)
-│   └── server/      # Backend API (Hono, ORPC)
+├── packages/
+│   └── backend/     # Convex backend functions and schema
+
 ```
 
 ## Available Scripts
@@ -62,7 +57,5 @@ tripgen/
 - `bun dev`: Start all applications in development mode
 - `bun build`: Build all applications
 - `bun dev:web`: Start only the web application
-- `bun dev:server`: Start only the server
+- `bun dev:setup`: Setup and configure your Convex project
 - `bun check-types`: Check TypeScript types across all apps
-- `bun db:push`: Push schema changes to database
-- `bun db:studio`: Open database studio UI

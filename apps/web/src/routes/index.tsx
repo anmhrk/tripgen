@@ -1,9 +1,6 @@
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { authClient } from "@/lib/auth-client";
-import { orpc } from "@/utils/orpc";
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ArrowUp, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -20,45 +17,30 @@ const PROMPT_SUGGESTIONS = [
 ];
 
 function HomeComponent() {
-  const session = authClient.useSession();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
 
-  const generateTrip = useMutation(
-    orpc.createNewTrip.mutationOptions({
-      onSuccess: (data) => {
-        router.navigate({ to: "/trip/$tripId", params: { tripId: data } });
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSettled: () => {
-        setLoading(false);
-      },
-    })
-  );
+  // const handleSubmit = () => {
+  //   if (!session.data?.user) {
+  //     window.localStorage.setItem(
+  //       "tripgen_prompt",
+  //       JSON.stringify({
+  //         prompt: prompt,
+  //         timestamp: Date.now() + 5 * 60 * 1000,
+  //       })
+  //     );
+  //     authClient.signIn.social({
+  //       provider: "google",
+  //       callbackURL: import.meta.env.VITE_APP_URL,
+  //     });
+  //     return;
+  //   }
 
-  const handleSubmit = () => {
-    if (!session.data?.user) {
-      window.localStorage.setItem(
-        "tripgen_prompt",
-        JSON.stringify({
-          prompt: prompt,
-          timestamp: Date.now() + 5 * 60 * 1000,
-        })
-      );
-      authClient.signIn.social({
-        provider: "google",
-        callbackURL: import.meta.env.VITE_APP_URL,
-      });
-      return;
-    }
-
-    setLoading(true);
-    generateTrip.mutate({ prompt });
-  };
+  //   setLoading(true);
+  //   generateTrip.mutate({ prompt });
+  // };
 
   useEffect(() => {
     if (promptRef.current) {
@@ -72,19 +54,19 @@ function HomeComponent() {
     });
   }, []);
 
-  // If not authed and try to submit, save prompt to local storage with a 5 min future time stamp
-  // Recover prompt from local storage if authed within 5 mins
-  useEffect(() => {
-    const savedPrompt = window.localStorage.getItem("tripgen_prompt");
-    if (savedPrompt && session.data?.user) {
-      const { prompt, timestamp } = JSON.parse(savedPrompt);
-      if (timestamp > Date.now() + 5 * 60 * 1000) {
-        setPrompt(prompt);
-      } else {
-        window.localStorage.removeItem("tripgen_prompt");
-      }
-    }
-  }, [session.data?.user]);
+  // // If not authed and try to submit, save prompt to local storage with a 5 min future time stamp
+  // // Recover prompt from local storage if authed within 5 mins
+  // useEffect(() => {
+  //   const savedPrompt = window.localStorage.getItem("tripgen_prompt");
+  //   if (savedPrompt && session.data?.user) {
+  //     const { prompt, timestamp } = JSON.parse(savedPrompt);
+  //     if (timestamp > Date.now() + 5 * 60 * 1000) {
+  //       setPrompt(prompt);
+  //     } else {
+  //       window.localStorage.removeItem("tripgen_prompt");
+  //     }
+  //   }
+  // }, [session.data?.user]);
 
   return (
     <div className="flex flex-col items-center min-h-screen max-w-4xl mx-auto w-full px-4">
@@ -99,18 +81,20 @@ function HomeComponent() {
             className="w-full min-h-[150px] p-3 max-h-[250px] rounded-2xl shadow-md resize-none pr-12 !text-[15px] transition"
             placeholder="Describe your trip here..."
             value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setPrompt(e.target.value)
+            }
+            onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit();
+                // handleSubmit();
               }
             }}
           />
           <Button
             size="icon"
             className="absolute bottom-3 right-3 rounded-full shadow-md cursor-pointer transition disabled:opacity-50 disabled:pointer-events-none"
-            onClick={handleSubmit}
+            // onClick={handleSubmit}
             aria-label="Send"
             disabled={!prompt.trim()}
           >

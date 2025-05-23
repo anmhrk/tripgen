@@ -1,14 +1,6 @@
 import Loader from "@/components/loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { link, orpc, ORPCContext } from "@/utils/orpc";
-import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState } from "react";
-import type { RouterClient } from "@orpc/server";
-import { createORPCReactQueryUtils } from "@orpc/react-query";
-import type { appRouter } from "../../../server/src/routers";
-import { createORPCClient } from "@orpc/client";
 import {
   HeadContent,
   Outlet,
@@ -18,10 +10,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import "../index.css";
 
-export interface RouterAppContext {
-  orpc: typeof orpc;
-  queryClient: QueryClient;
-}
+export interface RouterAppContext {}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: RootComponent,
@@ -49,24 +38,16 @@ function RootComponent() {
     select: (s) => s.isLoading,
   });
 
-  const [client] = useState<RouterClient<typeof appRouter>>(() =>
-    createORPCClient(link)
-  );
-  const [orpcUtils] = useState(() => createORPCReactQueryUtils(client));
-
   return (
     <>
       <HeadContent />
-      <ORPCContext.Provider value={orpcUtils}>
-        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-          <div className="grid grid-rows-[auto_1fr] h-svh">
-            {isFetching ? <Loader /> : <Outlet />}
-          </div>
-          <Toaster richColors />
-        </ThemeProvider>
-      </ORPCContext.Provider>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <div className="grid grid-rows-[auto_1fr] h-svh">
+          {isFetching ? <Loader /> : <Outlet />}
+        </div>
+        <Toaster richColors />
+      </ThemeProvider>
       <TanStackRouterDevtools position="bottom-left" />
-      <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
     </>
   );
 }
