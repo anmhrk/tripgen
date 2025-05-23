@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as functions_trip from "../functions/trip.js";
 import type * as functions_user from "../functions/user.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
@@ -28,6 +29,7 @@ import type * as http from "../http.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  "functions/trip": typeof functions_trip;
   "functions/user": typeof functions_user;
   healthCheck: typeof healthCheck;
   http: typeof http;

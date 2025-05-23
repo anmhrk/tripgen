@@ -4,7 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ArrowUp, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useAction, useQuery } from "convex/react";
+import { api } from "@tripgen/backend/_generated/api";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { toast } from "sonner";
+import { tryCatch } from "@/utils/try-catch";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -20,27 +24,33 @@ function HomeComponent() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const user = useQuery(api.functions.user.getCurrentUser);
+  const { signIn } = useAuthActions();
+  const createTrip = useAction(api.functions.trip.createTrip);
   const router = useRouter();
 
-  // const handleSubmit = () => {
-  //   if (!session.data?.user) {
-  //     window.localStorage.setItem(
-  //       "tripgen_prompt",
-  //       JSON.stringify({
-  //         prompt: prompt,
-  //         timestamp: Date.now() + 5 * 60 * 1000,
-  //       })
-  //     );
-  //     authClient.signIn.social({
-  //       provider: "google",
-  //       callbackURL: import.meta.env.VITE_APP_URL,
-  //     });
-  //     return;
-  //   }
+  const handleSubmit = async () => {
+    if (!user) {
+      window.localStorage.setItem(
+        "tripgen_prompt",
+        JSON.stringify({
+          prompt: prompt,
+          timestamp: Date.now() + 5 * 60 * 1000,
+        })
+      );
+      signIn("google");
+      return;
+    }
 
-  //   setLoading(true);
-  //   generateTrip.mutate({ prompt });
-  // };
+    setLoading(true);
+    const { data, error } = await tryCatch(createTrip({ prompt }));
+    if (error) {
+      toast.error(error.toString());
+    } else {
+      router.navigate({ to: "/trip/$tripId", params: { tripId: data } });
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (promptRef.current) {
@@ -54,19 +64,19 @@ function HomeComponent() {
     });
   }, []);
 
-  // // If not authed and try to submit, save prompt to local storage with a 5 min future time stamp
-  // // Recover prompt from local storage if authed within 5 mins
-  // useEffect(() => {
-  //   const savedPrompt = window.localStorage.getItem("tripgen_prompt");
-  //   if (savedPrompt && session.data?.user) {
-  //     const { prompt, timestamp } = JSON.parse(savedPrompt);
-  //     if (timestamp > Date.now() + 5 * 60 * 1000) {
-  //       setPrompt(prompt);
-  //     } else {
-  //       window.localStorage.removeItem("tripgen_prompt");
-  //     }
-  //   }
-  // }, [session.data?.user]);
+  // If not authed and try to submit, save prompt to local storage with a 5 min future time stamp
+  // Recover prompt from local storage if authed within 5 mins
+  useEffect(() => {
+    const savedPrompt = window.localStorage.getItem("tripgen_prompt");
+    if (savedPrompt && user) {
+      const { prompt, timestamp } = JSON.parse(savedPrompt);
+      if (timestamp > Date.now() + 5 * 60 * 1000) {
+        setPrompt(prompt);
+      } else {
+        window.localStorage.removeItem("tripgen_prompt");
+      }
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col items-center min-h-screen max-w-4xl mx-auto w-full px-4">
@@ -87,14 +97,14 @@ function HomeComponent() {
             onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                // handleSubmit();
+                handleSubmit();
               }
             }}
           />
           <Button
             size="icon"
             className="absolute bottom-3 right-3 rounded-full shadow-md cursor-pointer transition disabled:opacity-50 disabled:pointer-events-none"
-            // onClick={handleSubmit}
+            onClick={handleSubmit}
             aria-label="Send"
             disabled={!prompt.trim()}
           >
