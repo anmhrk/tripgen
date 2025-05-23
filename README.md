@@ -1,8 +1,8 @@
-# tripgen
+# TripGen
 
 This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Convex, and more.
 
-## Features
+## Tech Stack
 
 - **TypeScript** - For type safety and improved developer experience
 - **TanStack Router** - File-based routing with full type safety
@@ -38,8 +38,6 @@ bun dev
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
 
 Your app will connect to the Convex cloud backend automatically.
-
-
 
 ## Project Structure
 

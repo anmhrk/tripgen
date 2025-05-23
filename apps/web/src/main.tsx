@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import Loader from "./components/loader";
 import { routeTree } from "./routeTree.gen";
 
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
@@ -12,7 +13,11 @@ const router = createRouter({
   defaultPendingComponent: () => <Loader />,
   context: {},
   Wrap: function WrapComponent({ children }: { children: React.ReactNode }) {
-    return <ConvexProvider client={convex}>{children}</ConvexProvider>;
+    return (
+      <ConvexProvider client={convex}>
+        <ConvexAuthProvider client={convex}>{children}</ConvexAuthProvider>
+      </ConvexProvider>
+    );
   },
 });
 
