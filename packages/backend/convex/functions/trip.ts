@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { action, internalMutation } from "../_generated/server";
+import { action, internalMutation, query } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { z } from "zod";
 import OpenAI from "openai";
@@ -53,34 +53,50 @@ export const createTrip = action({
       throw new ConvexError("User not found!");
     }
 
-    const routeId = customAlphabet("1234567890abcdef", 10)();
+    const tripId = customAlphabet("1234567890abcdef", 10)();
     await ctx.runMutation(internal.functions.trip.writeTripToDb, {
-      routeId,
+      tripId,
       userId,
       title,
       prompt,
     });
 
-    return routeId;
+    return tripId;
   },
 });
 
 export const writeTripToDb = internalMutation({
   args: {
-    routeId: v.string(),
+    tripId: v.string(),
     userId: v.id("users"),
     title: v.string(),
     prompt: v.string(),
   },
   handler: async (ctx, args) => {
-    const { routeId, userId, title, prompt } = args;
+    const { tripId, userId, title, prompt } = args;
     await ctx.db.insert("trips", {
-      routeId,
+      tripId,
       userId,
       title,
       prompt,
       status: "created",
       createdAt: Date.now(),
     });
+  },
+});
+
+export const getTrip = query({
+  args: {
+    tripId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { tripId } = args;
+
+    const trip = await ctx.db
+      .query("trips")
+      .filter((q) => q.eq(q.field("tripId"), tripId))
+      .first();
+
+    return trip;
   },
 });

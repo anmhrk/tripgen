@@ -6,7 +6,7 @@ export default defineSchema({
   ...authTables,
 
   trips: defineTable({
-    routeId: v.string(),
+    tripId: v.string(),
     userId: v.id("users"),
     title: v.string(),
     createdAt: v.number(),
